@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>D2C Shortage Assistant</title>
 <style>
 *{box-sizing:border-box}
@@ -33,6 +33,10 @@ th,td{text-align:left;padding:12px;border-bottom:1px solid #e5eaf1;vertical-alig
 th{background:#edf2f8;font-size:12px}
 .sku{font-family:monospace;font-size:12px}
 .status{margin-top:12px;color:#52647c}
+.warning{color:#a03b30;font-weight:bold}
+.special{color:#8a6018;font-weight:bold}
+.good{color:#197451;font-weight:bold}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
 @media(max-width:700px){
 .metrics{grid-template-columns:repeat(2,1fr)}
 main{padding:12px}
@@ -40,17 +44,15 @@ main{padding:12px}
 </style>
 </head>
 <body>
-
 <header>
 <div style="font-size:11px;letter-spacing:2px">D2C WAREHOUSE OPERATIONS</div>
 <h1>Shortage Assistant</h1>
 <p>Shortage reporting & replenishment planning</p>
 </header>
-
 <main>
 <section class="panel">
 <h2>1. Upload Logiwa Reports</h2>
-<p class="note">Use your actual Shortage Report and Inventory export.</p>
+<p class="note">Use the actual Shortage Report and Inventory export.</p>
 <div class="controls">
 <div class="field">
 <label>Shortage Report (.xlsx or .csv)</label>
@@ -97,8 +99,8 @@ main{padding:12px}
 </section>
 
 <section class="panel">
-<h2>3. Replenishment Report</h2>
-<p class="note">Items are prioritized by oldest shortage date. Available shelf quantities are considered before assigning storage pulls.</p>
+<h2>3. Replenishment & Investigation Reports</h2>
+<p class="note">Prioritized by oldest outstanding order. Sufficient free shelf stock is excluded from replenishment pulls.</p>
 
 <div class="tabs">
 <button class="active" data-brand="all">All Brands</button>
@@ -106,9 +108,10 @@ main{padding:12px}
 <button data-brand="Swoveralls">Swoveralls</button>
 </div>
 
-<div class="controls" style="margin-bottom:18px">
+<div class="actions">
 <button class="primary" id="print">Print Replenishment Sheet</button>
-<button id="investigations">Print Investigation Sheet</button>
+<button id="specialPrint">Print Special Requests</button>
+<button id="investigations">Print Investigations</button>
 </div>
 
 <div class="tablewrap">
@@ -120,7 +123,7 @@ main{padding:12px}
 <th>SKU</th>
 <th>Shortage Qty</th>
 <th>Pull Qty</th>
-<th>Source Location / LPN</th>
+<th>Inventory Status / Locations</th>
 <th>Jira</th>
 </tr>
 </thead>
@@ -130,9 +133,8 @@ main{padding:12px}
 </table>
 </div>
 </section>
-
 <p class="note">
-Inventory is based on the uploaded Logiwa snapshot. Verify stock and LPNs before transferring. Virtual locations and staging are not eligible pull sources. The Excel reader uses an external library; obtain company approval before using confidential warehouse data on this website.
+Inventory quantities come from the uploaded Logiwa snapshot. Verify physical stock and LPNs before transferring. Virtual locations require a separate request. Excel files are parsed using a third-party library; obtain company approval before processing confidential work data.
 </p>
 </main>
 
@@ -154,87 +156,66 @@ return new Date(new Date().toLocaleString("en-US",{
 timeZone:"America/New_York"
 }));
 }
-
 function dateKey(d){
 return d.getFullYear()+"-"+
 String(d.getMonth()+1).padStart(2,"0")+"-"+
 String(d.getDate()).padStart(2,"0");
 }
-
 function cutoff(){
-let d=easternNow();
-let mode=$("mode").value;
-if(mode==="custom"){
-return $("customDate").value+" 14:00:00";
-}
+let d=easternNow(),mode=$("mode").value;
+if(mode==="custom")return $("customDate").value+" 14:00:00";
 if(mode==="yesterday"||(mode==="auto"&&d.getHours()<14)){
 d.setDate(d.getDate()-1);
 }
 return dateKey(d)+" 14:00:00";
 }
-
 function parseDate(v){
 if(v instanceof Date)return v.getTime();
-if(typeof v==="number"){
-return Math.round((v-25569)*86400000);
-}
+if(typeof v==="number")return Math.round((v-25569)*86400000);
 let s=String(v??"").trim();
 if(!s)return NaN;
 let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?/i);
 if(m){
-let hour=Number(m[4]||0);
-let ampm=(m[7]||"").toUpperCase();
-if(ampm==="PM"&&hour<12)hour+=12;
-if(ampm==="AM"&&hour===12)hour=0;
-return new Date(Number(m[3]),Number(m[1])-1,Number(m[2]),hour,Number(m[5]||0),Number(m[6]||0)).getTime();
+let h=Number(m[4]||0),ampm=(m[7]||"").toUpperCase();
+if(ampm==="PM"&&h<12)h+=12;
+if(ampm==="AM"&&h===12)h=0;
+return new Date(+m[3],+m[1]-1,+m[2],h,+(m[5]||0),+(m[6]||0)).getTime();
 }
 return new Date(s.replace(" ","T")).getTime();
 }
-
 function isVirtual(loc){
 return ["MV-M1","0M1","0M5"].includes(norm(loc));
 }
-
 function isStaging(loc){
 return /^(STAGING|STAGE|DOCK-STAGE)/i.test(String(loc??"").trim());
 }
-
 function isShelf(loc){
 return /^(100|88)\./i.test(String(loc??"").trim());
 }
-
+function isReturnLocation(loc){
+return /^[A-Z]\.\d+/i.test(String(loc??"").trim());
+}
 function getBrand(row){
 return String(row.Client||row["Client Display Name"]||row.Brand||"Other").trim();
 }
-
 function getQty(row){
 return number(row["Shortage UOM Qty"]);
 }
-
-function eligibleInventory(row){
-return number(row["Free UOM QTY"])>0 &&
-!isVirtual(row.Location) &&
-!isStaging(row.Location);
-}
-
 function inventoryMatches(item){
 return inventory.filter(i=>
-norm(i.SKU)===norm(item.sku) &&
+norm(i.SKU)===norm(item.sku)&&
 (!i.Client||norm(i.Client)===norm(item.brand))
 );
 }
-
 function filteredShortages(){
 let limit=parseDate(cutoff());
-let query=$("search").value.trim().toLowerCase();
+let q=$("search").value.trim().toLowerCase();
 return shortages.filter(r=>{
-let brand=getBrand(r);
 let created=parseDate(r["Order Creation Date"]);
-return Number.isFinite(created) &&
-created<limit &&
-getQty(r)>0 &&
-(selectedBrand==="all"||norm(brand)===norm(selectedBrand)) &&
-(!query||Object.values(r).some(v=>String(v).toLowerCase().includes(query)));
+return Number.isFinite(created)&&created<limit&&
+getQty(r)>0&&
+(selectedBrand==="all"||norm(getBrand(r))===norm(selectedBrand))&&
+(!q||Object.values(r).some(v=>String(v).toLowerCase().includes(q)));
 }).sort((a,b)=>parseDate(a["Order Creation Date"])-parseDate(b["Order Creation Date"]));
 }
 
@@ -243,96 +224,116 @@ let rows=filteredShortages();
 let grouped=new Map();
 
 for(const r of rows){
-let brand=getBrand(r);
-let sku=String(r.SKU||"").trim();
+let brand=getBrand(r),sku=String(r.SKU||"").trim();
 let key=norm(brand)+"|"+norm(sku);
 if(!grouped.has(key)){
 grouped.set(key,{
 brand,sku,need:0,
 date:parseDate(r["Order Creation Date"]),
-orders:new Set(),
-lines:[]
+orders:new Set()
 });
 }
 let g=grouped.get(key);
 g.need+=getQty(r);
 g.date=Math.min(g.date,parseDate(r["Order Creation Date"]));
 g.orders.add(String(r["Order Code"]||r["Store Order Name"]||""));
-g.lines.push(r);
 }
 
 let groups=[...grouped.values()].sort((a,b)=>a.date-b.date);
-let remaining=new Map();
 let plan=[];
+let remaining=new Map();
 
 for(const g of groups){
-let sources=inventoryMatches(g).filter(eligibleInventory);
+let sources=inventoryMatches(g).filter(i=>number(i["Free UOM QTY"])>0);
 
 let shelfQty=sources.filter(i=>isShelf(i.Location))
-.reduce((sum,i)=>sum+number(i["Free UOM QTY"]),0);
+.reduce((n,i)=>n+number(i["Free UOM QTY"]),0);
 
 let required=Math.max(0,g.need-shelfQty);
 let pulls=[];
 
-let storage=sources.filter(i=>!isShelf(i.Location))
-.sort((a,b)=>{
-let la=String(a.Location||"");
-let lb=String(b.Location||"");
-return la.localeCompare(lb,undefined,{numeric:true}) ||
-number(b["Free UOM QTY"])-number(a["Free UOM QTY"]);
-});
+let storage=sources.filter(i=>
+!isShelf(i.Location)&&
+!isVirtual(i.Location)&&
+!isStaging(i.Location)
+).sort((a,b)=>
+String(a.Location).localeCompare(String(b.Location),undefined,{numeric:true})
+);
 
 for(const i of storage){
 if(required<=0)break;
 let key=norm(g.brand)+"|"+norm(i.SKU)+"|"+
 norm(i.Location)+"|"+norm(i.LPN);
-if(!remaining.has(key)){
-remaining.set(key,number(i["Free UOM QTY"]));
-}
-let available=remaining.get(key);
-let take=Math.min(required,available);
+if(!remaining.has(key))remaining.set(key,number(i["Free UOM QTY"]));
+let take=Math.min(required,remaining.get(key));
 if(take>0){
 pulls.push({
-qty:take,
-sku:g.sku,
-brand:g.brand,
-location:i.Location,
-lpn:i.LPN||"—",
-date:g.date
+brand:g.brand,sku:g.sku,qty:take,
+location:i.Location,lpn:i.LPN||"—",date:g.date
 });
-remaining.set(key,available-take);
+remaining.set(key,remaining.get(key)-take);
 required-=take;
 }
 }
 
-plan.push({...g,shelfQty,pulls,unfilled:required});
+let virtualSources=sources.filter(i=>isVirtual(i.Location));
+let virtualQty=virtualSources.reduce((n,i)=>n+number(i["Free UOM QTY"]),0);
+let specialQty=Math.min(required,virtualQty);
+let totalFree=sources.reduce((n,i)=>n+number(i["Free UOM QTY"]),0);
+let unfilled=Math.max(0,required-specialQty);
+
+let status;
+if(g.need<=shelfQty){
+status="SHELF STOCK SUFFICIENT";
+}else if(totalFree===0){
+status="ZERO FREE INVENTORY";
+}else if(pulls.length&&required===0){
+status="STORAGE PULL AVAILABLE";
+}else if(specialQty>0){
+status="VIRTUAL INVENTORY — REQUEST REQUIRED";
+}else{
+status="INSUFFICIENT STOCK";
+}
+
+plan.push({
+...g,shelfQty,pulls,virtualSources,
+specialQty,unfilled,totalFree,status
+});
 }
 return {rows,plan};
 }
 
 function render(){
-$("cutoffText").textContent="Including shortage orders created before "+cutoff()+" Eastern.";
+$("cutoffText").textContent=
+"Including shortage orders created before "+cutoff()+" Eastern.";
 let {rows,plan}=buildPlan();
 currentPlan=plan;
 
-$("orderCount").textContent=new Set(rows.map(r=>r["Order Code"]||r["Store Order Name"])).size;
+$("orderCount").textContent=
+new Set(rows.map(r=>r["Order Code"]||r["Store Order Name"])).size;
 $("lineCount").textContent=rows.length;
 $("unitCount").textContent=rows.reduce((s,r)=>s+getQty(r),0);
-$("pullCount").textContent=plan.reduce((s,g)=>s+g.pulls.reduce((n,p)=>n+p.qty,0),0);
+$("pullCount").textContent=plan.reduce((s,g)=>
+s+g.pulls.reduce((n,p)=>n+p.qty,0),0);
 
 $("results").innerHTML=plan.map((g,index)=>{
 let locations=g.pulls.map(p=>
 html(p.location)+" / "+html(p.lpn)+" — Qty "+p.qty
 ).join("<br>");
-let status=g.unfilled>0?
-"<br><span style='color:#a33'>Unfilled: "+g.unfilled+"</span>":"";
+let color=g.status==="ZERO FREE INVENTORY"?"warning":
+g.status.includes("VIRTUAL")?"special":
+g.status==="SHELF STOCK SUFFICIENT"?"good":"";
 return "<tr>"+
 "<td>"+html(new Date(g.date).toLocaleDateString())+"</td>"+
 "<td>"+html(g.brand)+"</td>"+
 "<td class='sku'>"+html(g.sku)+"</td>"+
 "<td>"+g.need+"</td>"+
 "<td>"+g.pulls.reduce((n,p)=>n+p.qty,0)+"</td>"+
-"<td>"+(locations||"No storage pull required")+status+"</td>"+
+"<td><span class='"+color+"'>"+html(g.status)+"</span><br>"+
+(locations||"No eligible storage pull")+
+(g.specialQty?"<br>Special request qty: "+g.specialQty:"")+
+(g.unfilled?"<br>Unfilled qty: "+g.unfilled:"")+
+"</td>"+
 "<td><button onclick='copyJira("+index+")'>Copy Jira</button></td>"+
 "</tr>";
 }).join("")||"<tr><td colspan='7'>No matching shortages.</td></tr>";
@@ -345,31 +346,31 @@ let text=[
 "SKU: "+g.sku,
 "Shortage Qty: "+g.need,
 "Oldest Order Date: "+new Date(g.date).toLocaleDateString(),
+"Status: "+g.status,
 "Storage Locations:",
 ...g.pulls.map(p=>p.location+" | LPN "+p.lpn+" | Qty "+p.qty),
+"Virtual Locations:",
+...g.virtualSources.map(i=>i.Location+" | LPN "+(i.LPN||"—")+
+" | Free "+i["Free UOM QTY"]),
+"Special Request Qty: "+g.specialQty,
 "Unfilled Qty: "+g.unfilled,
 "Action: Verify inventory and resolve shortage."
 ].join("\n");
 try{
 await navigator.clipboard.writeText(text);
 alert("Jira details copied!");
-}catch(e){
-prompt("Copy Jira details:",text);
-}
+}catch(e){prompt("Copy Jira details:",text);}
 }
 
-function printable(title,sections){
+function printable(title,instructions,sections){
 let win=window.open("","_blank");
-if(!win){
-alert("Please allow pop-ups to print the worksheet.");
-return;
-}
+if(!win){alert("Please allow pop-ups to print.");return;}
 let styles=`
 <style>
 @page{size:letter portrait;margin:0.55in}
 body{font:11px Arial;color:#111}
 h1{text-align:center;font-size:18px;margin:0 0 6px}
-.subtitle{text-align:center;font-size:11px;margin-bottom:15px}
+.subtitle{text-align:center;font-size:11px;margin-bottom:15px;line-height:1.5}
 h2{font-size:13px;border-bottom:2px solid #333;padding-bottom:5px;margin-top:20px}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
 th,td{border:1px solid #888;padding:8px 6px;text-align:left;overflow-wrap:anywhere}
@@ -382,9 +383,9 @@ tr{break-inside:avoid}
 win.document.write(
 "<!DOCTYPE html><html><head><title>"+html(title)+"</title>"+
 styles+"</head><body><h1>"+html(title)+"</h1>"+
-"<div class='subtitle'>Transfer these items to shelf locations.<br>Cutoff: "+
+"<div class='subtitle'>"+html(instructions)+"<br>Cutoff: "+
 html(cutoff())+" ET</div>"+sections+
-"<p class='note'>Verify physical stock, location and LPN before transferring. Check each row when completed.</p>"+
+"<p class='note'>Verify quantities and locations against Logiwa before making inventory changes.</p>"+
 "</body></html>"
 );
 win.document.close();
@@ -394,43 +395,67 @@ setTimeout(()=>win.print(),300);
 
 function printPull(){
 let all=currentPlan.flatMap(g=>g.pulls);
+if(!all.length){
+alert("No eligible storage pulls for this report.");
+return;
+}
 let brands=[...new Set(all.map(p=>p.brand))];
-
 let sections=brands.map(brand=>{
 let pulls=all.filter(p=>p.brand===brand)
 .sort((a,b)=>a.date-b.date);
 return "<h2>"+html(brand)+"</h2>"+
 "<table><colgroup><col style='width:8%'><col style='width:10%'><col style='width:40%'><col style='width:22%'><col style='width:20%'></colgroup>"+
 "<thead><tr><th>✓</th><th>QTY</th><th>SKU</th><th>LOCATION</th><th>LPN</th></tr></thead><tbody>"+
-pulls.map(p=>"<tr>"+
-"<td class='check'>□</td>"+
+pulls.map(p=>"<tr><td class='check'>□</td>"+
 "<td class='qty'>"+p.qty+"</td>"+
 "<td>"+html(p.sku)+"</td>"+
 "<td>"+html(p.location)+"</td>"+
 "<td>"+html(p.lpn)+"</td></tr>").join("")+
 "</tbody></table>";
 }).join("");
+printable("D2C REPLENISHMENT PULL SHEET",
+"Transfer these items to shelf locations.",sections);
+}
 
-if(!all.length){
-alert("There are no eligible storage pulls for the current report.");
+function printSpecial(){
+let items=currentPlan.filter(g=>g.specialQty>0);
+if(!items.length){
+alert("No special requests for this report.");
 return;
 }
-printable("D2C REPLENISHMENT PULL SHEET",sections);
+let sections="<h2>Virtual Inventory — Request Required</h2>"+
+"<table><tr><th>✓</th><th>QTY</th><th>SKU</th><th>BRAND</th><th>VIRTUAL LOCATION</th><th>LPN</th></tr>"+
+items.flatMap(g=>{
+let remaining=g.specialQty;
+return g.virtualSources.flatMap(i=>{
+let qty=Math.min(remaining,number(i["Free UOM QTY"]));
+remaining-=qty;
+if(qty<=0)return [];
+return "<tr><td class='check'>□</td><td class='qty'>"+qty+
+"</td><td>"+html(g.sku)+"</td><td>"+html(g.brand)+
+"</td><td>"+html(i.Location)+"</td><td>"+html(i.LPN||"—")+"</td></tr>";
+});
+}).join("")+"</table>";
+printable("D2C SPECIAL REQUESTS",
+"Notify Maren. Virtual inventory requires a special request.",sections);
 }
 
 function printInvestigations(){
 let items=currentPlan.filter(g=>g.unfilled>0);
 if(!items.length){
-alert("No unfilled storage quantities in this report.");
+alert("No outstanding inventory investigations.");
 return;
 }
-let sections="<h2>Items Requiring Investigation</h2>"+
-"<table><tr><th>SKU</th><th>Brand</th><th>Unfilled QTY</th><th>Oldest Date</th></tr>"+
-items.map(g=>"<tr><td>"+html(g.sku)+"</td><td>"+
-html(g.brand)+"</td><td>"+g.unfilled+"</td><td>"+
-html(new Date(g.date).toLocaleDateString())+"</td></tr>").join("")+
-"</table>";
-printable("D2C SHORTAGE INVESTIGATIONS",sections);
+let sections="<h2>Inventory Investigations</h2>"+
+"<table><tr><th>✓</th><th>SKU</th><th>BRAND</th><th>QTY</th><th>STATUS</th></tr>"+
+items.map(g=>{
+let status=g.totalFree===0?"ZERO FREE INVENTORY":"INSUFFICIENT STOCK";
+return "<tr><td class='check'>□</td><td>"+html(g.sku)+
+"</td><td>"+html(g.brand)+"</td><td class='qty'>"+g.unfilled+
+"</td><td>"+status+"</td></tr>";
+}).join("")+"</table>";
+printable("D2C INVENTORY INVESTIGATIONS",
+"Review shortages with no sufficient available inventory.",sections);
 }
 
 function parseCSV(text){
@@ -508,6 +533,7 @@ render();
 $("customDate").onchange=render;
 $("search").oninput=render;
 $("print").onclick=printPull;
+$("specialPrint").onclick=printSpecial;
 $("investigations").onclick=printInvestigations;
 
 document.querySelectorAll("[data-brand]").forEach(button=>{

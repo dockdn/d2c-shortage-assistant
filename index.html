@@ -1,26 +1,527 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>D2C Shortage Center</title><style>*{box-sizing:border-box}body{font:14px system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fb;color:#17233b}header{background:#14253d;color:white;padding:24px 4vw}h1{margin:4px 0;font-size:26px}header p{margin:5px 0;color:#becbe0}main{max-width:1500px;margin:auto;padding:24px 4vw}.controls,.metrics,.panel{background:white;border:1px solid #e3e8f1;border-radius:14px;padding:18px;margin-bottom:16px}.controls{display:flex;align-items:end;gap:14px;flex-wrap:wrap}label{display:block;color:#52617a;font-size:12px;font-weight:600;margin-bottom:6px}select,input,button{font:inherit;border:1px solid #cdd6e3;border-radius:8px;padding:10px;background:white}input{min-width:230px}button{cursor:pointer;font-weight:600}button.primary{background:#233f69;color:white;border-color:#233f69}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.metric{border-right:1px solid #e8edf4}.metric:last-child{border:0}.metric strong{display:block;font-size:28px}.metric span{color:#65738b;font-size:12px}.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.tabs button.active{background:#233f69;color:white}.tablewrap{overflow:auto;max-height:62vh}table{border-collapse:collapse;width:100%;min-width:960px}td,th{text-align:left;border-bottom:1px solid #e8edf4;padding:13px;vertical-align:top}th{position:sticky;top:0;background:#edf2f8;font-size:12px}small{display:block;color:#728096;margin-top:6px;line-height:1.5}.sku{font-family:ui-monospace,monospace;font-size:12px}.ok{color:#187453}.warn{color:#9a6416}.bad{color:#b24040}.note{font-size:12px;color:#65738b;line-height:1.6}@media(max-width:650px){.metrics{grid-template-columns:repeat(2,1fr)}.metric{border:0}header{padding:20px}main{padding:15px}}</style><header><div style="font-size:12px;letter-spacing:2px">D2C OPERATIONS HUB / PERSONAL WORKSPACE</div><h1>Shortage Report Center</h1><p>Private-data-free demo · No live Logiwa connection</p></header><main><section class="controls"><div><label>Report cutoff mode</label><select id="mode"><option value="auto">Automatic (2 PM Eastern)</option><option value="yesterday">Yesterday at 2 PM</option><option value="today">Today at 2 PM</option><option value="custom">Custom date at 2 PM</option></select></div><div id="custom" style="display:none"><label>Custom cutoff date</label><input type="date" id="date"></div><div><label>Search orders / SKUs</label><input id="search" placeholder="Order #, SKU, reason..."></div><button id="imports" type="button">Load new exports</button><button class="primary" id="csv">Download CSV</button><button id="print">Print pull worksheet</button></section><section id="importpanel" class="panel" style="display:none"><b>Load updated Logiwa exports</b><p class="note">Select the Shipment Orders and Inventory exports. Files are processed locally in your browser session, not sent to this website’s server. Excel import loads a third-party parsing library; obtain company approval before using work files.</p><div class="controls"><div><label>Shipment Orders (.xlsx / .csv)</label><input id="ordersFile" type="file" accept=".xlsx,.xls,.csv"></div><div><label>Inventory (.xlsx / .csv)</label><input id="inventoryFile" type="file" accept=".xlsx,.xls,.csv"></div><button class="primary" id="loadFiles">Run updated report</button></div><p id="importstatus" class="note" role="status" aria-live="polite"></p></section><p class="note">Including all unresolved shortage lines created before <b id="cutoff"></b>. Based on uploaded export snapshot; refresh requires new exports. Time calculations use America/New_York.</p><section class="metrics"><div class="metric"><strong id="orders">—</strong><span>Distinct orders</span></div><div class="metric"><strong id="lines">—</strong><span>Shortage lines</span></div><div class="metric"><strong id="units">—</strong><span>Missing units</span></div><div class="metric"><strong id="match">—</strong><span>Lines with listed physical free stock</span></div></section><div class="tabs"><button class="active" data-brand="all">All brands</button><button data-brand="MagnaReady">MagnaReady</button><button data-brand="Swoveralls">Swoveralls</button></div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Order / date</th><th>Brand</th><th>SKU</th><th>Logiwa reason / status</th><th>Need</th><th>Available inventory / LPNs</th><th>Jira</th></tr></thead><tbody id="body"></tbody></table></div></section><p class="note">Important: Free stock is a snapshot, not a reservation. The worksheet lists potential locations rather than allocating inventory; verify availability and avoid duplicate pulls. Virtual locations and staging are excluded from physical pull suggestions. This version has no backend upload endpoint. Review external scripts and organizational policies before processing confidential data. Loading the Excel parser requires contacting a public CDN; use only with company approval. This deployed version contains no embedded work data. Only use approved, appropriately protected devices and hosting for company exports.</p></main><script>let orders=[];let inventory=[];
-const $=id=>document.getElementById(id);let selected='all';
-function nowEastern(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));}
-function cutoff(){let n=nowEastern(),d=new Date(n);if($('mode').value==='auto'){if(n.getHours()<14)d.setDate(d.getDate()-1);}else if($('mode').value==='yesterday')d.setDate(d.getDate()-1);else if($('mode').value==='custom'){return $('date').value+'T14:00:00';}d.setHours(14,0,0,0);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T14:00:00';}
-function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[.]/g,'');}
-function virtual(loc){return /^(MV-M1|0M1|0M5)$/i.test(norm(loc));}
-function staging(loc){return /^(STAGING|STAGE|DOCK-STAGE)/i.test(String(loc||'').trim());}
-function shelf(loc){return /^(100|88)[.\s]/.test(String(loc||'').trim()) || /^(100|88)\./.test(norm(loc));}
-function match(o){return inventory.filter(i=>norm(i.SKU)===norm(o.SKU)&&i.Client===o.Client);}
-function num(v){return Number(v)||0;}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function getRows(){let c=cutoff().replace('T',' ');let q=$('search').value.toLowerCase();return orders.filter(o=>o['Order Creation Date']<c&& (selected==='all'||o.Client===selected)&&(!q||Object.values(o).some(v=>String(v).toLowerCase().includes(q)))).sort((a,b)=>a['Order Creation Date'].localeCompare(b['Order Creation Date']));}
-function render(){let rows=getRows();$('cutoff').textContent=cutoff().replace('T',' at ')+' ET';$('orders').textContent=new Set(rows.map(o=>o['Order Code'])).size;$('lines').textContent=rows.length;$('units').textContent=rows.reduce((a,o)=>a+num(o['Shortage UOM Qty']),0);$('match').textContent=rows.filter(o=>match(o).some(i=>num(i['Free UOM QTY'])>0&&!virtual(i.Location)&&!staging(i.Location))).length;
-$('body').innerHTML=rows.map(o=>{let items=match(o).filter(i=>num(i['Free UOM QTY'])>0);items.sort((a,b)=>Number(shelf(b.Location))-Number(shelf(a.Location)));let phys=items.filter(i=>!virtual(i.Location)&&!staging(i.Location));let storage=phys.filter(i=>!shelf(i.Location));let locs=items.map(i=>`${esc(i.Location)} · ${num(i['Free UOM QTY'])} free${i.LPN?' · '+esc(i.LPN):''}${virtual(i.Location)?' [virtual]':''}`).join('<br>');return `<tr><td>${esc(o['Store Order Name'])}<small>${esc(o['Order Creation Date'])}</small></td><td>${esc(o.Client)}</td><td class="sku">${esc(o.SKU)}</td><td>${esc(o['Shortage Reason'])}<small>${esc(o['Order Status'])}</small></td><td>${esc(o['Shortage UOM Qty'])}</td><td>${phys.length?'<span class="ok">Physical stock listed</span>':items.length?'<span class="warn">Virtual / excluded only</span>':'<span class="bad">No matching free stock</span>'}<small>${locs||'—'}</small></td><td><button class="jira-copy" data-index="${orders.indexOf(o)}">Copy Jira Task</button></td></tr>`}).join('')||'<tr><td colspan="7">No matching shortage lines for this cutoff and filters.</td></tr>';}
-function csv(){let rows=getRows(),data=[['Order','Date','Brand','SKU','Reason','Status','Need','Location','LPN','Free Qty','Location Type']];for(let o of rows){let m=match(o).filter(i=>num(i['Free UOM QTY'])>0);if(!m.length)m=[{}];for(let i of m)data.push([o['Store Order Name'],o['Order Creation Date'],o.Client,o.SKU,o['Shortage Reason'],o['Order Status'],o['Shortage UOM Qty'],i.Location||'',i.LPN||'',i['Free UOM QTY']||'',virtual(i.Location)?'Virtual':staging(i.Location)?'Excluded staging':shelf(i.Location)?'Shelf':'Storage']);}let t=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='shortage-report.csv';a.click();URL.revokeObjectURL(a.href);}
-function printPull(){let rows=getRows(),by={};for(let o of rows){let key=o.Client+'|'+o.SKU;let z=by[key]||(by[key]={brand:o.Client,sku:o.SKU,need:0,orders:[],date:o['Order Creation Date']});z.need+=num(o['Shortage UOM Qty']);z.orders.push(o['Store Order Name']);}let data=Object.values(by).sort((a,b)=>a.date.localeCompare(b.date));let body=data.map(z=>{let options=inventory.filter(i=>norm(i.SKU)===norm(z.sku)&&i.Client===z.brand&&num(i['Free UOM QTY'])>0&&!virtual(i.Location)&&!staging(i.Location));let shelfQty=options.filter(i=>shelf(i.Location)).reduce((n,i)=>n+num(i['Free UOM QTY']),0);if(shelfQty>=z.need)return '';let storage=options.filter(i=>!shelf(i.Location)).sort((a,b)=>num(b['Free UOM QTY'])-num(a['Free UOM QTY']));return storage.map(i=>`<tr><td>□</td><td>${esc(z.brand)}</td><td>${esc(z.sku)}</td><td>${z.need} (shelf ${shelfQty})</td><td>${esc(i.Location)}</td><td>${esc(i.LPN||'—')}</td><td>${num(i['Free UOM QTY'])}</td><td>${esc([...new Set(z.orders)].join(', '))}</td></tr>`).join('')||`<tr><td>□</td><td>${esc(z.brand)}</td><td>${esc(z.sku)}</td><td>${z.need}</td><td colspan="3">No eligible storage found — investigate</td><td>${esc([...new Set(z.orders)].join(', '))}</td></tr>`}).join('');let w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print');return;}w.document.write('<html><head><title>Replenishment Worksheet</title><style>body{font:12px Arial;margin:20px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #aaa;padding:6px;text-align:left}tr{break-inside:avoid}h1{font-size:20px}</style></head><body><h1>D2C Replenishment Worksheet</h1><p>Cutoff: '+esc(cutoff())+' ET | Review locations and quantities before pulling. Multiple rows may be alternative locations; do not double-pull.</p><table><tr><th>Done</th><th>Brand</th><th>SKU</th><th>Need</th><th>Storage location</th><th>LPN</th><th>Free</th><th>Orders</th></tr>'+body+'</table></body></html>');w.document.close();w.focus();w.print();}
 
-function jiraText(o){let matches=match(o).filter(i=>num(i['Free UOM QTY'])>0);let usable=matches.filter(i=>!virtual(i.Location)&&!staging(i.Location));let loc=usable[0]||matches[0];let title=`${o.Client} | Investigate shortage | ${o.SKU}`;let desc=[`Brand: ${o.Client}`,`SKU: ${o.SKU}`,`Order: ${o['Store Order Name']}`,`Logiwa order: ${o['Order Code']}`,`Order created: ${o['Order Creation Date']}`,`Shortage reason: ${o['Shortage Reason']}`,`Qty needed for this order: ${o['Shortage UOM Qty']}`,`Suggested location: ${loc?.Location||'No matching location'}`,`LPN: ${loc?.LPN||'Not listed'}`,`Free qty at location: ${loc?.['Free UOM QTY']||'0'}`,`Other listed locations: ${matches.map(i=>i.Location+' / '+(i.LPN||'No LPN')+' / '+i['Free UOM QTY']+' free').join('; ')||'None'}`,`Action: Verify physical inventory and resolve discrepancy.`, `Notes: [Add investigation findings]`,`Reminder: Inventory is an export snapshot; verify before making adjustments.`].join('\n');return `Summary: ${title}\n\nDescription:\n${desc}`;}
-async function copyJira(idx,button){let t=jiraText(orders[idx]);try{await navigator.clipboard.writeText(t)}catch(e){let el=document.createElement('textarea');el.value=t;document.body.appendChild(el);el.select();document.execCommand('copy');el.remove();}let old=button.textContent;button.textContent='Copied!';setTimeout(()=>button.textContent=old,1600);}
-document.addEventListener('click',e=>{let b=e.target.closest('.jira-copy');if(b)copyJira(Number(b.dataset.index),b)});
-$('imports').onclick=()=>{$('importpanel').style.display=$('importpanel').style.display==='none'?'block':'none'};
-function parseCSV(t){let lines=[],row=[],field='',quoted=false;for(let i=0;i<t.length;i++){let c=t[i];if(c==='"'){if(quoted&&t[i+1]==='"'){field+='"';i++}else quoted=!quoted;}else if(c===','&&!quoted){row.push(field);field=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&t[i+1]==='\n')i++;row.push(field);field='';if(row.some(x=>x.trim()))lines.push(row);row=[];}else field+=c;}row.push(field);if(row.some(x=>x.trim()))lines.push(row);let h=lines.shift()||[];return lines.map(r=>Object.fromEntries(h.map((k,i)=>[k.replace(/^\uFEFF/,''),r[i]||''])));}
-async function readExport(file){if(!file)throw Error('Please select both files.');if(file.name.toLowerCase().endsWith('.csv'))return parseCSV(await file.text());if(!window.XLSX){await new Promise((resolve,reject)=>{let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=resolve;s.onerror=()=>reject(Error('Excel parser could not load. Connect to the internet or save the exports as CSV.'));document.head.appendChild(s);});}let wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false});}
-$('loadFiles').onclick=async()=>{let status=$('importstatus');status.textContent='Reading exports...';try{let [o,i]=await Promise.all([readExport($('ordersFile').files[0]),readExport($('inventoryFile').files[0])]);for(let [data,fields,label] of [[o,['SKU','Order Creation Date','Order Code','Shortage UOM Qty'],'Shipment Orders'],[i,['SKU','Location','Free UOM QTY'],'Inventory']]){if(!data.length||fields.some(k=>!(k in data[0])))throw Error(label+' export is missing required columns: '+fields.join(', '));}orders=o.map(r=>({...r,'Order Creation Date':String(r['Order Creation Date']).replace('T',' ').slice(0,19)}));inventory=i;status.textContent=`Loaded ${orders.length} shortage rows and ${inventory.length} inventory locations. Data remains in this browser session.`;render();}catch(e){status.textContent='Could not load files: '+e.message;}};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2C Shortage Assistant</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#18263c;font:14px Arial,sans-serif}
+header{background:#172b46;color:white;padding:25px 5%}
+header h1{margin:5px 0;font-size:26px}
+header p{color:#c8d3e3}
+main{max-width:1400px;margin:auto;padding:24px}
+.panel{background:white;border:1px solid #dfe5ee;border-radius:12px;padding:20px;margin-bottom:18px}
+h2{margin-top:0;font-size:18px}
+.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+.field{flex:1;min-width:190px}
+label{display:block;font-size:12px;font-weight:bold;color:#58677c;margin-bottom:8px}
+input,select,button{font:inherit;padding:10px;border:1px solid #ccd5e2;border-radius:7px;max-width:100%}
+input[type=file]{width:100%}
+button{cursor:pointer;background:white}
+.primary{background:#243f65;color:white;border-color:#243f65}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{background:white;border:1px solid #dfe5ee;border-radius:10px;padding:18px}
+.metric strong{display:block;font-size:26px;margin-bottom:5px}
+.metric span,.note{font-size:12px;color:#64748b;line-height:1.6}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}
+.tabs button.active{background:#243f65;color:white}
+.tablewrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e5eaf1;vertical-align:top}
+th{background:#edf2f8;font-size:12px}
+.sku{font-family:monospace;font-size:12px}
+.status{margin-top:12px;color:#52647c}
+@media(max-width:700px){
+.metrics{grid-template-columns:repeat(2,1fr)}
+main{padding:12px}
+}
+</style>
+</head>
+<body>
 
-$('mode').onchange=()=>{$('custom').style.display=$('mode').value==='custom'?'block':'none';render()};$('date').onchange=render;$('search').oninput=render;document.querySelectorAll('[data-brand]').forEach(b=>b.onclick=()=>{selected=b.dataset.brand;document.querySelectorAll('[data-brand]').forEach(x=>x.classList.toggle('active',x===b));render()});$('csv').onclick=csv;$('print').onclick=printPull;let n=nowEastern();$('date').value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');render();</script></html>
+<header>
+<div style="font-size:11px;letter-spacing:2px">D2C WAREHOUSE OPERATIONS</div>
+<h1>Shortage Assistant</h1>
+<p>Shortage reporting & replenishment planning</p>
+</header>
+
+<main>
+<section class="panel">
+<h2>1. Upload Logiwa Reports</h2>
+<p class="note">Use your actual Shortage Report and Inventory export.</p>
+<div class="controls">
+<div class="field">
+<label>Shortage Report (.xlsx or .csv)</label>
+<input type="file" id="shortageFile" accept=".xlsx,.xls,.csv">
+</div>
+<div class="field">
+<label>Inventory (.xlsx or .csv)</label>
+<input type="file" id="inventoryFile" accept=".xlsx,.xls,.csv">
+</div>
+<button class="primary" id="load">Run Report</button>
+</div>
+<p id="status" class="status" role="status"></p>
+</section>
+
+<section class="panel">
+<h2>2. Report Settings</h2>
+<div class="controls">
+<div class="field">
+<label>Order cutoff</label>
+<select id="mode">
+<option value="auto">Automatic — 2 PM Eastern</option>
+<option value="yesterday">Yesterday at 2 PM</option>
+<option value="today">Today at 2 PM</option>
+<option value="custom">Custom date at 2 PM</option>
+</select>
+</div>
+<div class="field" id="customBox" style="display:none">
+<label>Custom cutoff date</label>
+<input type="date" id="customDate">
+</div>
+<div class="field">
+<label>Search SKU / Order</label>
+<input id="search" placeholder="Search...">
+</div>
+</div>
+<p class="note" id="cutoffText"></p>
+</section>
+
+<section class="metrics">
+<div class="metric"><strong id="orderCount">0</strong><span>Orders</span></div>
+<div class="metric"><strong id="lineCount">0</strong><span>Shortage lines</span></div>
+<div class="metric"><strong id="unitCount">0</strong><span>Missing units</span></div>
+<div class="metric"><strong id="pullCount">0</strong><span>Units assigned to pull</span></div>
+</section>
+
+<section class="panel">
+<h2>3. Replenishment Report</h2>
+<p class="note">Items are prioritized by oldest shortage date. Available shelf quantities are considered before assigning storage pulls.</p>
+
+<div class="tabs">
+<button class="active" data-brand="all">All Brands</button>
+<button data-brand="MagnaReady">MagnaReady</button>
+<button data-brand="Swoveralls">Swoveralls</button>
+</div>
+
+<div class="controls" style="margin-bottom:18px">
+<button class="primary" id="print">Print Replenishment Sheet</button>
+<button id="investigations">Print Investigation Sheet</button>
+</div>
+
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>Oldest Date</th>
+<th>Brand</th>
+<th>SKU</th>
+<th>Shortage Qty</th>
+<th>Pull Qty</th>
+<th>Source Location / LPN</th>
+<th>Jira</th>
+</tr>
+</thead>
+<tbody id="results">
+<tr><td colspan="7">Upload your reports to begin.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<p class="note">
+Inventory is based on the uploaded Logiwa snapshot. Verify stock and LPNs before transferring. Virtual locations and staging are not eligible pull sources. The Excel reader uses an external library; obtain company approval before using confidential warehouse data on this website.
+</p>
+</main>
+
+<script>
+let shortages=[];
+let inventory=[];
+let selectedBrand="all";
+let currentPlan=[];
+
+const $=id=>document.getElementById(id);
+const number=v=>Math.max(0,Number(String(v??0).replace(/,/g,""))||0);
+const norm=v=>String(v??"").trim().toUpperCase().replace(/\s+/g,"");
+const html=v=>String(v??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+
+function easternNow(){
+return new Date(new Date().toLocaleString("en-US",{
+timeZone:"America/New_York"
+}));
+}
+
+function dateKey(d){
+return d.getFullYear()+"-"+
+String(d.getMonth()+1).padStart(2,"0")+"-"+
+String(d.getDate()).padStart(2,"0");
+}
+
+function cutoff(){
+let d=easternNow();
+let mode=$("mode").value;
+if(mode==="custom"){
+return $("customDate").value+" 14:00:00";
+}
+if(mode==="yesterday"||(mode==="auto"&&d.getHours()<14)){
+d.setDate(d.getDate()-1);
+}
+return dateKey(d)+" 14:00:00";
+}
+
+function parseDate(v){
+if(v instanceof Date)return v.getTime();
+if(typeof v==="number"){
+return Math.round((v-25569)*86400000);
+}
+let s=String(v??"").trim();
+if(!s)return NaN;
+let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?/i);
+if(m){
+let hour=Number(m[4]||0);
+let ampm=(m[7]||"").toUpperCase();
+if(ampm==="PM"&&hour<12)hour+=12;
+if(ampm==="AM"&&hour===12)hour=0;
+return new Date(Number(m[3]),Number(m[1])-1,Number(m[2]),hour,Number(m[5]||0),Number(m[6]||0)).getTime();
+}
+return new Date(s.replace(" ","T")).getTime();
+}
+
+function isVirtual(loc){
+return ["MV-M1","0M1","0M5"].includes(norm(loc));
+}
+
+function isStaging(loc){
+return /^(STAGING|STAGE|DOCK-STAGE)/i.test(String(loc??"").trim());
+}
+
+function isShelf(loc){
+return /^(100|88)\./i.test(String(loc??"").trim());
+}
+
+function getBrand(row){
+return String(row.Client||row["Client Display Name"]||row.Brand||"Other").trim();
+}
+
+function getQty(row){
+return number(row["Shortage UOM Qty"]);
+}
+
+function eligibleInventory(row){
+return number(row["Free UOM QTY"])>0 &&
+!isVirtual(row.Location) &&
+!isStaging(row.Location);
+}
+
+function inventoryMatches(item){
+return inventory.filter(i=>
+norm(i.SKU)===norm(item.sku) &&
+(!i.Client||norm(i.Client)===norm(item.brand))
+);
+}
+
+function filteredShortages(){
+let limit=parseDate(cutoff());
+let query=$("search").value.trim().toLowerCase();
+return shortages.filter(r=>{
+let brand=getBrand(r);
+let created=parseDate(r["Order Creation Date"]);
+return Number.isFinite(created) &&
+created<limit &&
+getQty(r)>0 &&
+(selectedBrand==="all"||norm(brand)===norm(selectedBrand)) &&
+(!query||Object.values(r).some(v=>String(v).toLowerCase().includes(query)));
+}).sort((a,b)=>parseDate(a["Order Creation Date"])-parseDate(b["Order Creation Date"]));
+}
+
+function buildPlan(){
+let rows=filteredShortages();
+let grouped=new Map();
+
+for(const r of rows){
+let brand=getBrand(r);
+let sku=String(r.SKU||"").trim();
+let key=norm(brand)+"|"+norm(sku);
+if(!grouped.has(key)){
+grouped.set(key,{
+brand,sku,need:0,
+date:parseDate(r["Order Creation Date"]),
+orders:new Set(),
+lines:[]
+});
+}
+let g=grouped.get(key);
+g.need+=getQty(r);
+g.date=Math.min(g.date,parseDate(r["Order Creation Date"]));
+g.orders.add(String(r["Order Code"]||r["Store Order Name"]||""));
+g.lines.push(r);
+}
+
+let groups=[...grouped.values()].sort((a,b)=>a.date-b.date);
+let remaining=new Map();
+let plan=[];
+
+for(const g of groups){
+let sources=inventoryMatches(g).filter(eligibleInventory);
+
+let shelfQty=sources.filter(i=>isShelf(i.Location))
+.reduce((sum,i)=>sum+number(i["Free UOM QTY"]),0);
+
+let required=Math.max(0,g.need-shelfQty);
+let pulls=[];
+
+let storage=sources.filter(i=>!isShelf(i.Location))
+.sort((a,b)=>{
+let la=String(a.Location||"");
+let lb=String(b.Location||"");
+return la.localeCompare(lb,undefined,{numeric:true}) ||
+number(b["Free UOM QTY"])-number(a["Free UOM QTY"]);
+});
+
+for(const i of storage){
+if(required<=0)break;
+let key=norm(g.brand)+"|"+norm(i.SKU)+"|"+
+norm(i.Location)+"|"+norm(i.LPN);
+if(!remaining.has(key)){
+remaining.set(key,number(i["Free UOM QTY"]));
+}
+let available=remaining.get(key);
+let take=Math.min(required,available);
+if(take>0){
+pulls.push({
+qty:take,
+sku:g.sku,
+brand:g.brand,
+location:i.Location,
+lpn:i.LPN||"—",
+date:g.date
+});
+remaining.set(key,available-take);
+required-=take;
+}
+}
+
+plan.push({...g,shelfQty,pulls,unfilled:required});
+}
+return {rows,plan};
+}
+
+function render(){
+$("cutoffText").textContent="Including shortage orders created before "+cutoff()+" Eastern.";
+let {rows,plan}=buildPlan();
+currentPlan=plan;
+
+$("orderCount").textContent=new Set(rows.map(r=>r["Order Code"]||r["Store Order Name"])).size;
+$("lineCount").textContent=rows.length;
+$("unitCount").textContent=rows.reduce((s,r)=>s+getQty(r),0);
+$("pullCount").textContent=plan.reduce((s,g)=>s+g.pulls.reduce((n,p)=>n+p.qty,0),0);
+
+$("results").innerHTML=plan.map((g,index)=>{
+let locations=g.pulls.map(p=>
+html(p.location)+" / "+html(p.lpn)+" — Qty "+p.qty
+).join("<br>");
+let status=g.unfilled>0?
+"<br><span style='color:#a33'>Unfilled: "+g.unfilled+"</span>":"";
+return "<tr>"+
+"<td>"+html(new Date(g.date).toLocaleDateString())+"</td>"+
+"<td>"+html(g.brand)+"</td>"+
+"<td class='sku'>"+html(g.sku)+"</td>"+
+"<td>"+g.need+"</td>"+
+"<td>"+g.pulls.reduce((n,p)=>n+p.qty,0)+"</td>"+
+"<td>"+(locations||"No storage pull required")+status+"</td>"+
+"<td><button onclick='copyJira("+index+")'>Copy Jira</button></td>"+
+"</tr>";
+}).join("")||"<tr><td colspan='7'>No matching shortages.</td></tr>";
+}
+
+async function copyJira(index){
+let g=currentPlan[index];
+let text=[
+"Brand: "+g.brand,
+"SKU: "+g.sku,
+"Shortage Qty: "+g.need,
+"Oldest Order Date: "+new Date(g.date).toLocaleDateString(),
+"Storage Locations:",
+...g.pulls.map(p=>p.location+" | LPN "+p.lpn+" | Qty "+p.qty),
+"Unfilled Qty: "+g.unfilled,
+"Action: Verify inventory and resolve shortage."
+].join("\n");
+try{
+await navigator.clipboard.writeText(text);
+alert("Jira details copied!");
+}catch(e){
+prompt("Copy Jira details:",text);
+}
+}
+
+function printable(title,sections){
+let win=window.open("","_blank");
+if(!win){
+alert("Please allow pop-ups to print the worksheet.");
+return;
+}
+let styles=`
+<style>
+@page{size:letter portrait;margin:0.55in}
+body{font:11px Arial;color:#111}
+h1{text-align:center;font-size:18px;margin:0 0 6px}
+.subtitle{text-align:center;font-size:11px;margin-bottom:15px}
+h2{font-size:13px;border-bottom:2px solid #333;padding-bottom:5px;margin-top:20px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{border:1px solid #888;padding:8px 6px;text-align:left;overflow-wrap:anywhere}
+th{background:#eee}
+tr{break-inside:avoid}
+.check{font-size:19px;text-align:center}
+.qty{font-weight:bold;font-size:14px;text-align:center}
+.note{font-size:10px;margin-top:12px}
+</style>`;
+win.document.write(
+"<!DOCTYPE html><html><head><title>"+html(title)+"</title>"+
+styles+"</head><body><h1>"+html(title)+"</h1>"+
+"<div class='subtitle'>Transfer these items to shelf locations.<br>Cutoff: "+
+html(cutoff())+" ET</div>"+sections+
+"<p class='note'>Verify physical stock, location and LPN before transferring. Check each row when completed.</p>"+
+"</body></html>"
+);
+win.document.close();
+win.focus();
+setTimeout(()=>win.print(),300);
+}
+
+function printPull(){
+let all=currentPlan.flatMap(g=>g.pulls);
+let brands=[...new Set(all.map(p=>p.brand))];
+
+let sections=brands.map(brand=>{
+let pulls=all.filter(p=>p.brand===brand)
+.sort((a,b)=>a.date-b.date);
+return "<h2>"+html(brand)+"</h2>"+
+"<table><colgroup><col style='width:8%'><col style='width:10%'><col style='width:40%'><col style='width:22%'><col style='width:20%'></colgroup>"+
+"<thead><tr><th>✓</th><th>QTY</th><th>SKU</th><th>LOCATION</th><th>LPN</th></tr></thead><tbody>"+
+pulls.map(p=>"<tr>"+
+"<td class='check'>□</td>"+
+"<td class='qty'>"+p.qty+"</td>"+
+"<td>"+html(p.sku)+"</td>"+
+"<td>"+html(p.location)+"</td>"+
+"<td>"+html(p.lpn)+"</td></tr>").join("")+
+"</tbody></table>";
+}).join("");
+
+if(!all.length){
+alert("There are no eligible storage pulls for the current report.");
+return;
+}
+printable("D2C REPLENISHMENT PULL SHEET",sections);
+}
+
+function printInvestigations(){
+let items=currentPlan.filter(g=>g.unfilled>0);
+if(!items.length){
+alert("No unfilled storage quantities in this report.");
+return;
+}
+let sections="<h2>Items Requiring Investigation</h2>"+
+"<table><tr><th>SKU</th><th>Brand</th><th>Unfilled QTY</th><th>Oldest Date</th></tr>"+
+items.map(g=>"<tr><td>"+html(g.sku)+"</td><td>"+
+html(g.brand)+"</td><td>"+g.unfilled+"</td><td>"+
+html(new Date(g.date).toLocaleDateString())+"</td></tr>").join("")+
+"</table>";
+printable("D2C SHORTAGE INVESTIGATIONS",sections);
+}
+
+function parseCSV(text){
+let rows=[],row=[],field="",quoted=false;
+for(let i=0;i<text.length;i++){
+let c=text[i];
+if(c==='"'){
+if(quoted&&text[i+1]==='"'){field+='"';i++;}
+else quoted=!quoted;
+}else if(c===","&&!quoted){
+row.push(field);field="";
+}else if((c==="\n"||c==="\r")&&!quoted){
+if(c==="\r"&&text[i+1]==="\n")i++;
+row.push(field);field="";
+if(row.some(v=>v.trim()))rows.push(row);
+row=[];
+}else field+=c;
+}
+row.push(field);
+if(row.some(v=>v.trim()))rows.push(row);
+let headers=(rows.shift()||[]).map(h=>h.replace(/^\uFEFF/,"").trim());
+return rows.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]||""])));
+}
+
+async function readFile(file){
+if(!file)throw Error("Please select both reports.");
+if(file.name.toLowerCase().endsWith(".csv")){
+return parseCSV(await file.text());
+}
+if(!window.XLSX){
+await new Promise((resolve,reject)=>{
+let s=document.createElement("script");
+s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+s.onload=resolve;
+s.onerror=()=>reject(Error("Excel reader could not load."));
+document.head.appendChild(s);
+});
+}
+let wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});
+return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{
+defval:"",raw:false
+});
+}
+
+$("load").onclick=async()=>{
+$("status").textContent="Reading reports...";
+try{
+let [s,i]=await Promise.all([
+readFile($("shortageFile").files[0]),
+readFile($("inventoryFile").files[0])
+]);
+for(let key of ["SKU","Order Creation Date","Shortage UOM Qty"]){
+if(!s.length||!(key in s[0])){
+throw Error("Shortage Report is missing: "+key);
+}
+}
+for(let key of ["SKU","Location","Free UOM QTY"]){
+if(!i.length||!(key in i[0])){
+throw Error("Inventory is missing: "+key);
+}
+}
+shortages=s;
+inventory=i;
+$("status").textContent="Loaded "+s.length+" shortage lines and "+i.length+" inventory records.";
+render();
+}catch(e){
+$("status").textContent="Could not load reports: "+e.message;
+}
+};
+
+$("mode").onchange=()=>{
+$("customBox").style.display=$("mode").value==="custom"?"block":"none";
+render();
+};
+$("customDate").onchange=render;
+$("search").oninput=render;
+$("print").onclick=printPull;
+$("investigations").onclick=printInvestigations;
+
+document.querySelectorAll("[data-brand]").forEach(button=>{
+button.onclick=()=>{
+selectedBrand=button.dataset.brand;
+document.querySelectorAll("[data-brand]").forEach(b=>
+b.classList.toggle("active",b===button)
+);
+render();
+};
+});
+
+$("customDate").value=dateKey(easternNow());
+render();
+</script>
+</body>
+</html>

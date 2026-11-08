@@ -6,39 +6,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D2C Shortage Assistant</title>
 <style>
-:root{--ink:#202b39;--muted:#687687;--line:#e3e7ec;--bg:#f7f8fa}
+:root{
+  --ink:#243044;
+  --muted:#718096;
+  --line:#e4e8ee;
+  --bg:#f7f8fa;
+  --navy:#293d59;
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);padding:24px 5%}
-header small{letter-spacing:2px;color:var(--muted);font-size:10px}
-h1{font-size:25px;margin:7px 0}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font:14px Arial,sans-serif;
+}
+header{
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  padding:25px 5%;
+}
+header small{
+  color:var(--muted);
+  letter-spacing:2px;
+  font-size:10px;
+}
+h1{font-size:26px;margin:7px 0}
 h2{font-size:17px;margin:0 0 16px}
-main{max-width:1100px;margin:auto;padding:25px}
-.panel{background:white;border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:17px}
-.row{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+main{max-width:1100px;margin:auto;padding:24px}
+.panel{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:23px;
+  margin-bottom:17px;
+}
+.row{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  align-items:end;
+}
 .field{flex:1;min-width:190px}
-label{display:block;font-size:12px;font-weight:bold;color:var(--muted);margin-bottom:8px}
-input,select,button{font:inherit;padding:11px;border:1px solid #ccd5df;border-radius:7px;background:white;max-width:100%}
+label{
+  display:block;
+  font-size:12px;
+  font-weight:bold;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+input,select,button{
+  font:inherit;
+  padding:11px;
+  border:1px solid #cdd6e0;
+  border-radius:7px;
+  background:white;
+  max-width:100%;
+}
 input[type=file]{width:100%}
 button{cursor:pointer}
-button.primary{background:#263b56;color:white;border-color:#263b56}
+button.primary{
+  background:var(--navy);
+  color:white;
+  border-color:var(--navy);
+}
 button:hover{opacity:.9}
-.note{font-size:12px;color:var(--muted);line-height:1.6}
-.metrics{display:flex;gap:35px;flex-wrap:wrap;margin:22px 0}
-.metric strong{display:block;font-size:25px}
-.metric span{font-size:11px;color:var(--muted)}
-.actions{display:flex;gap:12px;flex-wrap:wrap}
-.actions button{min-height:45px}
+.note{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.6;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.actions button{min-height:44px}
+.metrics{
+  display:flex;
+  gap:35px;
+  flex-wrap:wrap;
+  margin:24px 0;
+}
+.metric strong{
+  display:block;
+  font-size:25px;
+}
+.metric span{
+  font-size:11px;
+  color:var(--muted);
+}
 .tablewrap{overflow:auto}
 table{width:100%;border-collapse:collapse}
-th,td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{font-size:11px;color:var(--muted);background:#fafbfc}
-.sku{font:12px monospace;overflow-wrap:anywhere}
+th,td{
+  padding:12px 9px;
+  border-bottom:1px solid var(--line);
+  text-align:left;
+  vertical-align:top;
+}
+th{
+  font-size:11px;
+  color:var(--muted);
+  background:#fafbfc;
+}
+.sku{
+  font:12px monospace;
+  overflow-wrap:anywhere;
+}
 .good{color:#197450}
-.warn{color:#a16b18}
-.bad{color:#b23c3c}
+.warn{color:#9b6717}
+.bad{color:#b33d3d}
 .hidden{display:none}
-@media(max-width:650px){main{padding:12px}.panel{padding:16px}}
+.subheading{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:bold;
+  margin:22px 0 12px;
+}
+@media(max-width:650px){
+  main{padding:12px}
+  .panel{padding:16px}
+}
 </style>
 </head>
 <body>
@@ -54,88 +141,99 @@ th{font-size:11px;color:var(--muted);background:#fafbfc}
 <section class="panel">
 <h2>Upload Reports</h2>
 <div class="row">
-<div class="field">
-<label>Shortage Report</label>
-<input type="file" id="shortageFile" accept=".xlsx,.xls,.csv">
+  <div class="field">
+    <label>Shortage Report</label>
+    <input type="file" id="shortageFile" accept=".xlsx,.xls,.csv">
+  </div>
+  <div class="field">
+    <label>Inventory Export</label>
+    <input type="file" id="inventoryFile" accept=".xlsx,.xls,.csv">
+  </div>
+  <button class="primary" id="run">Generate Report</button>
 </div>
-<div class="field">
-<label>Inventory Export</label>
-<input type="file" id="inventoryFile" accept=".xlsx,.xls,.csv">
-</div>
-<button class="primary" id="run">Generate Report</button>
-</div>
-<p id="message" class="note">Select your two Logiwa exports.</p>
+<p class="note" id="message">Select your two Logiwa exports.</p>
 </section>
 
 <section class="panel">
 <h2>Report Date</h2>
 <div class="row">
-<div class="field">
-<label>Include shortages</label>
-<select id="mode">
-<option value="all">All Outstanding Shortages</option>
-<option value="custom">Created Before Custom Date & Time</option>
-</select>
+  <div class="field">
+    <label>Include shortages</label>
+    <select id="mode">
+      <option value="all">All Outstanding Shortages</option>
+      <option value="custom">Created Before Custom Date & Time</option>
+    </select>
+  </div>
+  <div class="field hidden" id="dateBox">
+    <label>Date</label>
+    <input type="date" id="date">
+  </div>
+  <div class="field hidden" id="timeBox">
+    <label>Time (Eastern)</label>
+    <input type="time" id="time" value="14:00">
+  </div>
 </div>
-<div class="field hidden" id="dateBox">
-<label>Date</label>
-<input type="date" id="date">
-</div>
-<div class="field hidden" id="timeBox">
-<label>Time (Eastern)</label>
-<input type="time" id="time" value="14:00">
-</div>
-</div>
-<p class="note" id="filterLabel">All outstanding shortages in the uploaded report.</p>
+<p class="note" id="filterLabel">
+All outstanding shortages in the uploaded report.
+</p>
 </section>
 
 <section class="panel">
 <h2>Reports</h2>
-<p class="note">
-The replenishment report is for warehouse staff.
-The master report includes inventory details and follow-up information.
-</p>
 
 <div class="actions">
-<button class="primary" id="printPull">Print Replenishment Report</button>
-<button id="printMaster">Print Master Report</button>
-<button id="copyJira">Copy SKUs & Quantities for Jira</button>
+  <button class="primary" id="printPull">
+    Print Replenishment Report
+  </button>
+  <button id="printMaster">
+    Print Master Report
+  </button>
+</div>
+
+<div class="subheading">JIRA — COPY BY BRAND</div>
+
+<div class="actions">
+  <button id="copyMagna">Copy MagnaReady SKUs</button>
+  <button id="copySwoveralls">Copy Swoveralls SKUs</button>
 </div>
 
 <p class="note" id="copyStatus"></p>
 
 <div class="metrics">
-<div class="metric">
-<strong id="skuCount">0</strong>
-<span>Shortage SKUs</span>
-</div>
-<div class="metric">
-<strong id="shortageCount">0</strong>
-<span>Shortage Units</span>
-</div>
-<div class="metric">
-<strong id="pullCount">0</strong>
-<span>Units to Replenish</span>
-</div>
-<div class="metric">
-<strong id="followCount">0</strong>
-<span>SKUs Requiring Follow-up</span>
-</div>
+  <div class="metric">
+    <strong id="skuCount">0</strong>
+    <span>Shortage SKUs</span>
+  </div>
+  <div class="metric">
+    <strong id="shortageCount">0</strong>
+    <span>Shortage Units</span>
+  </div>
+  <div class="metric">
+    <strong id="pullCount">0</strong>
+    <span>Units to Replenish</span>
+  </div>
+  <div class="metric">
+    <strong id="followCount">0</strong>
+    <span>SKUs Requiring Follow-up</span>
+  </div>
 </div>
 
 <div class="tablewrap">
 <table>
 <thead>
 <tr>
-<th>Brand</th>
-<th>SKU</th>
-<th>Need</th>
-<th>Pull</th>
-<th>Status</th>
+  <th>Brand</th>
+  <th>SKU</th>
+  <th>Need</th>
+  <th>Free Shelf</th>
+  <th>Pull</th>
+  <th>Status</th>
 </tr>
 </thead>
 <tbody id="results">
-<tr><td colspan="5">Upload reports to begin.</td></tr>
+<tr>
+  <td colspan="6">Upload reports to begin.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -144,461 +242,803 @@ The master report includes inventory details and follow-up information.
 <p class="note">
 Reports use exported free inventory, not live Logiwa stock.
 Verify quantities, locations, and LPNs before transferring.
-Use company approval and appropriate access controls before
-processing confidential warehouse exports.
+Use only with company-approved data handling.
 </p>
 
 </main>
 
 <script>
-const $=id=>document.getElementById(id);
-let shortages=[],inventory=[],plan=[],loaded=false;
+const $ = id => document.getElementById(id);
 
-const qty=v=>Math.max(0,Number(String(v??0).replace(/,/g,""))||0);
-const norm=v=>String(v??"").trim().toUpperCase().replace(/\s+/g,"");
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
+let shortages = [];
+let inventory = [];
+let plan = [];
+let loaded = false;
+
+const qty = v => {
+  const n = Number(String(v ?? 0).replace(/,/g,""));
+  return Number.isFinite(n) ? Math.max(0,n) : 0;
+};
+
+const norm = v =>
+  String(v ?? "").trim().toUpperCase().replace(/\s+/g,"");
+
+const esc = v =>
+  String(v ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
 
 function brand(r){
-return String(r.Client||r.Brand||r["Client Display Name"]||"Other").trim();
+  return String(
+    r.Client ||
+    r["Client Display Name"] ||
+    r.Brand ||
+    "Other"
+  ).trim();
 }
 
-function virtual(loc){
-return ["MV-M1","0M1","0M5"].includes(norm(loc));
+function isVirtual(location){
+  return ["MV-M1","0M1","0M5"].includes(norm(location));
 }
 
-function excluded(loc){
-return !String(loc??"").trim()||
-/^(STAGING|STAGE|DOCK-STAGE)/i.test(String(loc).trim());
+function isExcluded(location){
+  const loc = String(location ?? "").trim();
+
+  return !loc ||
+    /^(STAGING|STAGE|DOCK-STAGE)/i.test(loc);
 }
 
-function shelf(loc){
-return /^(100|88)\./i.test(String(loc??"").trim());
+function isShelf(location){
+  const loc = String(location ?? "").trim().toUpperCase();
+
+  // Proper pickable shelf locations:
+  // 100.3.18.2C
+  // 88.2.4.1A
+  //
+  // A.12 is NOT a shelf.
+  // R-100, STN, STW, STS are NOT shelves.
+
+  return /^(100|88)\.\d/.test(loc);
 }
 
-function locationType(loc){
-if(virtual(loc))return "Virtual";
-if(excluded(loc))return "Excluded";
-if(shelf(loc))return "Shelf";
-return "Storage";
+function locationType(location){
+  if(isVirtual(location)) return "Virtual";
+  if(isExcluded(location)) return "Excluded";
+  if(isShelf(location)) return "Shelf";
+  return "Storage";
 }
 
-function area(loc){
-let l=norm(loc);
-if(l.startsWith("REC-SOUTH"))return 0;
-if(l.startsWith("R-100"))return 1;
-if(l.startsWith("STN"))return 2;
-if(l.startsWith("STW"))return 3;
-if(l.startsWith("STS"))return 4;
-if(l.startsWith("RECEIVING"))return 5;
-return 6;
+function area(location){
+  const loc = norm(location);
+
+  if(loc.startsWith("REC-SOUTH")) return 0;
+  if(loc.startsWith("R-100")) return 1;
+  if(loc.startsWith("STN")) return 2;
+  if(loc.startsWith("STW")) return 3;
+  if(loc.startsWith("STS")) return 4;
+  if(loc.startsWith("RECEIVING")) return 5;
+
+  return 6;
 }
 
 function timestamp(v){
-if(v instanceof Date)return v.getTime();
-if(typeof v==="number")return (v-25569)*86400000;
-let s=String(v??"").trim();
-let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?/i);
-if(m){
-let h=Number(m[4]||0),ampm=(m[7]||"").toUpperCase();
-if(ampm==="PM"&&h<12)h+=12;
-if(ampm==="AM"&&h===12)h=0;
-return new Date(+m[3],+m[1]-1,+m[2],h,+(m[5]||0),+(m[6]||0)).getTime();
-}
-let parsed=new Date(s.replace(" ","T"));
-return parsed.getTime();
+  if(v instanceof Date) return v.getTime();
+
+  if(typeof v === "number"){
+    return (v - 25569) * 86400000;
+  }
+
+  const s = String(v ?? "").trim();
+
+  const m = s.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?/i
+  );
+
+  if(m){
+    let h = Number(m[4] || 0);
+    const ampm = (m[7] || "").toUpperCase();
+
+    if(ampm === "PM" && h < 12) h += 12;
+    if(ampm === "AM" && h === 12) h = 0;
+
+    return new Date(
+      +m[3], +m[1]-1, +m[2],
+      h, +(m[5] || 0), +(m[6] || 0)
+    ).getTime();
+  }
+
+  return new Date(s.replace(" ","T")).getTime();
 }
 
 function selectedRows(){
-let rows=shortages.filter(r=>qty(r["Shortage UOM Qty"])>0);
+  let rows = shortages.filter(r =>
+    qty(r["Shortage UOM Qty"]) > 0
+  );
 
-if($("mode").value==="custom"){
-if(!$("date").value||!$("time").value)return [];
-let limit=timestamp($("date").value+"T"+$("time").value+":00");
-rows=rows.filter(r=>{
-let t=timestamp(r["Order Creation Date"]);
-return Number.isFinite(t)&&t<limit;
-});
-}
-return rows.sort((a,b)=>
-timestamp(a["Order Creation Date"])-timestamp(b["Order Creation Date"])
-);
+  if($("mode").value === "custom"){
+    if(!$("date").value || !$("time").value){
+      return [];
+    }
+
+    const limit = timestamp(
+      $("date").value + "T" + $("time").value + ":00"
+    );
+
+    rows = rows.filter(r => {
+      const created = timestamp(r["Order Creation Date"]);
+
+      return Number.isFinite(created) && created < limit;
+    });
+  }
+
+  return rows.sort((a,b) =>
+    timestamp(a["Order Creation Date"]) -
+    timestamp(b["Order Creation Date"])
+  );
 }
 
 function buildPlan(){
-let groups=new Map();
+  const groups = new Map();
 
-for(const r of selectedRows()){
-let b=brand(r),sku=String(r.SKU||"").trim();
-let key=norm(b)+"|"+norm(sku);
-if(!groups.has(key)){
-groups.set(key,{
-brand:b,sku,need:0,
-oldest:timestamp(r["Order Creation Date"]),
-orders:new Set()
-});
-}
-let g=groups.get(key);
-g.need+=qty(r["Shortage UOM Qty"]);
-g.oldest=Math.min(g.oldest,timestamp(r["Order Creation Date"]));
-g.orders.add(String(r["Order Code"]||r["Store Order Name"]||""));
-}
+  for(const r of selectedRows()){
+    const b = brand(r);
+    const sku = String(r.SKU || "").trim();
+    const key = norm(b) + "|" + norm(sku);
 
-let result=[];
-let used=new Map();
+    if(!groups.has(key)){
+      groups.set(key,{
+        brand:b,
+        sku,
+        need:0,
+        oldest:timestamp(r["Order Creation Date"])
+      });
+    }
 
-for(const g of [...groups.values()].sort((a,b)=>a.oldest-b.oldest)){
-let stock=inventory.filter(i=>
-norm(i.SKU)===norm(g.sku)&&
-(!i.Client||norm(i.Client)===norm(g.brand))&&
-qty(i["Free UOM QTY"])>0
-);
+    const g = groups.get(key);
 
-let shelfStock=stock.filter(i=>locationType(i.Location)==="Shelf");
-let shelfQty=shelfStock.reduce((s,i)=>s+qty(i["Free UOM QTY"]),0);
+    g.need += qty(r["Shortage UOM Qty"]);
 
-let needed=Math.max(0,g.need-shelfQty);
+    g.oldest = Math.min(
+      g.oldest,
+      timestamp(r["Order Creation Date"])
+    );
+  }
 
-let storage=stock.filter(i=>locationType(i.Location)==="Storage")
-.sort((a,b)=>area(a.Location)-area(b.Location)||
-String(a.Location).localeCompare(String(b.Location),undefined,{numeric:true}));
+  const result = [];
 
-let pulls=[];
+  for(const g of [...groups.values()].sort(
+    (a,b) => a.oldest - b.oldest
+  )){
+    const stock = inventory.filter(i =>
+      norm(i.SKU) === norm(g.sku) &&
+      (!i.Client || norm(i.Client) === norm(g.brand)) &&
+      qty(i["Free UOM QTY"]) > 0
+    );
 
-for(const i of storage){
-if(needed<=0)break;
-let key=norm(i.Client||g.brand)+"|"+norm(i.SKU)+"|"+
-norm(i.Location)+"|"+norm(i.LPN);
+    // Count all FREE inventory on proper shelf locations.
+    const shelfStock = stock.filter(i =>
+      locationType(i.Location) === "Shelf"
+    );
 
-if(!used.has(key))used.set(key,0);
-let free=Math.max(0,qty(i["Free UOM QTY"])-used.get(key));
-let take=Math.min(needed,free);
+    const shelfQty = shelfStock.reduce(
+      (sum,i) => sum + qty(i["Free UOM QTY"]),0
+    );
 
-if(take>0){
-pulls.push({
-brand:g.brand,sku:g.sku,qty:take,
-location:i.Location,lpn:i.LPN||"—",oldest:g.oldest
-});
-used.set(key,used.get(key)+take);
-needed-=take;
-}
-}
+    // If enough free shelf inventory exists,
+    // the SKU does not need replenishment.
+    let remaining = Math.max(0,g.need - shelfQty);
 
-let virtualStock=stock.filter(i=>locationType(i.Location)==="Virtual");
-let virtualQty=virtualStock.reduce((s,i)=>s+qty(i["Free UOM QTY"]),0);
-let requestQty=Math.min(needed,virtualQty);
-let unfilled=Math.max(0,needed-requestQty);
-let totalFree=stock.reduce((s,i)=>s+qty(i["Free UOM QTY"]),0);
-let pullQty=pulls.reduce((s,p)=>s+p.qty,0);
+    const storage = stock.filter(i =>
+      locationType(i.Location) === "Storage"
+    ).sort((a,b) =>
+      area(a.Location) - area(b.Location) ||
+      String(a.Location).localeCompare(
+        String(b.Location),
+        undefined,
+        {numeric:true}
+      )
+    );
 
-let status;
-if(shelfQty>=g.need)status="Shelf Stock Sufficient";
-else if(totalFree===0)status="ZERO FREE INVENTORY";
-else if(unfilled>0)status="INSUFFICIENT STOCK";
-else if(requestQty>0)status="SPECIAL REQUEST REQUIRED";
-else status="Storage Pull Available";
+    const pulls = [];
 
-result.push({
-...g,stock,shelfQty,pulls,pullQty,
-virtualStock,requestQty,unfilled,totalFree,status
-});
-}
-return result;
+    for(const i of storage){
+      if(remaining <= 0) break;
+
+      const take = Math.min(
+        remaining,
+        qty(i["Free UOM QTY"])
+      );
+
+      if(take > 0){
+        pulls.push({
+          brand:g.brand,
+          sku:g.sku,
+          qty:take,
+          location:i.Location,
+          lpn:i.LPN || "—",
+          oldest:g.oldest
+        });
+
+        remaining -= take;
+      }
+    }
+
+    const virtualStock = stock.filter(i =>
+      locationType(i.Location) === "Virtual"
+    );
+
+    const virtualQty = virtualStock.reduce(
+      (sum,i) => sum + qty(i["Free UOM QTY"]),0
+    );
+
+    const requestQty = Math.min(
+      remaining,
+      virtualQty
+    );
+
+    const unfilled = Math.max(
+      0,
+      remaining - requestQty
+    );
+
+    const totalFree = stock.reduce(
+      (sum,i) => sum + qty(i["Free UOM QTY"]),0
+    );
+
+    const pullQty = pulls.reduce(
+      (sum,p) => sum + p.qty,0
+    );
+
+    let status;
+
+    if(shelfQty >= g.need){
+      status = "Shelf Stock Sufficient";
+    }else if(totalFree === 0){
+      status = "ZERO FREE INVENTORY";
+    }else if(unfilled > 0){
+      status = "INSUFFICIENT STOCK";
+    }else if(requestQty > 0){
+      status = "SPECIAL REQUEST REQUIRED";
+    }else{
+      status = "Storage Pull Available";
+    }
+
+    result.push({
+      ...g,
+      stock,
+      shelfQty,
+      pulls,
+      pullQty,
+      virtualStock,
+      requestQty,
+      unfilled,
+      totalFree,
+      status
+    });
+  }
+
+  return result;
 }
 
 function render(){
-$("filterLabel").textContent=$("mode").value==="all"?
-"All outstanding shortages in the uploaded report.":
-"Orders created before "+$("date").value+" at "+$("time").value+" Eastern.";
+  $("filterLabel").textContent =
+    $("mode").value === "all"
+    ? "All outstanding shortages in the uploaded report."
+    : "Orders created before " +
+      $("date").value + " at " +
+      $("time").value + " Eastern.";
 
-if(!loaded)return;
-plan=buildPlan();
+  if(!loaded) return;
 
-$("skuCount").textContent=plan.length;
-$("shortageCount").textContent=plan.reduce((s,g)=>s+g.need,0);
-$("pullCount").textContent=plan.reduce((s,g)=>s+g.pullQty,0);
-$("followCount").textContent=plan.filter(g=>g.requestQty||g.unfilled).length;
+  plan = buildPlan();
 
-$("results").innerHTML=plan.map(g=>{
-let color=g.unfilled?"bad":g.requestQty?"warn":
-g.status==="Shelf Stock Sufficient"?"good":"";
-return "<tr><td>"+esc(g.brand)+"</td>"+
-"<td class='sku'>"+esc(g.sku)+"</td>"+
-"<td>"+g.need+"</td><td>"+g.pullQty+"</td>"+
-"<td class='"+color+"'>"+esc(g.status)+"</td></tr>";
-}).join("")||"<tr><td colspan='5'>No shortages match the selected date.</td></tr>";
+  $("skuCount").textContent = plan.length;
+
+  $("shortageCount").textContent =
+    plan.reduce((sum,g) => sum + g.need,0);
+
+  $("pullCount").textContent =
+    plan.reduce((sum,g) => sum + g.pullQty,0);
+
+  $("followCount").textContent =
+    plan.filter(g => g.requestQty || g.unfilled).length;
+
+  $("results").innerHTML = plan.map(g => {
+    const color =
+      g.unfilled ? "bad" :
+      g.requestQty ? "warn" :
+      g.status === "Shelf Stock Sufficient" ? "good" : "";
+
+    return `
+    <tr>
+      <td>${esc(g.brand)}</td>
+      <td class="sku">${esc(g.sku)}</td>
+      <td>${g.need}</td>
+      <td>${g.shelfQty}</td>
+      <td>${g.pullQty}</td>
+      <td class="${color}">${esc(g.status)}</td>
+    </tr>`;
+  }).join("") ||
+  '<tr><td colspan="6">No matching shortages.</td></tr>';
 }
 
 function printPage(title,subtitle,content){
-let w=window.open("","_blank");
-if(!w){alert("Please allow pop-ups to print.");return;}
+  const w = window.open("","_blank");
 
-w.document.write(`<!doctype html><html><head>
-<title>${esc(title)}</title>
-<style>
-@page{size:letter portrait;margin:.48in}
-body{font:10px Arial;color:#111}
-h1{text-align:center;font-size:17px;margin:0 0 7px}
-h2{font-size:12px;margin:20px 0 7px;border-bottom:2px solid #333;padding-bottom:5px}
-.subtitle{text-align:center;font-size:11px;line-height:1.5;margin-bottom:15px}
-table{width:100%;border-collapse:collapse;table-layout:fixed}
-th,td{border:1px solid #888;padding:7px 5px;text-align:left;overflow-wrap:anywhere}
-th{background:#eee}
-tr{break-inside:avoid}
-.check{text-align:center;font-size:17px}
-.quantity{text-align:center;font-size:13px;font-weight:bold}
-.note{font-size:9px;margin-top:15px}
-</style></head><body>
-<h1>${esc(title)}</h1>
-<div class="subtitle">${esc(subtitle)}</div>
-${content}
-<p class="note">Inventory based on uploaded export. Verify stock and LPNs before making transfers.</p>
-</body></html>`);
-w.document.close();
-w.focus();
-setTimeout(()=>w.print(),300);
+  if(!w){
+    alert("Please allow pop-ups to print.");
+    return;
+  }
+
+  w.document.write(`<!DOCTYPE html>
+  <html>
+  <head>
+  <title>${esc(title)}</title>
+  <style>
+  @page{
+    size:letter portrait;
+    margin:.48in;
+  }
+  body{
+    font:10px Arial;
+    color:#111;
+  }
+  h1{
+    text-align:center;
+    font-size:17px;
+    margin:0 0 7px;
+  }
+  h2{
+    font-size:12px;
+    margin:20px 0 7px;
+    border-bottom:2px solid #333;
+    padding-bottom:5px;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:11px;
+    line-height:1.5;
+    margin-bottom:15px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  }
+  th,td{
+    border:1px solid #888;
+    padding:7px 5px;
+    text-align:left;
+    overflow-wrap:anywhere;
+  }
+  th{background:#eee}
+  tr{break-inside:avoid}
+  .check{
+    text-align:center;
+    font-size:17px;
+  }
+  .quantity{
+    text-align:center;
+    font-size:13px;
+    font-weight:bold;
+  }
+  .note{
+    font-size:9px;
+    margin-top:15px;
+  }
+  </style>
+  </head>
+  <body>
+  <h1>${esc(title)}</h1>
+  <div class="subtitle">${esc(subtitle)}</div>
+  ${content}
+  <p class="note">
+  Inventory based on uploaded Logiwa exports.
+  Verify stock and LPNs before transferring.
+  </p>
+  </body>
+  </html>`);
+
+  w.document.close();
+  w.focus();
+
+  setTimeout(() => w.print(),300);
 }
 
 function pullTable(items){
-return `<table>
-<colgroup>
-<col style="width:8%">
-<col style="width:10%">
-<col style="width:40%">
-<col style="width:22%">
-<col style="width:20%">
-</colgroup>
-<thead><tr>
-<th>✓</th><th>QTY</th><th>SKU</th><th>LOCATION</th><th>LPN</th>
-</tr></thead><tbody>`+
-items.map(p=>`<tr>
-<td class="check">□</td>
-<td class="quantity">${p.qty}</td>
-<td>${esc(p.sku)}</td>
-<td>${esc(p.location)}</td>
-<td>${esc(p.lpn)}</td>
-</tr>`).join("")+"</tbody></table>";
+  return `
+  <table>
+  <colgroup>
+    <col style="width:8%">
+    <col style="width:10%">
+    <col style="width:40%">
+    <col style="width:22%">
+    <col style="width:20%">
+  </colgroup>
+  <thead>
+  <tr>
+    <th>✓</th>
+    <th>QTY</th>
+    <th>SKU</th>
+    <th>LOCATION</th>
+    <th>LPN</th>
+  </tr>
+  </thead>
+  <tbody>
+  ${items.map(p => `
+    <tr>
+      <td class="check">□</td>
+      <td class="quantity">${p.qty}</td>
+      <td>${esc(p.sku)}</td>
+      <td>${esc(p.location)}</td>
+      <td>${esc(p.lpn)}</td>
+    </tr>
+  `).join("")}
+  </tbody>
+  </table>`;
 }
 
 function printPull(){
-if(!loaded)return alert("Upload reports first.");
+  if(!loaded){
+    alert("Upload reports first.");
+    return;
+  }
 
-let items=plan.flatMap(g=>g.pulls).sort((a,b)=>
-area(a.location)-area(b.location)||
-String(a.location).localeCompare(String(b.location),undefined,{numeric:true})||
-a.oldest-b.oldest
-);
+  // Only include SKUs that need replenishment.
+  // If FREE shelf stock covers the shortage,
+  // the entire SKU is excluded.
+  const items = plan
+    .filter(g => g.shelfQty < g.need)
+    .flatMap(g => g.pulls)
+    .filter(p =>
+      locationType(p.location) === "Storage"
+    )
+    .sort((a,b) =>
+      area(a.location) - area(b.location) ||
+      String(a.location).localeCompare(
+        String(b.location),
+        undefined,
+        {numeric:true}
+      ) ||
+      a.oldest - b.oldest
+    );
 
-if(!items.length)return alert("No eligible storage pulls.");
+  if(!items.length){
+    alert("No replenishment pulls are needed.");
+    return;
+  }
 
-printPage(
-"D2C REPLENISHMENT REPORT",
-"Transfer the following items to shelf locations.",
-pullTable(items)
-);
+  printPage(
+    "D2C REPLENISHMENT REPORT",
+    "Transfer the following items to shelf locations.",
+    pullTable(items)
+  );
 }
 
 function printMaster(){
-if(!loaded)return alert("Upload reports first.");
-if(!plan.length)return alert("No shortages to print.");
+  if(!loaded){
+    alert("Upload reports first.");
+    return;
+  }
 
-let content=`<table>
-<colgroup>
-<col style="width:17%"><col style="width:29%">
-<col style="width:8%"><col style="width:9%">
-<col style="width:10%"><col style="width:27%">
-</colgroup>
-<thead><tr>
-<th>BRAND</th><th>SKU</th><th>NEED</th>
-<th>SHELF FREE</th><th>PULL QTY</th><th>STATUS</th>
-</tr></thead><tbody>`+
-plan.map(g=>`<tr>
-<td>${esc(g.brand)}</td><td>${esc(g.sku)}</td>
-<td>${g.need}</td><td>${g.shelfQty}</td>
-<td>${g.pullQty}</td><td>${esc(g.status)}</td>
-</tr>`).join("")+"</tbody></table>";
+  if(!plan.length){
+    alert("No shortages to print.");
+    return;
+  }
 
-let details=plan.filter(g=>g.stock.length||g.unfilled>0);
+  let content = `
+  <table>
+  <thead>
+  <tr>
+    <th>BRAND</th>
+    <th>SKU</th>
+    <th>NEED</th>
+    <th>SHELF FREE</th>
+    <th>PULL QTY</th>
+    <th>STATUS</th>
+  </tr>
+  </thead>
+  <tbody>`;
 
-content+="<h2>Inventory Locations & LPNs</h2>";
-content+=`<table>
-<thead><tr>
-<th>SKU</th><th>LOCATION</th><th>LPN</th>
-<th>FREE QTY</th><th>TYPE</th>
-</tr></thead><tbody>`;
+  for(const g of plan){
+    content += `
+    <tr>
+      <td>${esc(g.brand)}</td>
+      <td>${esc(g.sku)}</td>
+      <td>${g.need}</td>
+      <td>${g.shelfQty}</td>
+      <td>${g.pullQty}</td>
+      <td>${esc(g.status)}</td>
+    </tr>`;
+  }
 
-for(const g of details){
-if(!g.stock.length){
-content+=`<tr><td>${esc(g.sku)}</td>
-<td colspan="4">ZERO FREE INVENTORY</td></tr>`;
-continue;
+  content += "</tbody></table>";
+
+  content += "<h2>Inventory Locations & LPNs</h2>";
+
+  content += `
+  <table>
+  <thead>
+  <tr>
+    <th>SKU</th>
+    <th>LOCATION</th>
+    <th>LPN</th>
+    <th>FREE QTY</th>
+    <th>TYPE</th>
+  </tr>
+  </thead>
+  <tbody>`;
+
+  for(const g of plan){
+    if(!g.stock.length){
+      content += `
+      <tr>
+        <td>${esc(g.sku)}</td>
+        <td colspan="4">ZERO FREE INVENTORY</td>
+      </tr>`;
+      continue;
+    }
+
+    for(const i of g.stock){
+      content += `
+      <tr>
+        <td>${esc(g.sku)}</td>
+        <td>${esc(i.Location)}</td>
+        <td>${esc(i.LPN || "—")}</td>
+        <td>${qty(i["Free UOM QTY"])}</td>
+        <td>${locationType(i.Location)}</td>
+      </tr>`;
+    }
+  }
+
+  content += "</tbody></table>";
+
+  const followups = plan.filter(g =>
+    g.requestQty > 0 || g.unfilled > 0
+  );
+
+  if(followups.length){
+    content += "<h2>Special Requests & Investigations</h2>";
+
+    content += `
+    <table>
+    <thead>
+    <tr>
+      <th>BRAND</th>
+      <th>SKU</th>
+      <th>REQUEST QTY</th>
+      <th>UNCOVERED QTY</th>
+      <th>NOTES</th>
+    </tr>
+    </thead>
+    <tbody>`;
+
+    for(const g of followups){
+      const locations = g.virtualStock.map(i =>
+        i.Location + " / " +
+        (i.LPN || "No LPN") + " / " +
+        qty(i["Free UOM QTY"]) + " free"
+      ).join("; ");
+
+      const note =
+        g.totalFree === 0
+        ? "ZERO FREE INVENTORY"
+        : g.requestQty > 0
+        ? "Virtual stock: " + locations
+        : "Insufficient available inventory";
+
+      content += `
+      <tr>
+        <td>${esc(g.brand)}</td>
+        <td>${esc(g.sku)}</td>
+        <td>${g.requestQty}</td>
+        <td>${g.unfilled}</td>
+        <td>${esc(note)}</td>
+      </tr>`;
+    }
+
+    content += "</tbody></table>";
+  }
+
+  printPage(
+    "D2C MASTER SHORTAGE REPORT",
+    "All shortage details, inventory locations and follow-up requirements.",
+    content
+  );
 }
-for(const i of g.stock){
-content+=`<tr>
-<td>${esc(g.sku)}</td>
-<td>${esc(i.Location)}</td>
-<td>${esc(i.LPN||"—")}</td>
-<td>${qty(i["Free UOM QTY"])}</td>
-<td>${locationType(i.Location)}</td>
-</tr>`;
-}
-}
-content+="</tbody></table>";
 
-let follow=plan.filter(g=>g.requestQty||g.unfilled);
+async function copyBrandJira(brandName){
+  if(!loaded){
+    alert("Upload reports first.");
+    return;
+  }
 
-if(follow.length){
-content+="<h2>Special Requests & Investigations</h2>";
-content+=`<table><thead><tr>
-<th>BRAND</th><th>SKU</th><th>REQUEST QTY</th>
-<th>UNCOVERED QTY</th><th>NOTES</th>
-</tr></thead><tbody>`;
+  const items = plan.filter(g =>
+    norm(g.brand) === norm(brandName) &&
+    g.need > 0
+  );
 
-for(const g of follow){
-let locations=g.virtualStock.map(i=>i.Location+" / "+
-(i.LPN||"No LPN")+" / "+qty(i["Free UOM QTY"])+" free").join("; ");
+  if(!items.length){
+    alert("No shortages found for " + brandName);
+    return;
+  }
 
-let note=g.totalFree===0?"ZERO FREE INVENTORY":
-g.requestQty>0?"Virtual stock: "+locations:
-"Insufficient available inventory";
+  // Jira format: (QTY) SKU
+  const text = items.map(g =>
+    "(" + g.need + ") " + g.sku
+  ).join("\n");
 
-content+=`<tr>
-<td>${esc(g.brand)}</td>
-<td>${esc(g.sku)}</td>
-<td>${g.requestQty}</td>
-<td>${g.unfilled}</td>
-<td>${esc(note)}</td>
-</tr>`;
-}
-content+="</tbody></table>";
-}
+  try{
+    await navigator.clipboard.writeText(text);
 
-printPage(
-"D2C MASTER SHORTAGE REPORT",
-"All shortage details, inventory locations and follow-up requirements.",
-content
-);
-}
+    $("copyStatus").textContent =
+      "Copied " + items.length +
+      " SKUs for " + brandName + ".";
 
-async function copyJira(){
-if(!loaded)return alert("Upload reports first.");
-
-let lines=plan.filter(g=>g.need>0)
-.map(g=>g.sku+" — "+g.need);
-
-if(!lines.length)return alert("No shortage SKUs to copy.");
-
-let text=lines.join("\n");
-
-try{
-await navigator.clipboard.writeText(text);
-$("copyStatus").textContent="Copied "+lines.length+" SKUs and quantities for Jira.";
-}catch(e){
-prompt("Copy these SKUs and quantities:",text);
-}
+  }catch(e){
+    prompt("Copy for " + brandName + ":",text);
+  }
 }
 
 function parseCSV(t){
-let lines=[],row=[],field="",quoted=false;
-for(let i=0;i<t.length;i++){
-let c=t[i];
-if(c==='"'){
-if(quoted&&t[i+1]==='"'){field+='"';i++;}
-else quoted=!quoted;
-}else if(c===","&&!quoted){
-row.push(field);field="";
-}else if((c==="\n"||c==="\r")&&!quoted){
-if(c==="\r"&&t[i+1]==="\n")i++;
-row.push(field);field="";
-if(row.some(v=>v.trim()))lines.push(row);
-row=[];
-}else field+=c;
-}
-row.push(field);
-if(row.some(v=>v.trim()))lines.push(row);
-let headers=(lines.shift()||[]).map(x=>x.replace(/^\uFEFF/,"").trim());
-return lines.map(r=>Object.fromEntries(headers.map((k,i)=>[k,r[i]||""])));
+  const lines=[];
+  let row=[],field="",quoted=false;
+
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+
+    if(c==='"'){
+      if(quoted && t[i+1]==='"'){
+        field+='"';
+        i++;
+      }else{
+        quoted=!quoted;
+      }
+    }else if(c==="," && !quoted){
+      row.push(field);
+      field="";
+    }else if((c==="\n"||c==="\r") && !quoted){
+      if(c==="\r" && t[i+1]==="\n") i++;
+
+      row.push(field);
+      field="";
+
+      if(row.some(v=>v.trim())) lines.push(row);
+      row=[];
+    }else{
+      field+=c;
+    }
+  }
+
+  row.push(field);
+
+  if(row.some(v=>v.trim())) lines.push(row);
+
+  const headers=(lines.shift()||[]).map(x =>
+    x.replace(/^\uFEFF/,"").trim()
+  );
+
+  return lines.map(r =>
+    Object.fromEntries(
+      headers.map((k,i)=>[k,r[i]||""])
+    )
+  );
 }
 
 async function readFile(file){
-if(!file)throw Error("Select both reports.");
+  if(!file){
+    throw Error("Select both reports.");
+  }
 
-if(file.name.toLowerCase().endsWith(".csv")){
-return parseCSV(await file.text());
-}
+  if(file.name.toLowerCase().endsWith(".csv")){
+    return parseCSV(await file.text());
+  }
 
-if(!window.XLSX){
-await new Promise((resolve,reject)=>{
-let s=document.createElement("script");
-s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-s.onload=resolve;
-s.onerror=()=>reject(Error("Excel reader could not load."));
-document.head.appendChild(s);
-});
-}
+  if(!window.XLSX){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement("script");
 
-let wb=XLSX.read(await file.arrayBuffer(),{
-type:"array",cellDates:true
-});
-return XLSX.utils.sheet_to_json(
-wb.Sheets[wb.SheetNames[0]],
-{defval:"",raw:false}
-);
+      s.src=
+      "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+
+      s.onload=resolve;
+
+      s.onerror=()=>reject(
+        Error("Excel reader could not load.")
+      );
+
+      document.head.appendChild(s);
+    });
+  }
+
+  const wb=XLSX.read(
+    await file.arrayBuffer(),
+    {type:"array",cellDates:true}
+  );
+
+  return XLSX.utils.sheet_to_json(
+    wb.Sheets[wb.SheetNames[0]],
+    {defval:"",raw:false}
+  );
 }
 
 $("run").onclick=async()=>{
-$("message").textContent="Reading reports...";
+  $("message").textContent="Reading reports...";
 
-try{
-let [s,i]=await Promise.all([
-readFile($("shortageFile").files[0]),
-readFile($("inventoryFile").files[0])
-]);
+  try{
+    const [s,i]=await Promise.all([
+      readFile($("shortageFile").files[0]),
+      readFile($("inventoryFile").files[0])
+    ]);
 
-for(const key of ["SKU","Order Creation Date","Shortage UOM Qty"]){
-if(!s.length||!(key in s[0]))
-throw Error("Shortage Report missing "+key);
-}
+    for(const key of [
+      "SKU",
+      "Order Creation Date",
+      "Shortage UOM Qty"
+    ]){
+      if(!s.length || !(key in s[0])){
+        throw Error("Shortage Report missing "+key);
+      }
+    }
 
-for(const key of ["SKU","Location","Free UOM QTY"]){
-if(!i.length||!(key in i[0]))
-throw Error("Inventory missing "+key);
-}
+    for(const key of [
+      "SKU",
+      "Location",
+      "Free UOM QTY"
+    ]){
+      if(!i.length || !(key in i[0])){
+        throw Error("Inventory missing "+key);
+      }
+    }
 
-shortages=s;
-inventory=i;
-loaded=true;
+    shortages=s;
+    inventory=i;
+    loaded=true;
 
-$("message").textContent=
-"Loaded "+s.length+" shortage lines and "+
-i.length+" inventory records.";
+    $("message").textContent =
+      "Loaded "+s.length+
+      " shortage lines and "+
+      i.length+" inventory records.";
 
-render();
+    render();
 
-}catch(e){
-$("message").textContent="Could not load: "+e.message;
-}
+  }catch(e){
+    $("message").textContent =
+      "Could not load: "+e.message;
+  }
 };
 
 $("mode").onchange=()=>{
-let custom=$("mode").value==="custom";
-$("dateBox").classList.toggle("hidden",!custom);
-$("timeBox").classList.toggle("hidden",!custom);
-render();
+  const custom=$("mode").value==="custom";
+
+  $("dateBox").classList.toggle("hidden",!custom);
+  $("timeBox").classList.toggle("hidden",!custom);
+
+  render();
 };
 
 $("date").onchange=render;
 $("time").onchange=render;
+
 $("printPull").onclick=printPull;
 $("printMaster").onclick=printMaster;
-$("copyJira").onclick=copyJira;
 
-let today=new Date();
+$("copyMagna").onclick=()=>
+  copyBrandJira("MagnaReady");
+
+$("copySwoveralls").onclick=()=>
+  copyBrandJira("Swoveralls");
+
+const today=new Date();
+
 $("date").value=
-today.getFullYear()+"-"+
-String(today.getMonth()+1).padStart(2,"0")+"-"+
-String(today.getDate()).padStart(2,"0");
+  today.getFullYear()+"-"+
+  String(today.getMonth()+1).padStart(2,"0")+"-"+
+  String(today.getDate()).padStart(2,"0");
 
 render();
 </script>

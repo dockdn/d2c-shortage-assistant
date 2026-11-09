@@ -4,24 +4,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My D2C Dashboard</title>
+<title>D2C Operations Hub</title>
 
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 :root {
-  --bg: #f7f8fa;
-  --white: #ffffff;
-  --text: #293548;
-  --muted: #778497;
-  --line: #e3e8ee;
-  --navy: #344d6c;
-  --soft: #f0f3f7;
-  --danger: #b75d5d;
+  --bg: #f8f9f7;
+  --surface: #ffffff;
+  --sidebar: #f0f2ef;
+  --stone: #e8eae6;
+  --sage: #c5ccc6;
+  --slate: #71839a;
+  --navy: #344358;
+  --text: #303c4b;
+  --muted: #7b8793;
+  --border: #e2e6e3;
+  --danger: #b76b6b;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -37,273 +42,327 @@ button, input, select {
   font: inherit;
 }
 
-button { cursor: pointer; }
+button {
+  cursor: pointer;
+}
+
+svg.lucide {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.8;
+}
 
 header {
+  height: 68px;
   background: white;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .header-inner {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: auto;
-  padding: 18px 22px;
+  height: 100%;
+  padding: 0 28px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .home-button {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
+  border: 0;
   background: transparent;
-  border: none;
   color: var(--navy);
   font-weight: 650;
-  padding: 7px;
+  padding: 8px;
 }
 
-.brand {
-  color: var(--muted);
+.header-brand {
   font-size: 11px;
-  letter-spacing: 1.7px;
-  font-weight: 600;
-}
-
-main {
-  max-width: 1100px;
-  margin: auto;
-  padding: 38px 22px;
-}
-
-.page { display: none; }
-.page.active { display: block; }
-
-.eyebrow {
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 1.7px;
   font-weight: 650;
+  letter-spacing: 1.6px;
+  color: var(--muted);
 }
 
-h1 {
-  font-size: 30px;
-  letter-spacing: -0.7px;
-  margin: 8px 0;
+.app-shell {
+  display: flex;
+  max-width: 1440px;
+  margin: auto;
+  min-height: calc(100vh - 68px);
 }
 
-h2 {
-  font-size: 19px;
-  margin: 0 0 14px;
+/* SIDEBAR */
+
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 30px 18px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
 }
 
-h3 {
-  font-size: 15px;
-  margin: 0 0 10px;
+.sidebar-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin: 0 12px 20px;
 }
 
-p { margin-top: 8px; }
-
-.muted { color: var(--muted); }
-.small { font-size: 12px; }
-
-.intro {
-  margin-bottom: 30px;
-}
-
-/* HOMEPAGE */
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.tile {
-  display: block;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
   width: 100%;
-  text-align: left;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  padding: 24px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
   color: var(--text);
+  text-align: left;
+  padding: 13px;
+  margin-bottom: 5px;
+  font-size: 13px;
   text-decoration: none;
   transition: 0.15s ease;
 }
 
-.tile:hover {
-  border-color: #a4b5c8;
-  transform: translateY(-2px);
+.nav-item:hover {
+  background: #e6ebe7;
 }
 
-.tile.wide {
-  grid-column: span 2;
-}
-
-.tile.featured {
-  background: #fbfcfe;
-  border-color: #cbd6e4;
-}
-
-.icon-box {
-  width: 43px;
-  height: 43px;
-  border-radius: 10px;
-  background: var(--soft);
+.nav-item.active {
+  background: white;
   color: var(--navy);
+  font-weight: 650;
+  box-shadow: 0 1px 4px rgba(0,0,0,.035);
+}
+
+.nav-item svg {
+  color: var(--slate);
+  flex-shrink: 0;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: #dce2de;
+  margin: 24px 12px;
+}
+
+.sidebar-footer {
+  margin: 25px 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* CONTENT */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 42px 48px;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+h1 {
+  font-size: 30px;
+  letter-spacing: -.7px;
+  margin: 8px 0;
+  font-weight: 650;
+}
+
+h2 {
+  font-size: 19px;
+  margin: 0 0 16px;
+}
+
+h3 {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+p {
+  margin-top: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 12px;
+}
+
+/* HOME */
+
+.home-screen {
+  min-height: 68vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+}
+
+.home-icon {
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  background: #edf0ec;
+  color: var(--slate);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 17px;
+  margin-bottom: 28px;
 }
 
-.tile-title {
-  display: block;
-  font-size: 16px;
-  font-weight: 650;
-  margin-bottom: 5px;
+.home-icon svg {
+  width: 45px;
+  height: 45px;
+  stroke-width: 1.35;
 }
 
-.tile-description {
-  font-size: 12px;
+.home-screen h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+
+.home-screen p {
   color: var(--muted);
+  font-size: 13px;
   margin: 0;
 }
 
-.tile-arrow {
-  float: right;
-  color: var(--muted);
-}
-
-/* EMERGENCY EASTER EGG */
-
 .emergency-link {
-  display: block;
-  margin: 52px auto 0;
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  text-align: center;
-  padding: 10px;
-}
-
-.emergency-link .intro-text {
-  display: block;
-  font-size: 11px;
-  margin-bottom: 9px;
-}
-
-.emergency-link .main-text {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  font-size: 12px;
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 65px;
+  padding: 10px;
   text-decoration: underline;
 }
 
-.emergency-link .main-text svg {
+.emergency-link svg {
   color: var(--danger);
-}
-
-.emergency-link .sub-text {
-  display: block;
-  font-size: 10px;
-  margin-top: 7px;
+  width: 16px;
+  height: 16px;
 }
 
 .emergency-link:hover {
   color: var(--navy);
 }
 
-/* INTERNAL PAGES */
+/* PANELS */
 
 .panel {
   background: white;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 13px;
-  padding: 24px;
-  margin: 20px 0;
+  padding: 25px;
+  margin-top: 23px;
 }
 
 .row {
   display: flex;
-  gap: 14px;
   flex-wrap: wrap;
+  gap: 15px;
   align-items: end;
 }
 
 .field {
   flex: 1;
-  min-width: 190px;
+  min-width: 180px;
 }
 
 label {
   display: block;
+  color: var(--muted);
   font-size: 12px;
   font-weight: 650;
-  color: var(--muted);
   margin-bottom: 8px;
 }
 
-input[type=file],
-input[type=date],
-input[type=time],
-input[type=text],
-input[type=url],
-select {
+input, select {
   width: 100%;
   min-width: 0;
   padding: 11px;
-  border: 1px solid #cbd5df;
+  border: 1px solid #cbd4d2;
   border-radius: 7px;
   background: white;
+  color: var(--text);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 20px 0 10px;
+  margin-top: 22px;
 }
 
 .btn {
   padding: 11px 15px;
-  border-radius: 7px;
-  border: 1px solid #cbd5df;
   background: white;
+  border: 1px solid #ccd4d2;
+  border-radius: 7px;
   color: var(--text);
 }
 
 .btn.primary {
   background: var(--navy);
-  border-color: var(--navy);
   color: white;
+  border-color: var(--navy);
 }
 
 .btn:hover {
-  filter: brightness(0.96);
+  filter: brightness(.96);
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
+
+.message {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 15px;
+}
 
 .metrics {
   display: flex;
   flex-wrap: wrap;
   gap: 30px;
-  margin: 23px 0;
+  margin: 24px 0;
 }
 
 .metric strong {
   display: block;
   font-size: 25px;
+  font-weight: 650;
 }
 
 .metric span {
-  font-size: 11px;
   color: var(--muted);
+  font-size: 11px;
 }
 
 .table-wrap {
@@ -317,13 +376,13 @@ table {
 
 th, td {
   text-align: left;
-  padding: 11px 8px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 9px;
   vertical-align: top;
 }
 
 th {
-  background: #fafbfc;
+  background: #fafbf9;
   color: var(--muted);
   font-size: 11px;
 }
@@ -334,38 +393,38 @@ td.sku {
   overflow-wrap: anywhere;
 }
 
-.warning { color: #a06c1e; }
-
-.message {
-  font-size: 12px;
-  color: var(--muted);
+.warning {
+  color: #a47735;
 }
 
 /* QUICK LINKS */
 
 .link-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
 
 .quick-link {
   display: block;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 20px;
-  color: var(--text);
-  text-decoration: none;
   background: white;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 22px;
+  text-decoration: none;
+  color: var(--text);
+  transition: .15s ease;
 }
 
 .quick-link:hover {
-  border-color: #a4b5c8;
+  border-color: var(--slate);
+  transform: translateY(-2px);
 }
 
 .quick-link strong {
   display: block;
-  margin-bottom: 5px;
+  font-size: 14px;
+  margin-bottom: 6px;
 }
 
 .quick-link p {
@@ -374,19 +433,22 @@ td.sku {
   margin: 0;
 }
 
+.quick-link svg {
+  color: var(--slate);
+  margin-bottom: 12px;
+}
+
 .section-label {
+  margin: 30px 0 14px;
   color: var(--muted);
   font-size: 11px;
   letter-spacing: 1px;
+  font-weight: 700;
   text-transform: uppercase;
-  font-weight: 650;
-  margin: 26px 0 12px;
 }
 
-/* HANDBOOK */
-
 .notice {
-  background: var(--soft);
+  background: #f2f4f1;
   border-radius: 9px;
   padding: 16px;
   font-size: 12px;
@@ -394,11 +456,11 @@ td.sku {
 
 .document-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  border-bottom: 1px solid var(--border);
   padding: 12px 0;
-  border-bottom: 1px solid var(--line);
 }
 
 .document-row a {
@@ -406,35 +468,71 @@ td.sku {
   overflow-wrap: anywhere;
 }
 
-footer {
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 40px;
+@media(max-width:800px) {
+  .sidebar {
+    width: 205px;
+  }
+
+  .content {
+    padding: 30px 24px;
+  }
 }
 
-svg.lucide {
-  width: 21px;
-  height: 21px;
-  stroke-width: 1.8;
-}
+@media(max-width:600px) {
+  .app-shell {
+    display: block;
+  }
 
-@media(max-width:650px) {
-  main { padding: 25px 14px; }
+  .sidebar {
+    width: 100%;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 
-  .dashboard-grid,
+  .sidebar-heading,
+  .sidebar-divider,
+  .sidebar-footer {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+  }
+
+  .nav-item {
+    width: auto;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 10px;
+    white-space: nowrap;
+  }
+
+  .nav-item span {
+    font-size: 11px;
+  }
+
+  .content {
+    padding: 24px 15px;
+  }
+
   .link-grid {
     grid-template-columns: 1fr;
   }
 
-  .tile.wide {
-    grid-column: auto;
+  .panel {
+    padding: 18px;
   }
 
-  .panel { padding: 17px; }
+  .home-screen {
+    min-height: 55vh;
+  }
 
-  h1 { font-size: 27px; }
-
-  .header-inner { padding: 14px; }
+  h1 {
+    font-size: 26px;
+  }
 }
 </style>
 </head>
@@ -448,140 +546,100 @@ svg.lucide {
       Home
     </button>
 
-    <div class="brand">D2C WORKSPACE</div>
+    <div class="header-brand">
+      D2C OPERATIONS
+    </div>
   </div>
 </header>
 
-<main>
+<div class="app-shell">
 
-<!-- ========================= -->
-<!-- HOME PAGE -->
-<!-- ========================= -->
+<!-- SIDEBAR -->
 
-<section id="home" class="page active">
+<aside class="sidebar">
 
-  <div class="eyebrow">WAREHOUSE OPERATIONS</div>
+  <div class="sidebar-heading">WORKSPACE</div>
 
-  <h1>My D2C Dashboard</h1>
-
-  <p class="muted intro">
-    Everything you need, all in one place.
-  </p>
-
-  <div class="dashboard-grid">
-
-    <!-- MAIN TASK BOARD -->
+  <nav>
 
     <a
-      class="tile wide featured"
+      class="nav-item"
       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
       target="_blank"
       rel="noopener noreferrer"
     >
-      <span class="tile-arrow">
-        <i data-lucide="arrow-up-right"></i>
-      </span>
-
-      <div class="icon-box">
-        <i data-lucide="clipboard-check"></i>
-      </div>
-
-      <span class="tile-title">
-        D2C Warehouse Dashboard
-      </span>
-
-      <p class="tile-description">
-        Open your main task management system.
-      </p>
+      <i data-lucide="clipboard-check"></i>
+      <span>Task Board</span>
     </a>
 
-    <!-- SHORTAGE CENTER -->
-
-    <button class="tile" onclick="showPage('shortage')">
-
-      <div class="icon-box">
-        <i data-lucide="package-search"></i>
-      </div>
-
-      <span class="tile-title">
-        Shortage Center
-      </span>
-
-      <p class="tile-description">
-        Storage pulls, shortage reports, and replenishment coverage.
-      </p>
-
+    <button
+      class="nav-item"
+      data-page="shortage"
+      onclick="showPage('shortage')"
+    >
+      <i data-lucide="package-search"></i>
+      <span>Shortage Center</span>
     </button>
 
-    <!-- THE GAME -->
-
-    <button class="tile" onclick="showPage('hats')">
-
-      <div class="icon-box">
-        <i data-lucide="layers"></i>
-      </div>
-
-      <span class="tile-title">
-        The Game POD Hats
-      </span>
-
-      <p class="tile-description">
-        Hat quantities, inventory locations, and LPNs.
-      </p>
-
+    <button
+      class="nav-item"
+      data-page="hats"
+      onclick="showPage('hats')"
+    >
+      <i data-lucide="layers"></i>
+      <span>POD Hats</span>
     </button>
 
-    <!-- QUICK LINKS -->
+    <button
+      class="nav-item"
+      data-page="links"
+      onclick="showPage('links')"
+    >
+      <i data-lucide="link"></i>
+      <span>Quick Links</span>
+    </button>
 
-    <button class="tile wide" onclick="showPage('links')">
+  </nav>
 
-      <span class="tile-arrow">
-        <i data-lucide="chevron-right"></i>
-      </span>
+  <div class="sidebar-divider"></div>
 
-      <div class="icon-box">
-        <i data-lucide="link"></i>
-      </div>
+  <div class="sidebar-footer">
+    Warehouse tools & resources
+  </div>
 
-      <span class="tile-title">
-        Quick Links
-      </span>
+</aside>
 
-      <p class="tile-description">
-        Shopify, POD Orders Dashboard, BSN Order Lookup, and more.
-      </p>
+<!-- MAIN CONTENT -->
 
+<main class="content">
+
+<!-- HOME -->
+
+<section id="home" class="page active">
+
+  <div class="home-screen">
+
+    <div class="home-icon">
+      <i data-lucide="warehouse"></i>
+    </div>
+
+    <h1>D2C Operations Hub</h1>
+
+    <p>Warehouse tools & resources</p>
+
+    <button
+      class="emergency-link"
+      onclick="showPage('emergency')"
+    >
+      <i data-lucide="siren"></i>
+      Break Glass in Case of Emergency
     </button>
 
   </div>
 
-  <!-- LITTLE EMERGENCY LINK -->
-
-  <button
-    class="emergency-link"
-    onclick="showPage('emergency')"
-  >
-
-    <span class="intro-text">
-      In the unlikely event that I'm not here...
-    </span>
-
-    <span class="main-text">
-      <i data-lucide="siren"></i>
-      Break Glass in Case of Emergency
-    </span>
-
-    <span class="sub-text">
-      Proceed with caution. Good luck. ♡
-    </span>
-
-  </button>
-
 </section>
 
-<!-- ========================= -->
 <!-- SHORTAGE CENTER -->
-<!-- ========================= -->
 
 <section id="shortage" class="page">
 
@@ -590,8 +648,8 @@ svg.lucide {
   <h1>Shortage Center</h1>
 
   <p class="muted small">
-    Find additional storage pulls that aren't covered by
-    available shelf inventory or existing replenishment tasks.
+    Identify additional storage pulls not covered by
+    available shelf inventory or existing replenishment.
   </p>
 
   <div class="panel">
@@ -602,71 +660,56 @@ svg.lucide {
 
       <div class="field">
         <label>1. Shortage Report</label>
-        <input
-          id="shortageFile"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-        >
+        <input id="shortageFile" type="file"
+          accept=".xlsx,.xls,.csv">
       </div>
 
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input
-          id="inventoryFile"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-        >
+        <input id="inventoryFile" type="file"
+          accept=".xlsx,.xls,.csv">
       </div>
 
       <div class="field">
         <label>3. Replenishment Task List</label>
-        <input
-          id="taskFile"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-        >
+        <input id="taskFile" type="file"
+          accept=".xlsx,.xls,.csv">
       </div>
 
     </div>
 
-    <h3 style="margin-top:25px">Report Date</h3>
+    <h3 style="margin-top:26px">Report Filter</h3>
 
     <div class="row">
 
       <div class="field">
-        <label>Include orders</label>
+        <label>Include Orders</label>
         <select id="dateMode" onchange="toggleDate()">
-          <option value="all">
-            All Outstanding Shortages
-          </option>
-          <option value="custom">
-            Created Before Custom Date & Time
-          </option>
+          <option value="all">All Outstanding Shortages</option>
+          <option value="custom">Custom Cutoff</option>
         </select>
       </div>
 
       <div class="field hidden" id="dateBox">
-        <label>Date</label>
+        <label>Cutoff Date</label>
         <input id="customDate" type="date">
       </div>
 
       <div class="field hidden" id="timeBox">
-        <label>Time (Eastern)</label>
+        <label>Cutoff Time (Eastern)</label>
         <input id="customTime" type="time" value="14:00">
       </div>
 
     </div>
 
     <div class="actions">
-      <button
-        class="btn primary"
-        onclick="generateShortage()"
-      >
-        Generate My Pull List
+      <button class="btn primary"
+        onclick="generateShortage()">
+        Generate Pull List
       </button>
     </div>
 
-    <p class="message" id="shortageMessage">
+    <p id="shortageMessage" class="message">
       Upload all three reports to begin.
     </p>
 
@@ -677,49 +720,36 @@ svg.lucide {
     <h2>Additional Storage Pulls</h2>
 
     <div class="metrics">
-
       <div class="metric">
         <strong id="shortageTotal">0</strong>
         <span>Shortage Units</span>
       </div>
-
       <div class="metric">
         <strong id="shelfTotal">0</strong>
         <span>Covered by Shelf</span>
       </div>
-
       <div class="metric">
         <strong id="taskTotal">0</strong>
         <span>Covered by Replenishment</span>
       </div>
-
       <div class="metric">
         <strong id="pullTotal">0</strong>
         <span>Additional Pull Units</span>
       </div>
-
     </div>
 
     <div class="actions">
-
       <button class="btn primary" onclick="printPulls()">
         Print Pull List
       </button>
-
-      <button
-        class="btn"
-        onclick="copyShortageBrand('MagnaReady')"
-      >
+      <button class="btn"
+        onclick="copyShortageBrand('MagnaReady')">
         Copy MagnaReady for Task Board
       </button>
-
-      <button
-        class="btn"
-        onclick="copyShortageBrand('Swoveralls')"
-      >
+      <button class="btn"
+        onclick="copyShortageBrand('Swoveralls')">
         Copy Swoveralls for Task Board
       </button>
-
     </div>
 
     <p class="message" id="shortageCopyStatus"></p>
@@ -735,7 +765,6 @@ svg.lucide {
             <th>LPN</th>
           </tr>
         </thead>
-
         <tbody id="pullTable"></tbody>
       </table>
     </div>
@@ -752,7 +781,6 @@ svg.lucide {
             <th>Reason</th>
           </tr>
         </thead>
-
         <tbody id="followTable"></tbody>
       </table>
     </div>
@@ -761,9 +789,7 @@ svg.lucide {
 
 </section>
 
-<!-- ========================= -->
 <!-- THE GAME POD HATS -->
-<!-- ========================= -->
 
 <section id="hats" class="page">
 
@@ -772,8 +798,8 @@ svg.lucide {
   <h1>The Game POD Hats</h1>
 
   <p class="muted small">
-    Upload your Shipment Orders and Inventory by Location
-    reports to find the hats you need from building 88.
+    Locate hats from building 88 using Shipment Orders
+    and Inventory by Location exports.
   </p>
 
   <div class="panel">
@@ -781,32 +807,22 @@ svg.lucide {
     <h2>Upload Logiwa Reports</h2>
 
     <div class="row">
-
       <div class="field">
         <label>1. Shipment Orders</label>
-        <input
-          id="hatOrders"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-        >
+        <input id="hatOrders" type="file"
+          accept=".xlsx,.xls,.csv">
       </div>
 
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input
-          id="hatInventory"
-          type="file"
-          accept=".xlsx,.xls,.csv"
-        >
+        <input id="hatInventory" type="file"
+          accept=".xlsx,.xls,.csv">
       </div>
-
     </div>
 
     <div class="actions">
-      <button
-        class="btn primary"
-        onclick="generateHats()"
-      >
+      <button class="btn primary"
+        onclick="generateHats()">
         Find My Hats
       </button>
     </div>
@@ -822,17 +838,14 @@ svg.lucide {
     <h2>Hats to Retrieve</h2>
 
     <div class="metrics">
-
       <div class="metric">
         <strong id="hatNeeded">0</strong>
         <span>Units Needed</span>
       </div>
-
       <div class="metric">
         <strong id="hatLocated">0</strong>
         <span>Units Located</span>
       </div>
-
     </div>
 
     <div class="actions">
@@ -853,7 +866,6 @@ svg.lucide {
             <th>LPN</th>
           </tr>
         </thead>
-
         <tbody id="hatTable"></tbody>
       </table>
     </div>
@@ -869,7 +881,6 @@ svg.lucide {
             <th>Reason</th>
           </tr>
         </thead>
-
         <tbody id="hatMissing"></tbody>
       </table>
     </div>
@@ -878,9 +889,7 @@ svg.lucide {
 
 </section>
 
-<!-- ========================= -->
 <!-- QUICK LINKS -->
-<!-- ========================= -->
 
 <section id="links" class="page">
 
@@ -888,58 +897,48 @@ svg.lucide {
 
   <h1>Quick Links</h1>
 
-  <p class="muted">
-    Your most-used systems, one click away.
+  <p class="muted small">
+    Frequently used systems and operational tools.
   </p>
 
-  <div class="section-label">Most Important</div>
+  <div class="section-label">Task Management</div>
 
   <div class="link-grid">
 
-    <a
-      class="quick-link"
+    <a class="quick-link"
       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="clipboard-check"></i>
       <strong>D2C Warehouse Dashboard ↗</strong>
       <p>Main task management system.</p>
     </a>
 
   </div>
 
-  <div class="section-label">Other Tools</div>
+  <div class="section-label">Order Management</div>
 
   <div class="link-grid">
 
-    <a
-      class="quick-link"
+    <a class="quick-link"
       href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="printer"></i>
       <strong>POD Orders Dashboard ↗</strong>
-      <p>
-        Artwork, cancellations, and replacement orders.
-      </p>
+      <p>Artwork, cancellations, and replacement orders.</p>
     </a>
 
-    <a
-      class="quick-link"
+    <a class="quick-link"
       href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="search"></i>
       <strong>BSN Order Lookup ↗</strong>
       <p>Order lookup and tracking information.</p>
     </a>
 
-    <a
-      class="quick-link"
+    <a class="quick-link"
       href="https://admin.shopify.com/store/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="shopping-bag"></i>
       <strong>Shopify Admin ↗</strong>
       <p>Brand stores and order management.</p>
     </a>
@@ -948,9 +947,7 @@ svg.lucide {
 
 </section>
 
-<!-- ========================= -->
 <!-- BREAK GLASS -->
-<!-- ========================= -->
 
 <section id="emergency" class="page">
 
@@ -958,8 +955,9 @@ svg.lucide {
 
   <h1>Break Glass in Case of Emergency</h1>
 
-  <p class="muted">
-    How-to guides, daily procedures, and important resources.
+  <p class="muted small">
+    Daily responsibilities, training resources,
+    and operational procedures.
   </p>
 
   <div class="panel">
@@ -968,36 +966,34 @@ svg.lucide {
 
     <div class="table-wrap">
       <table>
-
         <thead>
           <tr>
             <th>Time</th>
-            <th>Task</th>
+            <th>Responsibility</th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
-            <td>8:30 AM</td>
-            <td>The Game stock requests — assign to Marc</td>
+            <td>Morning</td>
+            <td>The Game POD stock requests</td>
           </tr>
-
           <tr>
             <td>2:00 PM</td>
-            <td>Amazon orders</td>
+            <td>Check MagnaReady Amazon orders</td>
           </tr>
-
           <tr>
             <td>After replenishment</td>
             <td>Review shortage report</td>
           </tr>
-
+          <tr>
+            <td>4:00 PM</td>
+            <td>Recheck MagnaReady Amazon orders</td>
+          </tr>
           <tr>
             <td>4:30 PM</td>
             <td>Check and clear Job Queue</td>
           </tr>
         </tbody>
-
       </table>
     </div>
 
@@ -1005,48 +1001,33 @@ svg.lucide {
 
   <div class="panel">
 
-    <h2>How-To Guides & Procedures</h2>
+    <h2>Procedure & PDF Libraries</h2>
 
     <p class="muted small">
-      We'll continue adding your actual guides,
-      training documents, and procedures here.
+      These sections will link to your shared
+      PDF libraries and training resources.
     </p>
 
-    <div class="section-label">
-      Daily Procedures
-    </div>
+    <div class="section-label">Daily Procedures</div>
     <div id="dailyDocs"></div>
 
-    <div class="section-label">
-      Logiwa How-Tos
-    </div>
+    <div class="section-label">Logiwa How-Tos</div>
     <div id="logiwaDocs"></div>
 
-    <div class="section-label">
-      Customer Service
-    </div>
+    <div class="section-label">Customer Service</div>
     <div id="csDocs"></div>
 
-    <div class="section-label">
-      Inventory & Troubleshooting
-    </div>
+    <div class="section-label">Inventory & Troubleshooting</div>
     <div id="inventoryDocs"></div>
 
-    <div class="section-label">
-      Important Contacts
-    </div>
+    <div class="section-label">Important Contacts</div>
     <div id="contactDocs"></div>
 
   </div>
 
   <div class="panel">
 
-    <h2>Add a Guide</h2>
-
-    <p class="muted small">
-      Add a link to an approved shared document,
-      PDF, or training guide.
-    </p>
+    <h2>Add a Resource Link</h2>
 
     <div class="row">
 
@@ -1064,56 +1045,43 @@ svg.lucide {
       </div>
 
       <div class="field">
-        <label>Document Name</label>
-        <input
-          id="docName"
-          type="text"
-          placeholder="Directed Put Away Guide"
-        >
+        <label>Resource Name</label>
+        <input id="docName" type="text"
+          placeholder="Logiwa Training Library">
       </div>
 
       <div class="field">
-        <label>Document Link</label>
-        <input
-          id="docUrl"
-          type="url"
-          placeholder="https://..."
-        >
+        <label>Shared Library URL</label>
+        <input id="docUrl" type="url"
+          placeholder="https://...">
       </div>
 
     </div>
 
     <div class="actions">
       <button class="btn primary" onclick="addDocument()">
-        Add Guide
+        Add Resource
       </button>
     </div>
 
-    <p id="documentMessage" class="message"></p>
+    <p class="message" id="documentMessage"></p>
 
     <div class="notice">
-      <strong>Note:</strong>
-      Links added here are saved in this browser only.
-      They will not automatically appear for other employees.
-      Later, we can connect this handbook to a shared,
-      company-approved document location.
+      Links added here are saved only in this browser.
+      They will not automatically appear for coworkers.
+      Shared library links can be built directly into
+      the website once they're available.
     </div>
 
   </div>
 
 </section>
 
-<footer>
-  Personal D2C workspace · Reports are based on uploaded
-  Logiwa exports, not live inventory.
-</footer>
-
 </main>
+</div>
 
 <script>
 "use strict";
-
-/* GENERAL HELPERS */
 
 const $ = id => document.getElementById(id);
 
@@ -1148,7 +1116,6 @@ function get(row, ...names) {
     const key = Object.keys(row || {}).find(
       k => norm(k) === norm(name)
     );
-
     if (key !== undefined && clean(row[key]) !== "") {
       return row[key];
     }
@@ -1158,7 +1125,6 @@ function get(row, ...names) {
 
 function hasColumn(rows, ...names) {
   if (!rows.length) return false;
-
   return names.some(name =>
     Object.keys(rows[0]).some(
       key => norm(key) === norm(name)
@@ -1168,62 +1134,44 @@ function hasColumn(rows, ...names) {
 
 function brand(value) {
   const s = norm(value).replace(/[^A-Z0-9]/g, "");
-
   if (s.includes("MAGNAREADY")) return "MagnaReady";
   if (s.includes("SWOVERALL")) return "Swoveralls";
   if (s.includes("THEGAME")) return "The Game";
-
   return clean(value) || "Other";
 }
 
 function client(row) {
   return brand(get(
-    row,
-    "Client",
-    "Client Display Name",
-    "Brand"
+    row, "Client", "Client Display Name", "Brand"
   ));
 }
 
 function locationType(value) {
   const s = norm(value);
-
   if (!s) return "Unknown";
-
-  if (["MV-M1", "0M1", "0M5"].includes(s)) {
-    return "Virtual";
-  }
-
+  if (["MV-M1", "0M1", "0M5"].includes(s)) return "Virtual";
   if (/STAGING|STAGE|PACKING|SHIPPING/.test(s)) {
     return "Excluded";
   }
-
-  if (/^(100|88)\.\d/.test(s)) {
-    return "Shelf";
-  }
-
+  if (/^(100|88)\.\d/.test(s)) return "Shelf";
   return "Storage";
 }
 
 function locationArea(value) {
   const s = norm(value);
-
   if (s.startsWith("REC-SOUTH")) return 0;
   if (s.startsWith("R-100")) return 1;
   if (s.startsWith("STN")) return 2;
   if (s.startsWith("STW")) return 3;
   if (s.startsWith("STS")) return 4;
   if (s.startsWith("RECEIVING")) return 5;
-
   return 6;
 }
 
 function sortLocations(a, b) {
   return locationArea(a) - locationArea(b) ||
     clean(a).localeCompare(
-      clean(b),
-      undefined,
-      { numeric: true }
+      clean(b), undefined, { numeric: true }
     );
 }
 
@@ -1243,6 +1191,14 @@ function showPage(id) {
     page.classList.toggle("active", page.id === id);
   });
 
+  document.querySelectorAll(".nav-item[data-page]")
+    .forEach(item => {
+      item.classList.toggle(
+        "active",
+        item.dataset.page === id
+      );
+    });
+
   window.scrollTo(0, 0);
 }
 
@@ -1254,17 +1210,14 @@ async function readFile(file) {
   }
 
   if (!window.XLSX) {
-    throw new Error(
-      "Excel reader could not load. Check your connection."
-    );
+    throw new Error("Excel reader could not load.");
   }
 
   let workbook;
 
   if (file.name.toLowerCase().endsWith(".csv")) {
     workbook = XLSX.read(
-      await file.text(),
-      { type: "string" }
+      await file.text(), { type: "string" }
     );
   } else {
     workbook = XLSX.read(
@@ -1287,9 +1240,8 @@ async function copyText(text, statusId) {
 
   try {
     await navigator.clipboard.writeText(text);
-
     $(statusId).textContent =
-      "Copied! Ready to paste into the D2C task board.";
+      "Copied! Ready for the D2C task board.";
   } catch {
     prompt("Copy this text:", text);
   }
@@ -1304,36 +1256,23 @@ function inventoryData(rows) {
     const sku = clean(get(row, "SKU"));
     const loc = clean(get(row, "Location", "Location Code"));
     const lpn = clean(get(row, "LPN", "License Plate Number"));
-    const free = number(get(
-      row,
-      "Free UOM QTY",
-      "Free Qty"
-    ));
+    const free = number(get(row, "Free UOM QTY", "Free Qty"));
     const b = client(row);
 
     if (!sku || !loc || free <= 0) continue;
 
     const key = [
-      norm(b),
-      norm(sku),
-      norm(loc),
-      norm(lpn)
+      norm(b), norm(sku), norm(loc), norm(lpn)
     ].join("|");
 
     if (seen.has(key)) {
       const existing = seen.get(key);
-
-      if (existing.free !== free) {
-        existing.conflict = true;
-      }
+      if (existing.free !== free) existing.conflict = true;
       continue;
     }
 
     seen.set(key, {
-      sku,
-      loc,
-      lpn,
-      free,
+      sku, loc, lpn, free,
       brand: b,
       type: locationType(loc),
       used: 0,
@@ -1347,16 +1286,13 @@ function inventoryData(rows) {
 /* DATE FILTER */
 
 function dateValue(value) {
-  if (value instanceof Date) {
-    return value.getTime();
-  }
+  if (value instanceof Date) return value.getTime();
 
   if (typeof value === "number") {
     return (value - 25569) * 86400000;
   }
 
   const s = clean(value);
-
   if (!s) return NaN;
 
   const match = s.match(
@@ -1365,9 +1301,7 @@ function dateValue(value) {
 
   if (match) {
     return new Date(
-      +match[1],
-      +match[2] - 1,
-      +match[3],
+      +match[1], +match[2] - 1, +match[3],
       +(match[4] || 0),
       +(match[5] || 0),
       +(match[6] || 0)
@@ -1379,7 +1313,6 @@ function dateValue(value) {
 
 function toggleDate() {
   const custom = $("dateMode").value === "custom";
-
   $("dateBox").classList.toggle("hidden", !custom);
   $("timeBox").classList.toggle("hidden", !custom);
 }
@@ -1388,11 +1321,7 @@ function toggleDate() {
 
 let shortagePulls = [];
 let shortageFollow = [];
-let shortageStats = {
-  total: 0,
-  shelf: 0,
-  tasks: 0
-};
+let shortageStats = { total: 0, shelf: 0, tasks: 0 };
 
 function activeTasks(rows) {
   const result = [];
@@ -1401,11 +1330,7 @@ function activeTasks(rows) {
   for (const row of rows) {
     const sku = clean(get(row, "SKU"));
     const status = norm(get(row, "Task Status"));
-    const qty = number(get(
-      row,
-      "Task UOM Qty",
-      "Task Qty"
-    ));
+    const qty = number(get(row, "Task UOM Qty", "Task Qty"));
 
     if (!sku || !qty) continue;
 
@@ -1427,11 +1352,8 @@ function activeTasks(rows) {
     };
 
     const key = task.id || [
-      task.brand,
-      norm(sku),
-      norm(task.loc),
-      norm(task.lpn),
-      qty
+      task.brand, norm(sku), norm(task.loc),
+      norm(task.lpn), qty
     ].join("|");
 
     if (seen.has(key)) continue;
@@ -1445,7 +1367,6 @@ function activeTasks(rows) {
 
 function calculateShortages(shortages, inventory, tasks) {
   const groups = new Map();
-
   let cutoff = Infinity;
 
   if ($("dateMode").value === "custom") {
@@ -1454,10 +1375,8 @@ function calculateShortages(shortages, inventory, tasks) {
     }
 
     cutoff = dateValue(
-      $("customDate").value +
-      "T" +
-      $("customTime").value +
-      ":00"
+      $("customDate").value + "T" +
+      $("customTime").value + ":00"
     );
   }
 
@@ -1479,10 +1398,7 @@ function calculateShortages(shortages, inventory, tasks) {
 
     if (!groups.has(key)) {
       groups.set(key, {
-        sku,
-        brand: b,
-        need: 0,
-        oldest: date
+        sku, brand: b, need: 0, oldest: date
       });
     }
 
@@ -1514,7 +1430,6 @@ function calculateShortages(shortages, inventory, tasks) {
 
   const taskCoverage = new Map();
 
-  // Reserve source stock assigned to replenishment tasks.
   for (const task of assignedTasks) {
     const key = norm(task.brand) + "|" + norm(task.sku);
 
@@ -1561,7 +1476,6 @@ function calculateShortages(shortages, inventory, tasks) {
     );
 
     const covered = Math.min(group.need, freeShelf);
-
     shortageStats.shelf += covered;
 
     let remaining = group.need - covered;
@@ -1593,19 +1507,14 @@ function calculateShortages(shortages, inventory, tasks) {
 
     const sources = matching
       .filter(item =>
-        item.type === "Storage" &&
-        !item.conflict
+        item.type === "Storage" && !item.conflict
       )
       .sort((a, b) => sortLocations(a.loc, b.loc));
 
     for (const item of sources) {
       if (remaining <= 0) break;
 
-      const available = Math.max(
-        0,
-        item.free - item.used
-      );
-
+      const available = Math.max(0, item.free - item.used);
       const take = Math.min(remaining, available);
 
       if (take > 0) {
@@ -1701,8 +1610,7 @@ async function generateShortage() {
     $("taskTotal").textContent = shortageStats.tasks;
 
     $("pullTotal").textContent = shortagePulls.reduce(
-      (sum, item) => sum + item.qty,
-      0
+      (sum, item) => sum + item.qty, 0
     );
 
     $("pullTable").innerHTML = shortagePulls.map(item => `
@@ -1883,11 +1791,7 @@ function calculateHats(orders, inventory) {
     for (const item of options) {
       if (remaining <= 0) break;
 
-      const available = Math.max(
-        0,
-        item.free - item.used
-      );
-
+      const available = Math.max(0, item.free - item.used);
       const take = Math.min(remaining, available);
 
       if (take > 0) {
@@ -1918,12 +1822,10 @@ function calculateHats(orders, inventory) {
 
   return {
     needed: [...groups.values()].reduce(
-      (sum, group) => sum + group.need,
-      0
+      (sum, group) => sum + group.need, 0
     ),
     located: hatPulls.reduce(
-      (sum, item) => sum + item.qty,
-      0
+      (sum, item) => sum + item.qty, 0
     )
   };
 }
@@ -2002,7 +1904,7 @@ function copyHats() {
   copyText(text, "hatCopyStatus");
 }
 
-/* BREAK GLASS DOCUMENT LIBRARY */
+/* DOCUMENT LIBRARY */
 
 const DOC_KEY = "d2c_handbook_links_v2";
 
@@ -2019,7 +1921,6 @@ function documents() {
     const data = JSON.parse(
       localStorage.getItem(DOC_KEY) || "[]"
     );
-
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -2031,7 +1932,6 @@ function renderDocuments() {
 
   for (const [category, id] of Object.entries(docCategories)) {
     const container = $(id);
-
     container.replaceChildren();
 
     const items = docs
@@ -2073,7 +1973,7 @@ function addDocument() {
 
   if (!name || !url) {
     $("documentMessage").textContent =
-      "Enter a document name and link.";
+      "Enter a resource name and link.";
     return;
   }
 
@@ -2081,7 +1981,6 @@ function addDocument() {
 
   try {
     parsed = new URL(url);
-
     if (!["http:", "https:"].includes(parsed.protocol)) {
       throw new Error("Invalid URL");
     }
@@ -2109,7 +2008,7 @@ function addDocument() {
     $("docUrl").value = "";
 
     $("documentMessage").textContent =
-      "Document link saved in this browser.";
+      "Resource saved in this browser.";
 
     renderDocuments();
   } catch {
@@ -2120,7 +2019,6 @@ function addDocument() {
 
 function removeDocument(index) {
   const docs = documents();
-
   docs.splice(index, 1);
 
   try {
@@ -2128,7 +2026,6 @@ function removeDocument(index) {
       DOC_KEY,
       JSON.stringify(docs)
     );
-
     renderDocuments();
   } catch {
     alert("Could not save the change.");
@@ -2149,7 +2046,6 @@ renderDocuments();
 if (window.lucide) {
   lucide.createIcons();
 }
-
 </script>
 
 </body>

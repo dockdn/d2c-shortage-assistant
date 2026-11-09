@@ -3178,6 +3178,216 @@ if(window.lucide){
   lucide.createIcons();
 }
 
+  
+<!-- D2C OPERATIONS HUB — COPY ENTIRE LIST FOR JIRA -->
+<script>
+(function () {
+  "use strict";
+
+  function addJiraCopyButton() {
+    const listSection = document.getElementById("lists");
+
+    if (!listSection) return;
+
+    // Find the existing List Generator action buttons.
+    const generateButton = [...listSection.querySelectorAll("button")]
+      .find(button =>
+        button.getAttribute("onclick") === "generateList()"
+      );
+
+    if (!generateButton) return;
+
+    const actions = generateButton.closest(".actions");
+
+    if (!actions || document.getElementById("copyEntireListJira")) {
+      return;
+    }
+
+    // Add one button for the complete list.
+    const jiraButton = document.createElement("button");
+
+    jiraButton.id = "copyEntireListJira";
+    jiraButton.type = "button";
+    jiraButton.className = "btn";
+    jiraButton.textContent = "Copy Entire List for Jira";
+    jiraButton.addEventListener("click", copyEntireListForJira);
+
+    // Place it after Print List.
+    const printButton = [...actions.querySelectorAll("button")]
+      .find(button =>
+        button.getAttribute("onclick") === "printList()"
+      );
+
+    if (printButton) {
+      printButton.insertAdjacentElement("afterend", jiraButton);
+    } else {
+      actions.appendChild(jiraButton);
+    }
+
+    // Show feedback when the list is copied.
+    const status = document.createElement("p");
+
+    status.id = "jiraListCopyStatus";
+    status.className = "message";
+    status.setAttribute("role", "status");
+
+    actions.insertAdjacentElement("afterend", status);
+  }
+
+  function buildJiraList() {
+    const type = document.getElementById("listType").value;
+    const title = document.getElementById("listTitle").value.trim();
+    const date = document.getElementById("listDate").value;
+
+    // Read every row in the entire List Generator,
+    // not just rows currently visible in the preview.
+    const rows = [...document.querySelectorAll(
+      "#listRows .generator-row"
+    )].map(row => {
+      const values = {};
+
+      row.querySelectorAll("input[data-field]").forEach(input => {
+        values[input.dataset.field] = input.value.trim();
+      });
+
+      return values;
+    }).filter(row =>
+      Object.values(row).some(value => value !== "")
+    );
+
+    if (!rows.length) {
+      return "";
+    }
+
+    const lines = [];
+
+    // List heading
+    lines.push(title || "D2C List");
+
+    if (date) {
+      lines.push("Date: " + date);
+    }
+
+    lines.push("");
+
+    if (type === "todo") {
+      lines.push("TASKS");
+      lines.push("");
+
+      rows.forEach(row => {
+        lines.push("☐ " + (row.Task || ""));
+      });
+    }
+
+    else if (type === "sku") {
+      const includeQuantity =
+        document.getElementById("includeQuantity").checked;
+
+      lines.push(
+        includeQuantity
+          ? "SKU | QTY | LOCATION | LPN"
+          : "SKU | LOCATION | LPN"
+      );
+
+      lines.push("");
+
+      rows.forEach(row => {
+        const values = [];
+
+        values.push(row.SKU || "—");
+
+        if (includeQuantity) {
+          values.push(row.QTY || "—");
+        }
+
+        values.push(row.Location || "—");
+        values.push(row.LPN || "—");
+
+        lines.push(values.join(" | "));
+      });
+    }
+
+    else if (type === "adjust") {
+      lines.push("SKU / LOCATION | ADJUSTMENT | NOTES");
+      lines.push("");
+
+      rows.forEach(row => {
+        lines.push([
+          row["SKU / Location"] || "—",
+          row.Adjustment || "—",
+          row.Notes || "—"
+        ].join(" | "));
+      });
+    }
+
+    else if (type === "custom") {
+      lines.push("ITEM | DETAILS");
+      lines.push("");
+
+      rows.forEach(row => {
+        lines.push([
+          row.Item || "—",
+          row.Details || "—"
+        ].join(" | "));
+      });
+    }
+
+    return lines.join("\n");
+  }
+
+  async function copyEntireListForJira() {
+    const status = document.getElementById(
+      "jiraListCopyStatus"
+    );
+
+    const text = buildJiraList();
+
+    if (!text) {
+      status.textContent =
+        "Add at least one item before copying your list.";
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+
+      status.textContent =
+        "Entire list copied! Ready to paste into Jira.";
+
+    } catch (error) {
+      // Fallback for browsers that restrict clipboard access.
+      const temporary = document.createElement("textarea");
+
+      temporary.value = text;
+      temporary.style.position = "fixed";
+      temporary.style.opacity = "0";
+
+      document.body.appendChild(temporary);
+      temporary.focus();
+      temporary.select();
+
+      const copied = document.execCommand("copy");
+      temporary.remove();
+
+      if (copied) {
+        status.textContent =
+          "Entire list copied! Ready to paste into Jira.";
+      } else {
+        status.textContent =
+          "Clipboard access was blocked. Copy from the text box.";
+
+        window.prompt("Copy your complete Jira list:", text);
+      }
+    }
+  }
+
+  // The script is placed at the bottom of index.html,
+  // so the List Generator already exists.
+  addJiraCopyButton();
+})();
+</script>
+<!-- END JIRA LIST COPY FEATURE -->
+
 </script>
 </body>
 </html>

@@ -3,685 +3,441 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>D2C Operations Hub</title>
 
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-:root {
-  --bg: #f8f9f7;
-  --surface: #ffffff;
-  --sidebar: #f0f2ef;
-  --stone: #e8eae6;
-  --sage: #c5ccc6;
-  --slate: #71839a;
-  --navy: #344358;
-  --text: #303c4b;
-  --muted: #7b8793;
-  --border: #e2e6e3;
-  --danger: #b76b6b;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-button, input, select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-svg.lucide {
-  width: 19px;
-  height: 19px;
-  stroke-width: 1.8;
-}
-
-header {
-  height: 68px;
-  background: white;
-  border-bottom: 1px solid var(--border);
-}
-
-.header-inner {
-  max-width: 1440px;
-  margin: auto;
-  height: 100%;
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.home-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  background: transparent;
-  color: var(--navy);
-  font-weight: 650;
-  padding: 8px;
-}
-
-.header-brand {
-  font-size: 11px;
-  font-weight: 650;
-  letter-spacing: 1.6px;
-  color: var(--muted);
-}
-
-.app-shell {
-  display: flex;
-  max-width: 1440px;
-  margin: auto;
-  min-height: calc(100vh - 68px);
-}
-
-/* SIDEBAR */
-
-.sidebar {
-  width: 250px;
-  flex-shrink: 0;
-  padding: 30px 18px;
-  background: var(--sidebar);
-  border-right: 1px solid var(--border);
-}
-
-.sidebar-heading {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-  margin: 0 12px 20px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  width: 100%;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--text);
-  text-align: left;
-  padding: 13px;
-  margin-bottom: 5px;
-  font-size: 13px;
-  text-decoration: none;
-  transition: 0.15s ease;
-}
-
-.nav-item:hover {
-  background: #e6ebe7;
-}
-
-.nav-item.active {
-  background: white;
-  color: var(--navy);
-  font-weight: 650;
-  box-shadow: 0 1px 4px rgba(0,0,0,.035);
-}
-
-.nav-item svg {
-  color: var(--slate);
-  flex-shrink: 0;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background: #dce2de;
-  margin: 24px 12px;
-}
-
-.sidebar-footer {
-  margin: 25px 12px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-/* CONTENT */
-
-.content {
-  flex: 1;
-  min-width: 0;
-  padding: 42px 48px;
-}
-
-.page {
-  display: none;
-}
-
-.page.active {
-  display: block;
-}
-
-.eyebrow {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.7px;
-}
-
-h1 {
-  font-size: 30px;
-  letter-spacing: -.7px;
-  margin: 8px 0;
-  font-weight: 650;
-}
-
-h2 {
-  font-size: 19px;
-  margin: 0 0 16px;
-}
-
-h3 {
-  font-size: 15px;
-  margin: 0 0 12px;
-}
-
-p {
-  margin-top: 8px;
-}
-
-.muted {
-  color: var(--muted);
-}
-
-.small {
-  font-size: 12px;
-}
-
-/* HOME */
-
-.home-screen {
-  min-height: 68vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 30px;
-}
-
-.home-icon {
-  width: 92px;
-  height: 92px;
-  border-radius: 24px;
-  background: #edf0ec;
-  color: var(--slate);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 28px;
-}
-
-.home-icon svg {
-  width: 45px;
-  height: 45px;
-  stroke-width: 1.35;
-}
-
-.home-screen h1 {
-  font-size: 32px;
-  margin: 0 0 8px;
-}
-
-.home-screen p {
-  color: var(--muted);
-  font-size: 13px;
-  margin: 0;
-}
-
-.emergency-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  font-size: 11px;
-  margin-top: 65px;
-  padding: 10px;
-  text-decoration: underline;
-}
-
-.emergency-link svg {
-  color: var(--danger);
-  width: 16px;
-  height: 16px;
-}
-
-.emergency-link:hover {
-  color: var(--navy);
-}
-
-/* PANELS */
-
-.panel {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  padding: 25px;
-  margin-top: 23px;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  align-items: end;
-}
-
-.field {
-  flex: 1;
-  min-width: 180px;
-}
-
-label {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 650;
-  margin-bottom: 8px;
-}
-
-input, select {
-  width: 100%;
-  min-width: 0;
-  padding: 11px;
-  border: 1px solid #cbd4d2;
-  border-radius: 7px;
-  background: white;
-  color: var(--text);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.btn {
-  padding: 11px 15px;
-  background: white;
-  border: 1px solid #ccd4d2;
-  border-radius: 7px;
-  color: var(--text);
-}
-
-.btn.primary {
-  background: var(--navy);
-  color: white;
-  border-color: var(--navy);
-}
-
-.btn:hover {
-  filter: brightness(.96);
-}
-
-.hidden {
-  display: none !important;
-}
-
-.message {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 15px;
-}
-
-.metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  margin: 24px 0;
-}
-
-.metric strong {
-  display: block;
-  font-size: 25px;
-  font-weight: 650;
-}
-
-.metric span {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  padding: 12px 9px;
-  vertical-align: top;
-}
-
-th {
-  background: #fafbf9;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-td.sku {
-  font-family: monospace;
-  font-size: 12px;
-  overflow-wrap: anywhere;
-}
-
-.warning {
-  color: #a47735;
-}
-
-/* QUICK LINKS */
-
-.link-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.quick-link {
-  display: block;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 22px;
-  text-decoration: none;
-  color: var(--text);
-  transition: .15s ease;
-}
-
-.quick-link:hover {
-  border-color: var(--slate);
-  transform: translateY(-2px);
-}
-
-.quick-link strong {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.quick-link p {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 0;
-}
-
-.quick-link svg {
-  color: var(--slate);
-  margin-bottom: 12px;
-}
-
-.section-label {
-  margin: 30px 0 14px;
-  color: var(--muted);
-  font-size: 11px;
-  letter-spacing: 1px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.notice {
-  background: #f2f4f1;
-  border-radius: 9px;
-  padding: 16px;
-  font-size: 12px;
-}
-
-.document-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid var(--border);
-  padding: 12px 0;
-}
-
-.document-row a {
-  color: var(--navy);
-  overflow-wrap: anywhere;
-}
-
-@media(max-width:800px) {
-  .sidebar {
-    width: 205px;
-  }
-
-  .content {
-    padding: 30px 24px;
-  }
-}
-
-@media(max-width:600px) {
-  .app-shell {
-    display: block;
-  }
-
-  .sidebar {
-    width: 100%;
-    padding: 12px;
-    border-right: 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-heading,
-  .sidebar-divider,
-  .sidebar-footer {
-    display: none;
-  }
-
-  .sidebar nav {
-    display: flex;
-    overflow-x: auto;
-    gap: 6px;
-  }
-
-  .nav-item {
-    width: auto;
-    flex-shrink: 0;
-    margin: 0;
-    padding: 10px;
-    white-space: nowrap;
-  }
-
-  .nav-item span {
-    font-size: 11px;
-  }
-
-  .content {
-    padding: 24px 15px;
-  }
-
-  .link-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .panel {
-    padding: 18px;
-  }
-
-  .home-screen {
-    min-height: 55vh;
-  }
-
-  h1 {
-    font-size: 26px;
+:root{
+  --bg:#f8f9f7;
+  --white:#fff;
+  --side:#f0f2ef;
+  --navy:#344358;
+  --slate:#71839a;
+  --text:#303c4b;
+  --muted:#7b8793;
+  --border:#e2e6e3;
+  --danger:#b76b6b;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+svg.lucide{width:19px;height:19px;stroke-width:1.8}
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:246px;
+  flex-shrink:0;
+  background:var(--side);
+  border-right:1px solid var(--border);
+  padding:28px 16px;
+  display:flex;
+  flex-direction:column;
+}
+.logo{
+  padding:0 12px 30px;
+  font-size:12px;
+  letter-spacing:1.4px;
+  font-weight:750;
+  color:var(--navy);
+}
+.nav-heading{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  color:var(--muted);
+  margin:0 12px 13px;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:12px;
+  margin:3px 0;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  text-decoration:none;
+  text-align:left;
+  color:var(--text);
+  font-size:13px;
+}
+.nav-item svg{color:var(--slate);flex-shrink:0}
+.nav-item:hover{background:#e6ebe7}
+.nav-item.active{
+  background:#fff;
+  color:var(--navy);
+  font-weight:650;
+  box-shadow:0 1px 4px #00000008;
+}
+.nav-divider{
+  height:1px;
+  background:#dce2de;
+  margin:18px 12px;
+}
+.sidebar-bottom{margin-top:auto;padding-top:30px}
+.emergency-nav{
+  color:var(--muted);
+  font-size:11px;
+}
+.emergency-nav svg{color:var(--danger)}
+.content{
+  flex:1;
+  min-width:0;
+  padding:0 42px 55px;
+}
+.topbar{
+  min-height:73px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  border-bottom:1px solid var(--border);
+}
+.topbar-label{
+  font-size:11px;
+  letter-spacing:1.3px;
+  font-weight:650;
+  color:var(--muted);
+}
+.date-display{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:12px;
+  color:var(--slate);
+}
+.date-display svg{width:17px;height:17px}
+.page{display:none;padding-top:36px}
+.page.active{display:block}
+.eyebrow{
+  font-size:10px;
+  letter-spacing:1.6px;
+  color:var(--muted);
+  font-weight:700;
+}
+h1{font-size:29px;letter-spacing:-.6px;margin:8px 0}
+h2{font-size:18px;margin:0 0 17px}
+h3{font-size:15px;margin:24px 0 12px}
+p{margin:8px 0}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.home-center{
+  min-height:65vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.home-icon{
+  display:grid;
+  place-items:center;
+  width:90px;
+  height:90px;
+  background:#edf0ec;
+  border-radius:24px;
+  margin-bottom:25px;
+  color:var(--slate);
+}
+.home-icon svg{width:43px;height:43px;stroke-width:1.4}
+.home-center h1{font-size:32px}
+.home-center p{font-size:13px;color:var(--muted)}
+.panel{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:24px;
+  margin-top:22px;
+}
+.row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  align-items:end;
+}
+.field{flex:1;min-width:170px}
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:650;
+  margin-bottom:7px;
+}
+input,select,textarea{
+  width:100%;
+  min-width:0;
+  border:1px solid #cbd4d2;
+  background:white;
+  color:var(--text);
+  border-radius:7px;
+  padding:10px;
+}
+textarea{resize:vertical;min-height:80px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.btn{
+  border:1px solid #ccd4d2;
+  background:#fff;
+  border-radius:7px;
+  color:var(--text);
+  padding:10px 14px;
+}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn:hover{filter:brightness(.96)}
+.btn.danger{color:var(--danger)}
+.hidden{display:none!important}
+.message{font-size:12px;color:var(--muted);margin-top:14px}
+.metrics{display:flex;gap:30px;flex-wrap:wrap;margin:22px 0}
+.metric strong{display:block;font-size:25px}
+.metric span{font-size:11px;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{
+  padding:11px 9px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+  vertical-align:top;
+}
+th{background:#fafbf9;font-size:11px;color:var(--muted)}
+td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
+.warning{color:#a47735}
+.section-label{
+  margin:25px 0 12px;
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:1px;
+  font-weight:700;
+  text-transform:uppercase;
+}
+.link-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.quick-link{
+  display:block;
+  background:white;
+  padding:20px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  text-decoration:none;
+  color:var(--text);
+}
+.quick-link:hover{border-color:var(--slate)}
+.quick-link svg{color:var(--slate);margin-bottom:12px}
+.quick-link strong{display:block;margin-bottom:5px}
+.quick-link p{font-size:12px;color:var(--muted)}
+.notice{
+  background:#f2f4f1;
+  padding:15px;
+  border-radius:8px;
+  font-size:12px;
+}
+.document-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.document-row a{color:var(--navy);overflow-wrap:anywhere}
+.generator-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 36px;
+  gap:9px;
+  margin:9px 0;
+}
+.generator-row.todo{grid-template-columns:1fr 36px}
+.generator-row.adjust{grid-template-columns:1fr 1fr 1fr 36px}
+.generator-row.custom{grid-template-columns:1fr 1fr 36px}
+.remove-row{
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:white;
+  color:var(--danger);
+}
+.preview{
+  background:#fafbf9;
+  border:1px dashed #cbd4d2;
+  border-radius:9px;
+  padding:18px;
+  margin-top:18px;
+}
+.preview h3{margin:0 0 12px}
+.preview-line{
+  padding:7px 0;
+  border-bottom:1px solid var(--border);
+  overflow-wrap:anywhere;
+}
+.ticket-preview{
+  border:1px solid var(--text);
+  padding:19px;
+  background:white;
+  margin-top:18px;
+  max-width:650px;
+}
+.ticket-preview h2{
+  text-align:center;
+  font-size:17px;
+  letter-spacing:1px;
+  border-bottom:2px solid var(--text);
+  padding-bottom:12px;
+}
+.ticket-line{
+  display:flex;
+  gap:10px;
+  border-bottom:1px solid #ddd;
+  padding:9px 0;
+  overflow-wrap:anywhere;
+}
+.ticket-line strong{min-width:105px}
+.ticket-notes{white-space:pre-wrap;overflow-wrap:anywhere}
+.ticket-checks{margin-top:18px;font-size:12px}
+@media(max-width:850px){
+  .sidebar{width:205px}
+  .content{padding:0 23px 40px}
+}
+@media(max-width:620px){
+  .app{display:block}
+  .sidebar{width:100%;padding:12px}
+  .logo{padding:5px 8px 12px}
+  .nav-heading,.nav-divider{display:none}
+  .sidebar nav{display:flex;gap:5px;overflow-x:auto}
+  .nav-item{width:auto;white-space:nowrap;flex-shrink:0;padding:10px}
+  .sidebar-bottom{padding-top:5px}
+  .content{padding:0 15px 30px}
+  .topbar{min-height:55px}
+  .date-display{font-size:11px}
+  .page{padding-top:25px}
+  .link-grid{grid-template-columns:1fr}
+  .panel{padding:17px}
+  .home-center{min-height:50vh}
+  .generator-row,.generator-row.adjust{
+    grid-template-columns:1fr 1fr 36px;
   }
 }
 </style>
 </head>
 
 <body>
-
-<header>
-  <div class="header-inner">
-    <button class="home-button" onclick="showPage('home')">
-      <i data-lucide="house"></i>
-      Home
-    </button>
-
-    <div class="header-brand">
-      D2C OPERATIONS
-    </div>
-  </div>
-</header>
-
-<div class="app-shell">
-
-<!-- SIDEBAR -->
+<div class="app">
 
 <aside class="sidebar">
+  <div class="logo">D2C OPERATIONS</div>
 
-  <div class="sidebar-heading">WORKSPACE</div>
+  <div class="nav-heading">WORKSPACE</div>
 
   <nav>
+    <button class="nav-item active" data-page="home"
+      onclick="showPage('home')">
+      <i data-lucide="house"></i><span>Home</span>
+    </button>
 
-    <a
-      class="nav-item"
+    <a class="nav-item"
       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="clipboard-check"></i>
       <span>Task Board</span>
     </a>
 
-    <button
-      class="nav-item"
-      data-page="shortage"
-      onclick="showPage('shortage')"
-    >
+    <button class="nav-item" data-page="shortage"
+      onclick="showPage('shortage')">
       <i data-lucide="package-search"></i>
       <span>Shortage Center</span>
     </button>
 
-    <button
-      class="nav-item"
-      data-page="hats"
-      onclick="showPage('hats')"
-    >
+    <button class="nav-item" data-page="hats"
+      onclick="showPage('hats')">
       <i data-lucide="layers"></i>
       <span>POD Hats</span>
     </button>
 
-    <button
-      class="nav-item"
-      data-page="links"
-      onclick="showPage('links')"
-    >
+    <button class="nav-item" data-page="lists"
+      onclick="showPage('lists')">
+      <i data-lucide="list-checks"></i>
+      <span>List Generator</span>
+    </button>
+
+    <button class="nav-item" data-page="tickets"
+      onclick="showPage('tickets')">
+      <i data-lucide="ticket"></i>
+      <span>Ticket Generator</span>
+    </button>
+
+    <button class="nav-item" data-page="links"
+      onclick="showPage('links')">
       <i data-lucide="link"></i>
       <span>Quick Links</span>
     </button>
-
   </nav>
 
-  <div class="sidebar-divider"></div>
-
-  <div class="sidebar-footer">
-    Warehouse tools & resources
+  <div class="sidebar-bottom">
+    <div class="nav-divider"></div>
+    <button class="nav-item emergency-nav"
+      data-page="emergency"
+      onclick="showPage('emergency')">
+      <i data-lucide="siren"></i>
+      <span>Break Glass in Case of Emergency</span>
+    </button>
   </div>
-
 </aside>
 
-<!-- MAIN CONTENT -->
-
 <main class="content">
+
+<div class="topbar">
+  <span class="topbar-label">D2C WORKSPACE</span>
+  <div class="date-display">
+    <i data-lucide="calendar-days"></i>
+    <span id="currentDate"></span>
+  </div>
+</div>
 
 <!-- HOME -->
 
 <section id="home" class="page active">
-
-  <div class="home-screen">
-
+  <div class="home-center">
     <div class="home-icon">
       <i data-lucide="warehouse"></i>
     </div>
-
     <h1>D2C Operations Hub</h1>
-
     <p>Warehouse tools & resources</p>
-
-    <button
-      class="emergency-link"
-      onclick="showPage('emergency')"
-    >
-      <i data-lucide="siren"></i>
-      Break Glass in Case of Emergency
-    </button>
-
   </div>
-
 </section>
 
 <!-- SHORTAGE CENTER -->
 
 <section id="shortage" class="page">
-
   <div class="eyebrow">OPERATIONS / REPORTS</div>
-
   <h1>Shortage Center</h1>
-
   <p class="muted small">
     Identify additional storage pulls not covered by
-    available shelf inventory or existing replenishment.
+    free shelf inventory or replenishment tasks.
   </p>
 
   <div class="panel">
-
     <h2>Upload Logiwa Reports</h2>
-
     <div class="row">
-
       <div class="field">
         <label>1. Shortage Report</label>
-        <input id="shortageFile" type="file"
-          accept=".xlsx,.xls,.csv">
+        <input id="shortageFile" type="file" accept=".xlsx,.xls,.csv">
       </div>
-
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input id="inventoryFile" type="file"
-          accept=".xlsx,.xls,.csv">
+        <input id="inventoryFile" type="file" accept=".xlsx,.xls,.csv">
       </div>
-
       <div class="field">
         <label>3. Replenishment Task List</label>
-        <input id="taskFile" type="file"
-          accept=".xlsx,.xls,.csv">
+        <input id="taskFile" type="file" accept=".xlsx,.xls,.csv">
       </div>
-
     </div>
 
-    <h3 style="margin-top:26px">Report Filter</h3>
-
+    <h3>Report Filter</h3>
     <div class="row">
-
       <div class="field">
         <label>Include Orders</label>
         <select id="dateMode" onchange="toggleDate()">
@@ -689,36 +445,27 @@ td.sku {
           <option value="custom">Custom Cutoff</option>
         </select>
       </div>
-
       <div class="field hidden" id="dateBox">
         <label>Cutoff Date</label>
         <input id="customDate" type="date">
       </div>
-
       <div class="field hidden" id="timeBox">
         <label>Cutoff Time (Eastern)</label>
         <input id="customTime" type="time" value="14:00">
       </div>
-
     </div>
-
     <div class="actions">
-      <button class="btn primary"
-        onclick="generateShortage()">
+      <button class="btn primary" onclick="generateShortage()">
         Generate Pull List
       </button>
     </div>
-
-    <p id="shortageMessage" class="message">
+    <p class="message" id="shortageMessage">
       Upload all three reports to begin.
     </p>
-
   </div>
 
   <div class="panel hidden" id="shortageOutput">
-
     <h2>Additional Storage Pulls</h2>
-
     <div class="metrics">
       <div class="metric">
         <strong id="shortageTotal">0</strong>
@@ -737,7 +484,6 @@ td.sku {
         <span>Additional Pull Units</span>
       </div>
     </div>
-
     <div class="actions">
       <button class="btn primary" onclick="printPulls()">
         Print Pull List
@@ -751,92 +497,66 @@ td.sku {
         Copy Swoveralls for Task Board
       </button>
     </div>
-
     <p class="message" id="shortageCopyStatus"></p>
-
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Brand</th>
-            <th>SKU</th>
-            <th>QTY</th>
-            <th>Location</th>
-            <th>LPN</th>
+            <th>Brand</th><th>SKU</th><th>QTY</th>
+            <th>Location</th><th>LPN</th>
           </tr>
         </thead>
         <tbody id="pullTable"></tbody>
       </table>
     </div>
 
-    <h3 style="margin-top:28px">Needs Follow-up</h3>
-
+    <h3>Needs Follow-up</h3>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th>Brand</th>
-            <th>SKU</th>
-            <th>QTY</th>
-            <th>Reason</th>
+            <th>Brand</th><th>SKU</th><th>QTY</th><th>Reason</th>
           </tr>
         </thead>
         <tbody id="followTable"></tbody>
       </table>
     </div>
-
   </div>
-
 </section>
 
-<!-- THE GAME POD HATS -->
+<!-- POD HATS -->
 
 <section id="hats" class="page">
-
   <div class="eyebrow">THE GAME / POD</div>
-
   <h1>The Game POD Hats</h1>
-
   <p class="muted small">
-    Locate hats from building 88 using Shipment Orders
-    and Inventory by Location exports.
+    Find hat quantities and inventory locations in building 88.
   </p>
 
   <div class="panel">
-
     <h2>Upload Logiwa Reports</h2>
-
     <div class="row">
       <div class="field">
         <label>1. Shipment Orders</label>
-        <input id="hatOrders" type="file"
-          accept=".xlsx,.xls,.csv">
+        <input id="hatOrders" type="file" accept=".xlsx,.xls,.csv">
       </div>
-
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input id="hatInventory" type="file"
-          accept=".xlsx,.xls,.csv">
+        <input id="hatInventory" type="file" accept=".xlsx,.xls,.csv">
       </div>
     </div>
-
     <div class="actions">
-      <button class="btn primary"
-        onclick="generateHats()">
+      <button class="btn primary" onclick="generateHats()">
         Find My Hats
       </button>
     </div>
-
     <p class="message" id="hatMessage">
       Upload both reports to begin.
     </p>
-
   </div>
 
   <div class="panel hidden" id="hatOutput">
-
     <h2>Hats to Retrieve</h2>
-
     <div class="metrics">
       <div class="metric">
         <strong id="hatNeeded">0</strong>
@@ -847,64 +567,256 @@ td.sku {
         <span>Units Located</span>
       </div>
     </div>
-
     <div class="actions">
       <button class="btn primary" onclick="copyHats()">
         Copy The Game for Task Board
       </button>
     </div>
-
     <p class="message" id="hatCopyStatus"></p>
-
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>SKU</th>
-            <th>QTY</th>
-            <th>Location</th>
-            <th>LPN</th>
-          </tr>
+          <tr><th>SKU</th><th>QTY</th><th>Location</th><th>LPN</th></tr>
         </thead>
         <tbody id="hatTable"></tbody>
       </table>
     </div>
-
-    <h3 style="margin-top:28px">Unable to Locate</h3>
-
+    <h3>Unable to Locate</h3>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>SKU</th>
-            <th>QTY</th>
-            <th>Reason</th>
-          </tr>
+          <tr><th>SKU</th><th>QTY</th><th>Reason</th></tr>
         </thead>
         <tbody id="hatMissing"></tbody>
       </table>
     </div>
+  </div>
+</section>
 
+<!-- LIST GENERATOR -->
+
+<section id="lists" class="page">
+  <div class="eyebrow">WORKSPACE / PRINTABLES</div>
+  <h1>List Generator</h1>
+  <p class="muted small">
+    Create simple printable lists for everyday warehouse tasks.
+  </p>
+
+  <div class="panel">
+    <h2>Customize Your List</h2>
+
+    <div class="row">
+      <div class="field">
+        <label>List Type</label>
+        <select id="listType" onchange="changeListType()">
+          <option value="todo">To-Do List</option>
+          <option value="sku">SKU / Location / LPN</option>
+          <option value="adjust">Inventory Adjustment List</option>
+          <option value="custom">Custom Two-Column List</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Print Layout</label>
+        <select id="listPaper">
+          <option value="4x6">4 × 6 Vertical</option>
+          <option value="letter">US Letter Portrait</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:18px">
+      <div class="field">
+        <label>List Title</label>
+        <input id="listTitle" type="text" value="To-Do List">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="listDate" type="date">
+      </div>
+    </div>
+
+    <h3>List Items</h3>
+    <div id="listRows"></div>
+
+    <div class="actions">
+      <button class="btn" onclick="addListRow()">
+        + Add Row
+      </button>
+      <button class="btn primary" onclick="generateList()">
+        Generate Preview
+      </button>
+      <button class="btn" onclick="printList()">
+        Print List
+      </button>
+      <button class="btn danger" onclick="clearList()">
+        Clear
+      </button>
+    </div>
   </div>
 
+  <div class="panel hidden" id="listOutput">
+    <h2>Print Preview</h2>
+    <div id="listPreview" class="preview"></div>
+  </div>
+</section>
+
+<!-- TICKET GENERATOR -->
+
+<section id="tickets" class="page">
+  <div class="eyebrow">WORKSPACE / PRINTABLES</div>
+  <h1>Ticket Generator</h1>
+  <p class="muted small">
+    Create clean tickets for rush orders and investigation carts.
+  </p>
+
+  <div class="panel">
+    <h2>Ticket Details</h2>
+
+    <div class="row">
+      <div class="field">
+        <label>Ticket Type</label>
+        <select id="ticketType" onchange="changeTicketType()">
+          <option value="rush">Rush Order</option>
+          <option value="investigation">Investigation Cart</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Print Layout</label>
+        <select id="ticketPaper">
+          <option value="4x6">4 × 6 Vertical</option>
+          <option value="letter">US Letter Portrait</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="ticketDate" type="date">
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:18px">
+      <div class="field">
+        <label>Order Number / Reference</label>
+        <input id="ticketOrder" type="text"
+          placeholder="#MR-12345 or reference">
+      </div>
+      <div class="field">
+        <label>Brand</label>
+        <select id="ticketBrand">
+          <option value="">Select Brand</option>
+          <option>MagnaReady</option>
+          <option>Swoveralls</option>
+          <option>The Game</option>
+          <option>MV Sport</option>
+          <option>Duderobe</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="rushFields">
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>SKU</label>
+          <input id="rushSKU" type="text" placeholder="SKU">
+        </div>
+        <div class="field">
+          <label>Quantity</label>
+          <input id="rushQty" type="number" min="1" placeholder="1">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Shipping Method</label>
+          <input id="rushShipping" type="text"
+            placeholder="UPS Next Day Air, USPS Priority...">
+        </div>
+        <div class="field">
+          <label>Required Ship Date</label>
+          <input id="rushDue" type="date">
+        </div>
+      </div>
+    </div>
+
+    <div id="investigationFields" class="hidden">
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Cart / Box Identifier</label>
+          <input id="investCart" type="text"
+            placeholder="Cart number or identifier">
+        </div>
+        <div class="field">
+          <label>Location</label>
+          <input id="investLocation" type="text"
+            placeholder="Current location">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>SKU</label>
+          <input id="investSKU" type="text" placeholder="SKU">
+        </div>
+        <div class="field">
+          <label>LPN</label>
+          <input id="investLPN" type="text" placeholder="License plate">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Issue Type</label>
+          <select id="investIssue">
+            <option>Wrong LPN</option>
+            <option>Not in Inventory</option>
+            <option>Wrong Item in Box</option>
+            <option>Damaged / Opened Item</option>
+            <option>Quantity Discrepancy</option>
+            <option>Cannot Locate Inventory</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Quantity Affected</label>
+          <input id="investQty" type="number" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <label>Notes / Instructions</label>
+      <textarea id="ticketNotes" rows="4"
+        placeholder="Additional information..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" onclick="generateTicket()">
+        Generate Ticket
+      </button>
+      <button class="btn" onclick="printTicket()">
+        Print Ticket
+      </button>
+      <button class="btn danger" onclick="clearTicket()">
+        Clear Fields
+      </button>
+    </div>
+  </div>
+
+  <div class="panel hidden" id="ticketOutput">
+    <h2>Ticket Preview</h2>
+    <div id="ticketPreview" class="ticket-preview"></div>
+  </div>
 </section>
 
 <!-- QUICK LINKS -->
 
 <section id="links" class="page">
-
   <div class="eyebrow">WORKSPACE / RESOURCES</div>
-
   <h1>Quick Links</h1>
-
-  <p class="muted small">
-    Frequently used systems and operational tools.
-  </p>
+  <p class="muted small">Frequently used systems.</p>
 
   <div class="section-label">Task Management</div>
-
   <div class="link-grid">
-
     <a class="quick-link"
       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
       target="_blank" rel="noopener noreferrer">
@@ -912,29 +824,24 @@ td.sku {
       <strong>D2C Warehouse Dashboard ↗</strong>
       <p>Main task management system.</p>
     </a>
-
   </div>
 
   <div class="section-label">Order Management</div>
-
   <div class="link-grid">
-
     <a class="quick-link"
       href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
       target="_blank" rel="noopener noreferrer">
       <i data-lucide="printer"></i>
       <strong>POD Orders Dashboard ↗</strong>
-      <p>Artwork, cancellations, and replacement orders.</p>
+      <p>Artwork, cancellations, and replacements.</p>
     </a>
-
     <a class="quick-link"
       href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
       target="_blank" rel="noopener noreferrer">
       <i data-lucide="search"></i>
       <strong>BSN Order Lookup ↗</strong>
-      <p>Order lookup and tracking information.</p>
+      <p>Order lookup and tracking.</p>
     </a>
-
     <a class="quick-link"
       href="https://admin.shopify.com/store/"
       target="_blank" rel="noopener noreferrer">
@@ -942,70 +849,36 @@ td.sku {
       <strong>Shopify Admin ↗</strong>
       <p>Brand stores and order management.</p>
     </a>
-
   </div>
-
 </section>
 
 <!-- BREAK GLASS -->
 
 <section id="emergency" class="page">
-
   <div class="eyebrow">BACKUP PLAN / PROCEDURES</div>
-
   <h1>Break Glass in Case of Emergency</h1>
-
   <p class="muted small">
-    Daily responsibilities, training resources,
-    and operational procedures.
+    Daily responsibilities, procedures, and training resources.
   </p>
 
   <div class="panel">
-
     <h2>Daily Must-Dos</h2>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Responsibility</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Morning</td>
-            <td>The Game POD stock requests</td>
-          </tr>
-          <tr>
-            <td>2:00 PM</td>
-            <td>Check MagnaReady Amazon orders</td>
-          </tr>
-          <tr>
-            <td>After replenishment</td>
-            <td>Review shortage report</td>
-          </tr>
-          <tr>
-            <td>4:00 PM</td>
-            <td>Recheck MagnaReady Amazon orders</td>
-          </tr>
-          <tr>
-            <td>4:30 PM</td>
-            <td>Check and clear Job Queue</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
+    <table>
+      <thead><tr><th>Time</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td>Morning</td><td>The Game POD stock requests</td></tr>
+        <tr><td>2:00 PM</td><td>Check MagnaReady Amazon orders</td></tr>
+        <tr><td>After replenishment</td><td>Review shortage report</td></tr>
+        <tr><td>4:00 PM</td><td>Recheck MagnaReady Amazon orders</td></tr>
+        <tr><td>4:30 PM</td><td>Check and clear Job Queue</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="panel">
-
     <h2>Procedure & PDF Libraries</h2>
-
     <p class="muted small">
-      These sections will link to your shared
-      PDF libraries and training resources.
+      Shared library links will be added when available.
     </p>
 
     <div class="section-label">Daily Procedures</div>
@@ -1022,59 +895,42 @@ td.sku {
 
     <div class="section-label">Important Contacts</div>
     <div id="contactDocs"></div>
-
   </div>
 
   <div class="panel">
-
     <h2>Add a Resource Link</h2>
-
     <div class="row">
-
       <div class="field">
         <label>Category</label>
         <select id="docCategory">
           <option value="daily">Daily Procedures</option>
           <option value="logiwa">Logiwa How-Tos</option>
           <option value="cs">Customer Service</option>
-          <option value="inventory">
-            Inventory & Troubleshooting
-          </option>
+          <option value="inventory">Inventory & Troubleshooting</option>
           <option value="contact">Important Contacts</option>
         </select>
       </div>
-
       <div class="field">
         <label>Resource Name</label>
-        <input id="docName" type="text"
-          placeholder="Logiwa Training Library">
+        <input id="docName" placeholder="Logiwa Training Library">
       </div>
-
       <div class="field">
         <label>Shared Library URL</label>
-        <input id="docUrl" type="url"
-          placeholder="https://...">
+        <input id="docUrl" type="url" placeholder="https://...">
       </div>
-
     </div>
-
     <div class="actions">
       <button class="btn primary" onclick="addDocument()">
         Add Resource
       </button>
     </div>
-
     <p class="message" id="documentMessage"></p>
-
     <div class="notice">
-      Links added here are saved only in this browser.
-      They will not automatically appear for coworkers.
-      Shared library links can be built directly into
-      the website once they're available.
+      Links added through this form are stored in this browser only.
+      For a shared employee handbook, the final links should be
+      included in the website itself.
     </div>
-
   </div>
-
 </section>
 
 </main>
@@ -1084,969 +940,808 @@ td.sku {
 "use strict";
 
 const $ = id => document.getElementById(id);
+const clean = v => String(v ?? "").trim();
+const norm = v => clean(v).toUpperCase().replace(/\s+/g,"");
+const num = v => Math.max(0,Number(clean(v).replace(/,/g,""))||0);
+const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+}[c]));
 
-function clean(value) {
-  return String(value ?? "").trim();
-}
-
-function norm(value) {
-  return clean(value).toUpperCase().replace(/\s+/g, "");
-}
-
-function number(value) {
-  const n = Number(clean(value).replace(/,/g, ""));
-  return Number.isFinite(n) ? Math.max(0, n) : 0;
-}
-
-function escapeHTML(value) {
-  return String(value ?? "").replace(
-    /[&<>"']/g,
-    c => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[c])
-  );
-}
-
-function get(row, ...names) {
-  for (const name of names) {
-    const key = Object.keys(row || {}).find(
-      k => norm(k) === norm(name)
-    );
-    if (key !== undefined && clean(row[key]) !== "") {
-      return row[key];
-    }
+function get(row,...names){
+  for(const name of names){
+    const key=Object.keys(row||{}).find(k=>norm(k)===norm(name));
+    if(key!==undefined && clean(row[key])!=="") return row[key];
   }
   return "";
 }
-
-function hasColumn(rows, ...names) {
-  if (!rows.length) return false;
-  return names.some(name =>
-    Object.keys(rows[0]).some(
-      key => norm(key) === norm(name)
-    )
+function hasColumn(rows,...names){
+  return rows.length>0 && names.some(name=>
+    Object.keys(rows[0]).some(k=>norm(k)===norm(name))
   );
 }
-
-function brand(value) {
-  const s = norm(value).replace(/[^A-Z0-9]/g, "");
-  if (s.includes("MAGNAREADY")) return "MagnaReady";
-  if (s.includes("SWOVERALL")) return "Swoveralls";
-  if (s.includes("THEGAME")) return "The Game";
-  return clean(value) || "Other";
+function brand(v){
+  const s=norm(v).replace(/[^A-Z0-9]/g,"");
+  if(s.includes("MAGNAREADY"))return "MagnaReady";
+  if(s.includes("SWOVERALL"))return "Swoveralls";
+  if(s.includes("THEGAME"))return "The Game";
+  return clean(v)||"Other";
 }
-
-function client(row) {
-  return brand(get(
-    row, "Client", "Client Display Name", "Brand"
-  ));
+function client(row){
+  return brand(get(row,"Client","Client Display Name","Brand"));
 }
-
-function locationType(value) {
-  const s = norm(value);
-  if (!s) return "Unknown";
-  if (["MV-M1", "0M1", "0M5"].includes(s)) return "Virtual";
-  if (/STAGING|STAGE|PACKING|SHIPPING/.test(s)) {
-    return "Excluded";
-  }
-  if (/^(100|88)\.\d/.test(s)) return "Shelf";
-  return "Storage";
+function locType(v){
+  const s=norm(v);
+  if(["MV-M1","0M1","0M5"].includes(s))return "Virtual";
+  if(/STAGING|STAGE|PACKING|SHIPPING/.test(s))return "Excluded";
+  if(/^(100|88)\.\d/.test(s))return "Shelf";
+  return s?"Storage":"Unknown";
 }
-
-function locationArea(value) {
-  const s = norm(value);
-  if (s.startsWith("REC-SOUTH")) return 0;
-  if (s.startsWith("R-100")) return 1;
-  if (s.startsWith("STN")) return 2;
-  if (s.startsWith("STW")) return 3;
-  if (s.startsWith("STS")) return 4;
-  if (s.startsWith("RECEIVING")) return 5;
+function locRank(v){
+  const s=norm(v);
+  if(s.startsWith("REC-SOUTH"))return 0;
+  if(s.startsWith("R-100"))return 1;
+  if(s.startsWith("STN"))return 2;
+  if(s.startsWith("STW"))return 3;
+  if(s.startsWith("STS"))return 4;
+  if(s.startsWith("RECEIVING"))return 5;
   return 6;
 }
-
-function sortLocations(a, b) {
-  return locationArea(a) - locationArea(b) ||
-    clean(a).localeCompare(
-      clean(b), undefined, { numeric: true }
-    );
+function sortLoc(a,b){
+  return locRank(a)-locRank(b)||
+    clean(a).localeCompare(clean(b),undefined,{numeric:true});
+}
+function matches(a,b){
+  return norm(a.sku)===norm(b.sku)&&
+    (a.brand===b.brand||a.brand==="Other"||b.brand==="Other");
 }
 
-function matches(item, group) {
-  return norm(item.sku) === norm(group.sku) &&
-    (
-      item.brand === group.brand ||
-      item.brand === "Other" ||
-      group.brand === "Other"
-    );
+/* NAVIGATION AND DATE */
+
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>
+    p.classList.toggle("active",p.id===id)
+  );
+  document.querySelectorAll(".nav-item[data-page]").forEach(n=>
+    n.classList.toggle("active",n.dataset.page===id)
+  );
+  window.scrollTo(0,0);
 }
 
-/* NAVIGATION */
-
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(page => {
-    page.classList.toggle("active", page.id === id);
+function updateDate(){
+  const date=new Date();
+  $("currentDate").textContent=date.toLocaleDateString("en-US",{
+    timeZone:"America/New_York",
+    weekday:"long",
+    month:"long",
+    day:"numeric",
+    year:"numeric"
   });
-
-  document.querySelectorAll(".nav-item[data-page]")
-    .forEach(item => {
-      item.classList.toggle(
-        "active",
-        item.dataset.page === id
-      );
-    });
-
-  window.scrollTo(0, 0);
 }
 
-/* FILE READING */
+/* FILE HELPERS */
 
-async function readFile(file) {
-  if (!file) {
-    throw new Error("Please upload all required files.");
+async function readFile(file){
+  if(!file)throw Error("Please upload all required files.");
+  if(!window.XLSX)throw Error("Excel reader did not load.");
+
+  let wb;
+  if(file.name.toLowerCase().endsWith(".csv")){
+    wb=XLSX.read(await file.text(),{type:"string"});
+  }else{
+    wb=XLSX.read(await file.arrayBuffer(),{
+      type:"array",cellDates:true
+    });
   }
-
-  if (!window.XLSX) {
-    throw new Error("Excel reader could not load.");
-  }
-
-  let workbook;
-
-  if (file.name.toLowerCase().endsWith(".csv")) {
-    workbook = XLSX.read(
-      await file.text(), { type: "string" }
-    );
-  } else {
-    workbook = XLSX.read(
-      await file.arrayBuffer(),
-      { type: "array", cellDates: true }
-    );
-  }
-
   return XLSX.utils.sheet_to_json(
-    workbook.Sheets[workbook.SheetNames[0]],
-    { defval: "", raw: false }
+    wb.Sheets[wb.SheetNames[0]],
+    {defval:"",raw:false}
   );
 }
 
-async function copyText(text, statusId) {
-  if (!text.trim()) {
-    alert("Nothing to copy.");
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-    $(statusId).textContent =
-      "Copied! Ready for the D2C task board.";
-  } catch {
-    prompt("Copy this text:", text);
+async function copyText(value,statusId){
+  if(!value.trim()){alert("Nothing to copy.");return;}
+  try{
+    await navigator.clipboard.writeText(value);
+    $(statusId).textContent="Copied to clipboard.";
+  }catch{
+    prompt("Copy this text:",value);
   }
 }
 
-/* INVENTORY */
-
-function inventoryData(rows) {
-  const seen = new Map();
-
-  for (const row of rows) {
-    const sku = clean(get(row, "SKU"));
-    const loc = clean(get(row, "Location", "Location Code"));
-    const lpn = clean(get(row, "LPN", "License Plate Number"));
-    const free = number(get(row, "Free UOM QTY", "Free Qty"));
-    const b = client(row);
-
-    if (!sku || !loc || free <= 0) continue;
-
-    const key = [
-      norm(b), norm(sku), norm(loc), norm(lpn)
-    ].join("|");
-
-    if (seen.has(key)) {
-      const existing = seen.get(key);
-      if (existing.free !== free) existing.conflict = true;
+function inventoryData(rows){
+  const seen=new Map();
+  for(const row of rows){
+    const sku=clean(get(row,"SKU"));
+    const loc=clean(get(row,"Location","Location Code"));
+    const lpn=clean(get(row,"LPN","License Plate Number"));
+    const free=num(get(row,"Free UOM QTY","Free Qty"));
+    const b=client(row);
+    if(!sku||!loc||!free)continue;
+    const key=[norm(b),norm(sku),norm(loc),norm(lpn)].join("|");
+    if(seen.has(key)){
+      if(seen.get(key).free!==free)seen.get(key).conflict=true;
       continue;
     }
-
-    seen.set(key, {
-      sku, loc, lpn, free,
-      brand: b,
-      type: locationType(loc),
-      used: 0,
-      conflict: false
+    seen.set(key,{
+      sku,loc,lpn,free,brand:b,type:locType(loc),
+      used:0,conflict:false
     });
   }
-
   return [...seen.values()];
 }
 
-/* DATE FILTER */
-
-function dateValue(value) {
-  if (value instanceof Date) return value.getTime();
-
-  if (typeof value === "number") {
-    return (value - 25569) * 86400000;
-  }
-
-  const s = clean(value);
-  if (!s) return NaN;
-
-  const match = s.match(
-    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/
+function dateValue(v){
+  if(v instanceof Date)return v.getTime();
+  const s=clean(v);
+  if(!s)return NaN;
+  const m=s.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/
   );
-
-  if (match) {
-    return new Date(
-      +match[1], +match[2] - 1, +match[3],
-      +(match[4] || 0),
-      +(match[5] || 0),
-      +(match[6] || 0)
-    ).getTime();
-  }
-
+  if(m)return new Date(+m[1],+m[2]-1,+m[3],
+    +(m[4]||0),+(m[5]||0)).getTime();
   return new Date(s).getTime();
 }
 
-function toggleDate() {
-  const custom = $("dateMode").value === "custom";
-  $("dateBox").classList.toggle("hidden", !custom);
-  $("timeBox").classList.toggle("hidden", !custom);
+function toggleDate(){
+  const custom=$("dateMode").value==="custom";
+  $("dateBox").classList.toggle("hidden",!custom);
+  $("timeBox").classList.toggle("hidden",!custom);
 }
 
-/* SHORTAGE CENTER */
+/* SHORTAGE REPORT */
 
-let shortagePulls = [];
-let shortageFollow = [];
-let shortageStats = { total: 0, shelf: 0, tasks: 0 };
+let shortagePulls=[],shortageFollow=[];
+let shortageStats={total:0,shelf:0,tasks:0};
 
-function activeTasks(rows) {
-  const result = [];
-  const seen = new Set();
-
-  for (const row of rows) {
-    const sku = clean(get(row, "SKU"));
-    const status = norm(get(row, "Task Status"));
-    const qty = number(get(row, "Task UOM Qty", "Task Qty"));
-
-    if (!sku || !qty) continue;
-
-    if (/COMPLETE|CANCEL|CLOSED|FAILED/.test(status)) {
+function activeTasks(rows){
+  const tasks=[],seen=new Set();
+  for(const row of rows){
+    const sku=clean(get(row,"SKU"));
+    const status=norm(get(row,"Task Status"));
+    const qty=num(get(row,"Task UOM Qty","Task Qty"));
+    if(!sku||!qty)continue;
+    if(/COMPLETE|CANCEL|CLOSED|FAILED/.test(status))continue;
+    if(!/PENDING|PROGRESS|START|ASSIGN|OPEN|CREATED/.test(status))
       continue;
-    }
-
-    if (!/PENDING|PROGRESS|START|ASSIGN|OPEN|CREATED/.test(status)) {
-      continue;
-    }
-
-    const task = {
-      sku,
-      brand: client(row),
-      qty,
-      loc: clean(get(row, "Source location")),
-      lpn: clean(get(row, "Source LPN")),
-      id: clean(get(row, "Task Id", "Task ID"))
+    const task={
+      sku,brand:client(row),qty,
+      loc:clean(get(row,"Source location")),
+      lpn:clean(get(row,"Source LPN")),
+      id:clean(get(row,"Task Id","Task ID"))
     };
-
-    const key = task.id || [
-      task.brand, norm(sku), norm(task.loc),
-      norm(task.lpn), qty
+    const key=task.id||[
+      task.brand,norm(sku),norm(task.loc),norm(task.lpn),qty
     ].join("|");
-
-    if (seen.has(key)) continue;
-
-    seen.add(key);
-    result.push(task);
+    if(seen.has(key))continue;
+    seen.add(key);tasks.push(task);
   }
-
-  return result;
+  return tasks;
 }
 
-function calculateShortages(shortages, inventory, tasks) {
-  const groups = new Map();
-  let cutoff = Infinity;
-
-  if ($("dateMode").value === "custom") {
-    if (!$("customDate").value || !$("customTime").value) {
-      throw new Error("Choose a custom date and time.");
-    }
-
-    cutoff = dateValue(
-      $("customDate").value + "T" +
-      $("customTime").value + ":00"
-    );
+function calculateShortages(shortages,inventory,tasks){
+  const groups=new Map();
+  let cutoff=Infinity;
+  if($("dateMode").value==="custom"){
+    if(!$("customDate").value||!$("customTime").value)
+      throw Error("Choose a custom cutoff.");
+    cutoff=dateValue($("customDate").value+"T"+
+      $("customTime").value);
   }
 
-  for (const row of shortages) {
-    const sku = clean(get(row, "SKU"));
-    const b = client(row);
-    const qty = number(get(row, "Shortage UOM Qty"));
-    const date = dateValue(get(row, "Order Creation Date"));
+  for(const row of shortages){
+    const sku=clean(get(row,"SKU"));
+    const b=client(row);
+    const qty=num(get(row,"Shortage UOM Qty"));
+    const date=dateValue(get(row,"Order Creation Date"));
+    if(!sku||!qty)continue;
+    if($("dateMode").value==="custom"&&
+      (!Number.isFinite(date)||date>=cutoff))continue;
 
-    if (!sku || !qty) continue;
-
-    if ($("dateMode").value === "custom") {
-      if (!Number.isFinite(date) || date >= cutoff) {
-        continue;
-      }
-    }
-
-    const key = norm(b) + "|" + norm(sku);
-
-    if (!groups.has(key)) {
-      groups.set(key, {
-        sku, brand: b, need: 0, oldest: date
-      });
-    }
-
-    const group = groups.get(key);
-    group.need += qty;
-
-    if (Number.isFinite(date)) {
-      group.oldest = Number.isFinite(group.oldest)
-        ? Math.min(group.oldest, date)
-        : date;
-    }
+    const key=norm(b)+"|"+norm(sku);
+    if(!groups.has(key))
+      groups.set(key,{sku,brand:b,need:0,oldest:date});
+    const g=groups.get(key);
+    g.need+=qty;
+    if(Number.isFinite(date))
+      g.oldest=Number.isFinite(g.oldest)?
+        Math.min(g.oldest,date):date;
   }
 
-  const ordered = [...groups.values()].sort(
-    (a, b) => (a.oldest || 0) - (b.oldest || 0)
+  const ordered=[...groups.values()].sort(
+    (a,b)=>(a.oldest||0)-(b.oldest||0)
   );
+  const stock=inventoryData(inventory);
+  const assigned=activeTasks(tasks);
+  const coverage=new Map();
 
-  const stock = inventoryData(inventory);
-  const assignedTasks = activeTasks(tasks);
-
-  shortagePulls = [];
-  shortageFollow = [];
-
-  shortageStats = {
-    total: ordered.reduce((s, g) => s + g.need, 0),
-    shelf: 0,
-    tasks: 0
+  shortagePulls=[];shortageFollow=[];
+  shortageStats={
+    total:ordered.reduce((s,g)=>s+g.need,0),
+    shelf:0,tasks:0
   };
 
-  const taskCoverage = new Map();
-
-  for (const task of assignedTasks) {
-    const key = norm(task.brand) + "|" + norm(task.sku);
-
-    taskCoverage.set(
-      key,
-      (taskCoverage.get(key) || 0) + task.qty
-    );
-
-    let remaining = task.qty;
-
-    const sources = stock.filter(item =>
-      matches(item, task) &&
-      item.type === "Storage" &&
-      !item.conflict &&
-      (!task.loc || norm(item.loc) === norm(task.loc)) &&
-      (!task.lpn || norm(item.lpn) === norm(task.lpn))
-    );
-
-    for (const item of sources) {
-      if (remaining <= 0) break;
-
-      const take = Math.min(
-        remaining,
-        Math.max(0, item.free - item.used)
-      );
-
-      item.used += take;
-      remaining -= take;
+  for(const task of assigned){
+    const key=norm(task.brand)+"|"+norm(task.sku);
+    coverage.set(key,(coverage.get(key)||0)+task.qty);
+    let remaining=task.qty;
+    for(const item of stock.filter(x=>
+      matches(x,task)&&x.type==="Storage"&&!x.conflict&&
+      (!task.loc||norm(x.loc)===norm(task.loc))&&
+      (!task.lpn||norm(x.lpn)===norm(task.lpn))
+    )){
+      const take=Math.min(remaining,Math.max(0,item.free-item.used));
+      item.used+=take;remaining-=take;
+      if(!remaining)break;
     }
   }
 
-  for (const group of ordered) {
-    const matching = stock.filter(item =>
-      matches(item, group)
+  for(const g of ordered){
+    const matching=stock.filter(x=>matches(x,g));
+    const shelf=matching.filter(x=>x.type==="Shelf"&&!x.conflict);
+    const freeShelf=shelf.reduce(
+      (s,x)=>s+Math.max(0,x.free-x.used),0
     );
+    const covered=Math.min(g.need,freeShelf);
+    shortageStats.shelf+=covered;
+    let remaining=g.need-covered;
+    let reserve=covered;
 
-    const shelf = matching.filter(item =>
-      item.type === "Shelf" && !item.conflict
-    );
-
-    const freeShelf = shelf.reduce(
-      (s, item) => s + Math.max(0, item.free - item.used),
-      0
-    );
-
-    const covered = Math.min(group.need, freeShelf);
-    shortageStats.shelf += covered;
-
-    let remaining = group.need - covered;
-    let reserve = covered;
-
-    for (const item of shelf) {
-      if (reserve <= 0) break;
-
-      const take = Math.min(
-        reserve,
-        Math.max(0, item.free - item.used)
-      );
-
-      item.used += take;
-      reserve -= take;
+    for(const item of shelf){
+      const take=Math.min(reserve,Math.max(0,item.free-item.used));
+      item.used+=take;reserve-=take;
+      if(!reserve)break;
     }
 
-    const key = norm(group.brand) + "|" + norm(group.sku);
-    const generic = "OTHER|" + norm(group.sku);
-
-    const assigned = Math.min(
-      remaining,
-      (taskCoverage.get(key) || 0) +
-      (key === generic ? 0 : (taskCoverage.get(generic) || 0))
+    const key=norm(g.brand)+"|"+norm(g.sku);
+    const generic="OTHER|"+norm(g.sku);
+    const taskQty=Math.min(remaining,
+      (coverage.get(key)||0)+
+      (key===generic?0:(coverage.get(generic)||0))
     );
+    remaining-=taskQty;
+    shortageStats.tasks+=taskQty;
 
-    remaining -= assigned;
-    shortageStats.tasks += assigned;
+    const sources=matching.filter(x=>
+      x.type==="Storage"&&!x.conflict
+    ).sort((a,b)=>sortLoc(a.loc,b.loc));
 
-    const sources = matching
-      .filter(item =>
-        item.type === "Storage" && !item.conflict
-      )
-      .sort((a, b) => sortLocations(a.loc, b.loc));
-
-    for (const item of sources) {
-      if (remaining <= 0) break;
-
-      const available = Math.max(0, item.free - item.used);
-      const take = Math.min(remaining, available);
-
-      if (take > 0) {
+    for(const item of sources){
+      const take=Math.min(remaining,
+        Math.max(0,item.free-item.used));
+      if(take>0){
         shortagePulls.push({
-          brand: group.brand,
-          sku: group.sku,
-          qty: take,
-          loc: item.loc,
-          lpn: item.lpn || "—",
-          oldest: group.oldest
+          brand:g.brand,sku:g.sku,qty:take,
+          loc:item.loc,lpn:item.lpn||"—",oldest:g.oldest
         });
-
-        item.used += take;
-        remaining -= take;
+        item.used+=take;remaining-=take;
       }
+      if(!remaining)break;
     }
 
-    if (remaining > 0) {
-      const virtual = matching.filter(
-        item => item.type === "Virtual"
-      );
-
-      let reason = "No additional free physical inventory";
-
-      if (matching.some(item => item.conflict)) {
-        reason = "Conflicting inventory quantities — verify";
-      } else if (virtual.length) {
-        reason = "Virtual: " + virtual.map(
-          item => item.loc + " / " + (item.lpn || "No LPN")
-        ).join("; ");
-      }
-
+    if(remaining){
+      const virtual=matching.filter(x=>x.type==="Virtual");
+      let reason="No additional free physical inventory";
+      if(matching.some(x=>x.conflict))
+        reason="Conflicting inventory quantities — verify";
+      else if(virtual.length)
+        reason="Virtual: "+virtual.map(x=>
+          x.loc+" / "+(x.lpn||"No LPN")).join("; ");
       shortageFollow.push({
-        brand: group.brand,
-        sku: group.sku,
-        qty: remaining,
-        reason
+        brand:g.brand,sku:g.sku,qty:remaining,reason
       });
     }
   }
 
-  shortagePulls.sort(
-    (a, b) =>
-      sortLocations(a.loc, b.loc) ||
-      (a.oldest || 0) - (b.oldest || 0)
-  );
+  shortagePulls.sort((a,b)=>
+    sortLoc(a.loc,b.loc)||(a.oldest||0)-(b.oldest||0));
 }
 
-async function generateShortage() {
-  $("shortageMessage").textContent = "Reading files...";
+async function generateShortage(){
+  $("shortageMessage").textContent="Reading reports...";
   $("shortageOutput").classList.add("hidden");
-
-  try {
-    const [shortages, inventory, tasks] = await Promise.all([
+  try{
+    const [s,i,t]=await Promise.all([
       readFile($("shortageFile").files[0]),
       readFile($("inventoryFile").files[0]),
       readFile($("taskFile").files[0])
     ]);
+    if(!hasColumn(s,"SKU")||
+       !hasColumn(s,"Shortage UOM Qty"))
+      throw Error("Shortage columns not recognized.");
+    if(!hasColumn(i,"SKU")||
+       !hasColumn(i,"Location")||
+       !hasColumn(i,"Free UOM QTY"))
+      throw Error("Inventory columns not recognized.");
+    if(!hasColumn(t,"SKU")||
+       !hasColumn(t,"Task Status")||
+       !hasColumn(t,"Task UOM Qty"))
+      throw Error("Replenishment task columns not recognized.");
 
-    if (
-      !hasColumn(shortages, "SKU") ||
-      !hasColumn(shortages, "Shortage UOM Qty")
-    ) {
-      throw new Error(
-        "Shortage export needs SKU and Shortage UOM Qty."
-      );
-    }
+    calculateShortages(s,i,t);
+    $("shortageTotal").textContent=shortageStats.total;
+    $("shelfTotal").textContent=shortageStats.shelf;
+    $("taskTotal").textContent=shortageStats.tasks;
+    $("pullTotal").textContent=shortagePulls.reduce(
+      (sum,x)=>sum+x.qty,0);
 
-    if (
-      !hasColumn(inventory, "SKU") ||
-      !hasColumn(inventory, "Location") ||
-      !hasColumn(inventory, "Free UOM QTY")
-    ) {
-      throw new Error(
-        "Inventory export needs SKU, Location, and Free UOM QTY."
-      );
-    }
+    $("pullTable").innerHTML=shortagePulls.map(x=>`
+      <tr><td>${esc(x.brand)}</td><td class="sku">${esc(x.sku)}</td>
+      <td><b>${x.qty}</b></td><td>${esc(x.loc)}</td>
+      <td>${esc(x.lpn)}</td></tr>
+    `).join("")||'<tr><td colspan="5">No additional pulls.</td></tr>';
 
-    if (
-      !hasColumn(tasks, "SKU") ||
-      !hasColumn(tasks, "Task Status") ||
-      !hasColumn(tasks, "Task UOM Qty")
-    ) {
-      throw new Error(
-        "Task export needs SKU, Task Status, and Task UOM Qty."
-      );
-    }
-
-    calculateShortages(shortages, inventory, tasks);
-
-    $("shortageTotal").textContent = shortageStats.total;
-    $("shelfTotal").textContent = shortageStats.shelf;
-    $("taskTotal").textContent = shortageStats.tasks;
-
-    $("pullTotal").textContent = shortagePulls.reduce(
-      (sum, item) => sum + item.qty, 0
-    );
-
-    $("pullTable").innerHTML = shortagePulls.map(item => `
-      <tr>
-        <td>${escapeHTML(item.brand)}</td>
-        <td class="sku">${escapeHTML(item.sku)}</td>
-        <td><b>${item.qty}</b></td>
-        <td>${escapeHTML(item.loc)}</td>
-        <td>${escapeHTML(item.lpn)}</td>
-      </tr>
-    `).join("") ||
-      '<tr><td colspan="5">No additional pulls needed.</td></tr>';
-
-    $("followTable").innerHTML = shortageFollow.map(item => `
-      <tr>
-        <td>${escapeHTML(item.brand)}</td>
-        <td class="sku">${escapeHTML(item.sku)}</td>
-        <td>${item.qty}</td>
-        <td class="warning">${escapeHTML(item.reason)}</td>
-      </tr>
-    `).join("") ||
-      '<tr><td colspan="4">No follow-ups.</td></tr>';
+    $("followTable").innerHTML=shortageFollow.map(x=>`
+      <tr><td>${esc(x.brand)}</td><td class="sku">${esc(x.sku)}</td>
+      <td>${x.qty}</td><td class="warning">${esc(x.reason)}</td></tr>
+    `).join("")||'<tr><td colspan="4">No follow-ups.</td></tr>';
 
     $("shortageOutput").classList.remove("hidden");
-
-    $("shortageMessage").textContent =
-      `Loaded ${shortages.length} shortage lines, ` +
-      `${inventory.length} inventory rows, ` +
-      `and ${tasks.length} task rows.`;
-
-  } catch (error) {
-    $("shortageMessage").textContent =
-      "Error: " + error.message;
+    $("shortageMessage").textContent=
+      `Loaded ${s.length} shortage, ${i.length} inventory, `+
+      `${t.length} replenishment rows.`;
+  }catch(e){
+    $("shortageMessage").textContent="Error: "+e.message;
   }
 }
 
-function copyShortageBrand(b) {
-  const text = shortagePulls
-    .filter(item => item.brand === b)
-    .map(item =>
-      `(${item.qty}) ${item.sku} — ${item.loc} — ${item.lpn}`
-    )
-    .join("\n");
-
-  copyText(text, "shortageCopyStatus");
+function copyShortageBrand(b){
+  copyText(shortagePulls.filter(x=>x.brand===b).map(x=>
+    `(${x.qty}) ${x.sku} — ${x.loc} — ${x.lpn}`
+  ).join("\n"),"shortageCopyStatus");
 }
 
-function printPulls() {
-  if (!shortagePulls.length) {
-    alert("No additional pulls to print.");
-    return;
-  }
-
-  const windowRef = window.open("", "_blank");
-
-  if (!windowRef) {
-    alert("Please allow pop-ups to print.");
-    return;
-  }
-
-  const rows = shortagePulls.map(item => `
-    <tr>
-      <td>□</td>
-      <td>${item.qty}</td>
-      <td>${escapeHTML(item.sku)}</td>
-      <td>${escapeHTML(item.loc)}</td>
-      <td>${escapeHTML(item.lpn)}</td>
-    </tr>
+function printPulls(){
+  if(!shortagePulls.length){alert("No pulls to print.");return;}
+  const rows=shortagePulls.map(x=>`
+    <tr><td>□</td><td>${x.qty}</td><td>${esc(x.sku)}</td>
+    <td>${esc(x.loc)}</td><td>${esc(x.lpn)}</td></tr>
   `).join("");
-
-  windowRef.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Additional Storage Pulls</title>
-      <style>
-        @page { size: letter; margin: .45in; }
-        body { font: 10px Arial; }
-        h1 { text-align: center; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #888; padding: 7px; }
-        th { background: #eee; text-align: left; }
-        tr { break-inside: avoid; }
-      </style>
-    </head>
-    <body>
-      <h1>ADDITIONAL STORAGE PULLS</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>✓</th>
-            <th>QTY</th>
-            <th>SKU</th>
-            <th>LOCATION</th>
-            <th>LPN</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </body>
-    </html>
-  `);
-
-  windowRef.document.close();
-  windowRef.focus();
-
-  setTimeout(() => windowRef.print(), 300);
+  printHTML("Additional Storage Pulls",`
+    <h1>ADDITIONAL STORAGE PULLS</h1>
+    <table><thead><tr><th>✓</th><th>QTY</th>
+    <th>SKU</th><th>LOCATION</th><th>LPN</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+  `,"letter");
 }
 
-/* THE GAME POD HATS */
+/* POD HATS */
 
-let hatPulls = [];
-let hatMissing = [];
+let hatPulls=[],hatMissing=[];
 
-function isHat(sku, name) {
-  const s = norm(sku);
-  const n = norm(name);
-
-  if (/TEE|SHIRT|HOODIE|SWEATSHIRT|PANT|SHORTS|JACKET/.test(n)) {
+function isHat(sku,name){
+  const s=norm(sku),n=norm(name);
+  if(/TEE|SHIRT|HOODIE|SWEATSHIRT|PANT|SHORTS|JACKET/.test(n))
     return false;
-  }
-
-  return /^G\d/.test(s) ||
+  return /^G\d/.test(s)||
     /HAT|CAP|TRUCKER|SNAPBACK|BEANIE|VISOR/.test(n);
 }
 
-function calculateHats(orders, inventory) {
-  const groups = new Map();
-
-  for (const row of orders) {
-    if (client(row) !== "The Game") continue;
-
-    const status = norm(get(row, "Status"));
-
-    if (/CANCEL|SHIPPED|DELIVERED/.test(status)) {
-      continue;
-    }
-
-    const sku = clean(get(row, "SKU"));
-    const name = clean(get(row, "Product Name"));
-    const qty = number(get(row, "Pack Quantity"));
-
-    if (!sku || !qty || !isHat(sku, name)) continue;
-
-    const key = norm(sku);
-
-    if (!groups.has(key)) {
-      groups.set(key, { sku, need: 0 });
-    }
-
-    groups.get(key).need += qty;
+function calculateHats(orders,inventory){
+  const groups=new Map();
+  for(const row of orders){
+    if(client(row)!=="The Game")continue;
+    const status=norm(get(row,"Status"));
+    if(/CANCEL|SHIPPED|DELIVERED/.test(status))continue;
+    const sku=clean(get(row,"SKU"));
+    const name=clean(get(row,"Product Name"));
+    const qty=num(get(row,"Pack Quantity"));
+    if(!sku||!qty||!isHat(sku,name))continue;
+    const key=norm(sku);
+    if(!groups.has(key))groups.set(key,{sku,need:0});
+    groups.get(key).need+=qty;
   }
 
-  const stock = inventoryData(inventory);
+  const stock=inventoryData(inventory);
+  hatPulls=[];hatMissing=[];
+  for(const g of groups.values()){
+    let remaining=g.need;
+    const options=stock.filter(x=>
+      norm(x.sku)===norm(g.sku)&&
+      x.brand==="The Game"&&
+      x.type!=="Virtual"&&x.type!=="Excluded"&&
+      !x.conflict&&/^88(?:\.|-)/.test(norm(x.loc))
+    ).sort((a,b)=>
+      (a.type==="Shelf"?0:1)-(b.type==="Shelf"?0:1)||
+      sortLoc(a.loc,b.loc)
+    );
 
-  hatPulls = [];
-  hatMissing = [];
-
-  for (const group of groups.values()) {
-    let remaining = group.need;
-
-    const options = stock
-      .filter(item =>
-        norm(item.sku) === norm(group.sku) &&
-        item.brand === "The Game" &&
-        item.type !== "Virtual" &&
-        item.type !== "Excluded" &&
-        !item.conflict &&
-        norm(item.loc).startsWith("88")
-      )
-      .sort(
-        (a, b) =>
-          (a.type === "Shelf" ? 0 : 1) -
-          (b.type === "Shelf" ? 0 : 1) ||
-          sortLocations(a.loc, b.loc)
-      );
-
-    for (const item of options) {
-      if (remaining <= 0) break;
-
-      const available = Math.max(0, item.free - item.used);
-      const take = Math.min(remaining, available);
-
-      if (take > 0) {
+    for(const x of options){
+      const take=Math.min(remaining,Math.max(0,x.free-x.used));
+      if(take>0){
         hatPulls.push({
-          sku: group.sku,
-          qty: take,
-          loc: item.loc,
-          lpn: item.lpn || "—"
+          sku:g.sku,qty:take,loc:x.loc,lpn:x.lpn||"—"
         });
-
-        item.used += take;
-        remaining -= take;
+        x.used+=take;remaining-=take;
       }
+      if(!remaining)break;
     }
-
-    if (remaining > 0) {
-      hatMissing.push({
-        sku: group.sku,
-        qty: remaining,
-        reason: "Insufficient free inventory in building 88"
-      });
-    }
+    if(remaining)hatMissing.push({
+      sku:g.sku,qty:remaining,
+      reason:"Insufficient free inventory in building 88"
+    });
   }
-
-  hatPulls.sort(
-    (a, b) => sortLocations(a.loc, b.loc)
-  );
-
+  hatPulls.sort((a,b)=>sortLoc(a.loc,b.loc));
   return {
-    needed: [...groups.values()].reduce(
-      (sum, group) => sum + group.need, 0
-    ),
-    located: hatPulls.reduce(
-      (sum, item) => sum + item.qty, 0
-    )
+    needed:[...groups.values()].reduce((s,g)=>s+g.need,0),
+    located:hatPulls.reduce((s,x)=>s+x.qty,0)
   };
 }
 
-async function generateHats() {
-  $("hatMessage").textContent = "Reading files...";
+async function generateHats(){
+  $("hatMessage").textContent="Reading reports...";
   $("hatOutput").classList.add("hidden");
-
-  try {
-    const [orders, inventory] = await Promise.all([
+  try{
+    const [o,i]=await Promise.all([
       readFile($("hatOrders").files[0]),
       readFile($("hatInventory").files[0])
     ]);
+    if(!hasColumn(o,"SKU")||
+       !hasColumn(o,"Pack Quantity")||
+       !hasColumn(o,"Client Display Name"))
+      throw Error("Shipment Orders columns not recognized.");
+    if(!hasColumn(i,"SKU")||
+       !hasColumn(i,"Location")||
+       !hasColumn(i,"Free UOM QTY"))
+      throw Error("Inventory columns not recognized.");
 
-    if (
-      !hasColumn(orders, "SKU") ||
-      !hasColumn(orders, "Pack Quantity") ||
-      !hasColumn(orders, "Client Display Name")
-    ) {
-      throw new Error(
-        "Shipment Orders needs SKU, Pack Quantity, and Client Display Name."
-      );
-    }
+    const summary=calculateHats(o,i);
+    $("hatNeeded").textContent=summary.needed;
+    $("hatLocated").textContent=summary.located;
 
-    if (
-      !hasColumn(inventory, "SKU") ||
-      !hasColumn(inventory, "Location") ||
-      !hasColumn(inventory, "Free UOM QTY")
-    ) {
-      throw new Error(
-        "Inventory needs SKU, Location, and Free UOM QTY."
-      );
-    }
+    $("hatTable").innerHTML=hatPulls.map(x=>`
+      <tr><td class="sku">${esc(x.sku)}</td><td>${x.qty}</td>
+      <td>${esc(x.loc)}</td><td>${esc(x.lpn)}</td></tr>
+    `).join("")||'<tr><td colspan="4">No hats located.</td></tr>';
 
-    const summary = calculateHats(orders, inventory);
-
-    $("hatNeeded").textContent = summary.needed;
-    $("hatLocated").textContent = summary.located;
-
-    $("hatTable").innerHTML = hatPulls.map(item => `
-      <tr>
-        <td class="sku">${escapeHTML(item.sku)}</td>
-        <td><b>${item.qty}</b></td>
-        <td>${escapeHTML(item.loc)}</td>
-        <td>${escapeHTML(item.lpn)}</td>
-      </tr>
-    `).join("") ||
-      '<tr><td colspan="4">No available hat locations found.</td></tr>';
-
-    $("hatMissing").innerHTML = hatMissing.map(item => `
-      <tr>
-        <td class="sku">${escapeHTML(item.sku)}</td>
-        <td>${item.qty}</td>
-        <td class="warning">${escapeHTML(item.reason)}</td>
-      </tr>
-    `).join("") ||
-      '<tr><td colspan="3">All identified hats are covered.</td></tr>';
+    $("hatMissing").innerHTML=hatMissing.map(x=>`
+      <tr><td class="sku">${esc(x.sku)}</td><td>${x.qty}</td>
+      <td>${esc(x.reason)}</td></tr>
+    `).join("")||'<tr><td colspan="3">All identified hats covered.</td></tr>';
 
     $("hatOutput").classList.remove("hidden");
-
-    $("hatMessage").textContent =
-      `Loaded ${orders.length} shipment lines and ` +
-      `${inventory.length} inventory rows.`;
-
-  } catch (error) {
-    $("hatMessage").textContent =
-      "Error: " + error.message;
+    $("hatMessage").textContent=
+      `Loaded ${o.length} shipment and ${i.length} inventory rows.`;
+  }catch(e){
+    $("hatMessage").textContent="Error: "+e.message;
   }
 }
 
-function copyHats() {
-  const text = hatPulls.map(item =>
-    `(${item.qty}) ${item.sku} — ${item.loc} — ${item.lpn}`
-  ).join("\n");
-
-  copyText(text, "hatCopyStatus");
+function copyHats(){
+  copyText(hatPulls.map(x=>
+    `(${x.qty}) ${x.sku} — ${x.loc} — ${x.lpn}`
+  ).join("\n"),"hatCopyStatus");
 }
 
-/* DOCUMENT LIBRARY */
+/* GENERAL PRINTING */
 
-const DOC_KEY = "d2c_handbook_links_v2";
+function printHTML(title,body,paper){
+  const w=window.open("","_blank");
+  if(!w){alert("Please allow pop-ups to print.");return;}
 
-const docCategories = {
-  daily: "dailyDocs",
-  logiwa: "logiwaDocs",
-  cs: "csDocs",
-  inventory: "inventoryDocs",
-  contact: "contactDocs"
+  const size=paper==="4x6"?"4in 6in":"letter";
+  const margin=paper==="4x6"?"0.18in":"0.45in";
+  const font=paper==="4x6"?"10px":"12px";
+
+  w.document.write(`
+  <!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${esc(title)}</title>
+  <style>
+  @page{size:${size} portrait;margin:${margin}}
+  *{box-sizing:border-box}
+  body{font-family:Arial,sans-serif;font-size:${font};
+    color:#111;margin:0;overflow-wrap:anywhere}
+  h1{font-size:1.45em;text-align:center;margin:0 0 12px}
+  h2{font-size:1.2em;margin:12px 0}
+  p{margin:6px 0}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #888;padding:6px;text-align:left}
+  th{background:#eee}
+  tr{break-inside:avoid}
+  .line{padding:7px 0;border-bottom:1px solid #bbb;
+    break-inside:avoid}
+  .field{padding:7px 0;border-bottom:1px solid #bbb}
+  .field strong{display:inline-block;min-width:85px}
+  .notes{white-space:pre-wrap;overflow-wrap:anywhere}
+  .checks{margin-top:16px;line-height:2}
+  </style></head><body>${body}</body></html>
+  `);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),350);
+}
+
+/* LIST GENERATOR */
+
+const listFields={
+  todo:["Task"],
+  sku:["SKU","Location","LPN"],
+  adjust:["SKU / Location","Adjustment","Notes"],
+  custom:["Item","Details"]
 };
 
-function documents() {
-  try {
-    const data = JSON.parse(
-      localStorage.getItem(DOC_KEY) || "[]"
-    );
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
+let listPreviewHTML="";
+
+function changeListType(){
+  const type=$("listType").value;
+  const titles={
+    todo:"To-Do List",
+    sku:"SKU / Location / LPN",
+    adjust:"Inventory Adjustment List",
+    custom:"Custom List"
+  };
+  $("listTitle").value=titles[type];
+  $("listRows").innerHTML="";
+  $("listOutput").classList.add("hidden");
+  for(let i=0;i<5;i++)addListRow();
 }
 
-function renderDocuments() {
-  const docs = documents();
+function addListRow(){
+  const type=$("listType").value;
+  const div=document.createElement("div");
+  div.className="generator-row "+type;
+  for(const name of listFields[type]){
+    const input=document.createElement("input");
+    input.placeholder=name;
+    input.setAttribute("aria-label",name);
+    div.append(input);
+  }
+  const remove=document.createElement("button");
+  remove.className="remove-row";
+  remove.textContent="×";
+  remove.title="Remove row";
+  remove.onclick=()=>div.remove();
+  div.append(remove);
+  $("listRows").append(div);
+}
 
-  for (const [category, id] of Object.entries(docCategories)) {
-    const container = $(id);
+function getListItems(){
+  return [...$("listRows").children].map(row=>
+    [...row.querySelectorAll("input")].map(i=>clean(i.value))
+  ).filter(values=>values.some(Boolean));
+}
+
+function generateList(){
+  const type=$("listType").value;
+  const items=getListItems();
+  if(!items.length){alert("Add at least one item.");return;}
+
+  const title=clean($("listTitle").value)||"List";
+  const date=$("listDate").value;
+  const headings=listFields[type];
+
+  let content="";
+
+  if(type==="todo"){
+    content=items.map(x=>
+      `<div class="line">☐ ${esc(x[0])}</div>`
+    ).join("");
+  }else{
+    content=`<table><thead><tr>
+      ${headings.map(h=>`<th>${esc(h)}</th>`).join("")}
+      </tr></thead><tbody>`+
+      items.map(x=>`<tr>${x.map(v=>
+        `<td>${esc(v)||"&nbsp;"}</td>`).join("")}</tr>`
+      ).join("")+"</tbody></table>";
+  }
+
+  listPreviewHTML=`<h1>${esc(title)}</h1>`+
+    (date?`<p style="text-align:center">${esc(date)}</p>`:"")+
+    content;
+
+  $("listPreview").innerHTML=listPreviewHTML;
+  $("listOutput").classList.remove("hidden");
+}
+
+function printList(){
+  generateList();
+  if(!listPreviewHTML)return;
+  printHTML(
+    clean($("listTitle").value)||"List",
+    listPreviewHTML,
+    $("listPaper").value
+  );
+}
+
+function clearList(){
+  changeListType();
+}
+
+/* TICKET GENERATOR */
+
+let ticketPreviewHTML="";
+
+function changeTicketType(){
+  const rush=$("ticketType").value==="rush";
+  $("rushFields").classList.toggle("hidden",!rush);
+  $("investigationFields").classList.toggle("hidden",rush);
+  $("ticketOutput").classList.add("hidden");
+}
+
+function ticketField(label,value){
+  return `<div class="field"><strong>${esc(label)}:</strong> `+
+    `${esc(value)||"________________"}</div>`;
+}
+
+function generateTicket(){
+  const rush=$("ticketType").value==="rush";
+  const title=rush?"RUSH ORDER":"INVESTIGATION TICKET";
+  const order=clean($("ticketOrder").value);
+  const b=$("ticketBrand").value;
+  const date=$("ticketDate").value;
+  const notes=clean($("ticketNotes").value);
+
+  let body=ticketField("Date",date)+
+    ticketField("Order / Ref",order)+
+    ticketField("Brand",b);
+
+  if(rush){
+    body+=ticketField("SKU",$("rushSKU").value)+
+      ticketField("Quantity",$("rushQty").value)+
+      ticketField("Shipping",$("rushShipping").value)+
+      ticketField("Ship By",$("rushDue").value);
+  }else{
+    body+=ticketField("Cart / Box",$("investCart").value)+
+      ticketField("Location",$("investLocation").value)+
+      ticketField("SKU",$("investSKU").value)+
+      ticketField("LPN",$("investLPN").value)+
+      ticketField("Issue",$("investIssue").value)+
+      ticketField("Quantity",$("investQty").value);
+  }
+
+  body+=`<div class="field"><strong>Notes:</strong>
+    <div class="notes">${esc(notes)||"________________"}</div>
+    </div>`;
+
+  body+=rush?
+    `<div class="checks">
+      ☐ Order reviewed<br>
+      ☐ Prioritized for fulfillment<br>
+      ☐ Shipped / tracking confirmed
+    </div>`:
+    `<div class="checks">
+      ☐ Inventory verified<br>
+      ☐ Discrepancy investigated<br>
+      ☐ Corrective action completed
+    </div>`;
+
+  ticketPreviewHTML=`<h1>${title}</h1>${body}`;
+
+  $("ticketPreview").innerHTML=
+    `<h2>${title}</h2>${body}`;
+  $("ticketOutput").classList.remove("hidden");
+}
+
+function printTicket(){
+  generateTicket();
+  printHTML(
+    "D2C Ticket",
+    ticketPreviewHTML,
+    $("ticketPaper").value
+  );
+}
+
+function clearTicket(){
+  $("tickets").querySelectorAll(
+    'input[type="text"],input[type="number"],textarea'
+  ).forEach(el=>el.value="");
+  $("ticketBrand").value="";
+  $("ticketOutput").classList.add("hidden");
+}
+
+/* DOCUMENT LINKS */
+
+const DOC_KEY="d2c_handbook_links_v2";
+const docCategories={
+  daily:"dailyDocs",
+  logiwa:"logiwaDocs",
+  cs:"csDocs",
+  inventory:"inventoryDocs",
+  contact:"contactDocs"
+};
+
+function documents(){
+  try{
+    const data=JSON.parse(localStorage.getItem(DOC_KEY)||"[]");
+    return Array.isArray(data)?data:[];
+  }catch{return [];}
+}
+
+function renderDocuments(){
+  const docs=documents();
+  for(const [category,id] of Object.entries(docCategories)){
+    const container=$(id);
     container.replaceChildren();
+    const items=docs.map((d,index)=>({...d,index}))
+      .filter(d=>d.category===category);
 
-    const items = docs
-      .map((doc, index) => ({ ...doc, index }))
-      .filter(doc => doc.category === category);
-
-    if (!items.length) {
-      const empty = document.createElement("p");
-      empty.className = "muted small";
-      empty.textContent = "No guides added yet.";
-      container.append(empty);
+    if(!items.length){
+      const p=document.createElement("p");
+      p.className="muted small";
+      p.textContent="No library linked yet.";
+      container.append(p);
     }
 
-    for (const doc of items) {
-      const row = document.createElement("div");
-      row.className = "document-row";
-
-      const link = document.createElement("a");
-      link.href = doc.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = doc.name;
-
-      const remove = document.createElement("button");
-      remove.className = "btn";
-      remove.textContent = "Remove";
-      remove.onclick = () => removeDocument(doc.index);
-
-      row.append(link, remove);
+    for(const doc of items){
+      const row=document.createElement("div");
+      row.className="document-row";
+      const a=document.createElement("a");
+      a.href=doc.url;
+      a.target="_blank";
+      a.rel="noopener noreferrer";
+      a.textContent=doc.name;
+      const remove=document.createElement("button");
+      remove.className="btn";
+      remove.textContent="Remove";
+      remove.onclick=()=>removeDocument(doc.index);
+      row.append(a,remove);
       container.append(row);
     }
   }
 }
 
-function addDocument() {
-  const category = $("docCategory").value;
-  const name = clean($("docName").value);
-  const url = clean($("docUrl").value);
-
-  if (!name || !url) {
-    $("documentMessage").textContent =
-      "Enter a resource name and link.";
+function addDocument(){
+  const category=$("docCategory").value;
+  const name=clean($("docName").value);
+  const url=clean($("docUrl").value);
+  if(!name||!url){
+    $("documentMessage").textContent="Enter a name and link.";
     return;
   }
-
   let parsed;
-
-  try {
-    parsed = new URL(url);
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      throw new Error("Invalid URL");
-    }
-  } catch {
-    $("documentMessage").textContent =
-      "Enter a valid http or https link.";
+  try{
+    parsed=new URL(url);
+    if(!["http:","https:"].includes(parsed.protocol))
+      throw Error("Invalid URL");
+  }catch{
+    $("documentMessage").textContent="Enter a valid URL.";
     return;
   }
 
-  const docs = documents();
-
-  docs.push({
-    category,
-    name,
-    url: parsed.href
-  });
-
-  try {
-    localStorage.setItem(
-      DOC_KEY,
-      JSON.stringify(docs)
-    );
-
-    $("docName").value = "";
-    $("docUrl").value = "";
-
-    $("documentMessage").textContent =
-      "Resource saved in this browser.";
-
+  const docs=documents();
+  docs.push({category,name,url:parsed.href});
+  try{
+    localStorage.setItem(DOC_KEY,JSON.stringify(docs));
+    $("docName").value="";
+    $("docUrl").value="";
+    $("documentMessage").textContent=
+      "Saved in this browser.";
     renderDocuments();
-  } catch {
-    $("documentMessage").textContent =
-      "This browser could not save the link.";
+  }catch{
+    $("documentMessage").textContent="Unable to save.";
   }
 }
 
-function removeDocument(index) {
-  const docs = documents();
-  docs.splice(index, 1);
-
-  try {
-    localStorage.setItem(
-      DOC_KEY,
-      JSON.stringify(docs)
-    );
+function removeDocument(index){
+  const docs=documents();
+  docs.splice(index,1);
+  try{
+    localStorage.setItem(DOC_KEY,JSON.stringify(docs));
     renderDocuments();
-  } catch {
-    alert("Could not save the change.");
-  }
+  }catch{alert("Unable to save changes.");}
 }
 
 /* INITIALIZE */
 
-const today = new Date();
+function easternDate(){
+  return new Intl.DateTimeFormat("en-CA",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).format(new Date());
+}
 
-$("customDate").value =
-  today.getFullYear() + "-" +
-  String(today.getMonth() + 1).padStart(2, "0") + "-" +
-  String(today.getDate()).padStart(2, "0");
+const initialDate=easternDate();
+$("customDate").value=initialDate;
+$("listDate").value=initialDate;
+$("ticketDate").value=initialDate;
 
+updateDate();
+changeListType();
+changeTicketType();
 renderDocuments();
 
-if (window.lucide) {
-  lucide.createIcons();
-}
-</script>
+if(window.lucide)lucide.createIcons();
 
+</script>
 </body>
 </html>

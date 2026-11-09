@@ -3,1271 +3,2154 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My D2C Workspace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My D2C Dashboard</title>
+
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <style>
-:root{
-  --bg:#f7f8fa;
-  --card:#ffffff;
-  --text:#293548;
-  --muted:#718094;
-  --line:#e3e8ef;
-  --navy:#344b68;
-  --soft:#f1f4f8;
+:root {
+  --bg: #f7f8fa;
+  --white: #ffffff;
+  --text: #293548;
+  --muted: #778497;
+  --line: #e3e8ee;
+  --navy: #344d6c;
+  --soft: #f0f3f7;
+  --danger: #b75d5d;
 }
-*{box-sizing:border-box}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font:14px Arial,Helvetica,sans-serif;
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
 }
-header{
-  background:white;border-bottom:1px solid var(--line);
-  padding:20px 5%;
+
+button, input, select {
+  font: inherit;
 }
-.head{
-  max-width:1120px;margin:auto;
-  display:flex;justify-content:space-between;align-items:center;
+
+button { cursor: pointer; }
+
+header {
+  background: white;
+  border-bottom: 1px solid var(--line);
 }
-.logo{font-size:12px;font-weight:bold;letter-spacing:1px}
-main{max-width:1120px;margin:auto;padding:32px 20px}
-h1{font-size:29px;margin:8px 0}
-h2{font-size:22px;margin:0 0 12px}
-h3{font-size:16px;margin:0 0 12px}
-p{line-height:1.6}
-.muted{color:var(--muted)}
-.small{font-size:12px}
-.eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted)}
-button,input,select{
-  font:inherit;padding:11px;border:1px solid #cbd5e0;
-  border-radius:7px;background:white;
+
+.header-inner {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-button{cursor:pointer}
-button:hover{filter:brightness(.97)}
-button.primary{background:var(--navy);color:white;border-color:var(--navy)}
-button.light{background:var(--soft);border-color:var(--soft)}
-.home-btn{padding:9px 16px}
-.page{display:none}
-.page.active{display:block}
-.grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:16px;margin-top:25px;
+
+.home-button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: transparent;
+  border: none;
+  color: var(--navy);
+  font-weight: 650;
+  padding: 7px;
 }
-.card,.panel{
-  background:white;border:1px solid var(--line);
-  border-radius:13px;padding:24px;
+
+.brand {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1.7px;
+  font-weight: 600;
 }
-.card{
-  cursor:pointer;min-height:150px;
-  transition:border-color .15s,transform .15s;
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 38px 22px;
 }
-.card:hover{border-color:#9aaec6;transform:translateY(-2px)}
-.card h3{margin:14px 0 7px}
-.card p{margin:0}
-.card-icon{font-size:24px;color:var(--navy)}
-.card.featured{border-color:#c4d0df}
-.panel{margin:18px 0}
-.row{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
-.field{flex:1;min-width:185px}
-label{
-  display:block;font-size:12px;color:var(--muted);
-  font-weight:bold;margin-bottom:8px;
+
+.page { display: none; }
+.page.active { display: block; }
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1.7px;
+  font-weight: 650;
 }
-input[type=file]{width:100%}
-input[type=text],input[type=url]{width:100%}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-.hidden{display:none!important}
-.metrics{display:flex;gap:28px;flex-wrap:wrap;margin:20px 0}
-.metric strong{display:block;font-size:24px}
-.metric span{font-size:11px;color:var(--muted)}
-.tablewrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th,td{
-  padding:11px 8px;text-align:left;
-  border-bottom:1px solid var(--line);vertical-align:top;
+
+h1 {
+  font-size: 30px;
+  letter-spacing: -0.7px;
+  margin: 8px 0;
 }
-th{background:#fafbfc;font-size:11px;color:var(--muted)}
-.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
-.warning{color:#a16a1c}
-.error{color:#b13e3e}
-.success{color:#16754a}
-.link-grid{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px;margin-top:18px;
+
+h2 {
+  font-size: 19px;
+  margin: 0 0 14px;
 }
-.link{
-  display:block;text-decoration:none;color:var(--text);
-  background:white;border:1px solid var(--line);
-  border-radius:10px;padding:20px;
+
+h3 {
+  font-size: 15px;
+  margin: 0 0 10px;
 }
-.link:hover{border-color:#9aaec6}
-.link strong{display:block;margin-bottom:7px}
-.feature-link{border-color:#bdcadb;background:#f9fbfe}
-.section-label{
-  font-size:11px;font-weight:bold;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;margin-top:25px;
+
+p { margin-top: 8px; }
+
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+
+.intro {
+  margin-bottom: 30px;
 }
-.doc{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;border-bottom:1px solid var(--line);padding:13px 0;
+
+/* HOMEPAGE */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
-.doc a{color:var(--navy);text-decoration:none;overflow-wrap:anywhere}
-.doc a:hover{text-decoration:underline}
-.notice{
-  background:var(--soft);border-radius:8px;
-  padding:13px 15px;font-size:12px;line-height:1.6;
+
+.tile {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 24px;
+  color: var(--text);
+  text-decoration: none;
+  transition: 0.15s ease;
 }
-footer{color:var(--muted);font-size:11px;margin:30px 0}
-@media(max-width:650px){
-  main{padding:20px 12px}
-  .grid,.link-grid{grid-template-columns:1fr}
-  .card{min-height:115px}
-  .panel{padding:16px}
+
+.tile:hover {
+  border-color: #a4b5c8;
+  transform: translateY(-2px);
+}
+
+.tile.wide {
+  grid-column: span 2;
+}
+
+.tile.featured {
+  background: #fbfcfe;
+  border-color: #cbd6e4;
+}
+
+.icon-box {
+  width: 43px;
+  height: 43px;
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 17px;
+}
+
+.tile-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 650;
+  margin-bottom: 5px;
+}
+
+.tile-description {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.tile-arrow {
+  float: right;
+  color: var(--muted);
+}
+
+/* EMERGENCY EASTER EGG */
+
+.emergency-link {
+  display: block;
+  margin: 52px auto 0;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  text-align: center;
+  padding: 10px;
+}
+
+.emergency-link .intro-text {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+
+.emergency-link .main-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.emergency-link .main-text svg {
+  color: var(--danger);
+}
+
+.emergency-link .sub-text {
+  display: block;
+  font-size: 10px;
+  margin-top: 7px;
+}
+
+.emergency-link:hover {
+  color: var(--navy);
+}
+
+/* INTERNAL PAGES */
+
+.panel {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.field {
+  flex: 1;
+  min-width: 190px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+input[type=file],
+input[type=date],
+input[type=time],
+input[type=text],
+input[type=url],
+select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #cbd5df;
+  border-radius: 7px;
+  background: white;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 10px;
+}
+
+.btn {
+  padding: 11px 15px;
+  border-radius: 7px;
+  border: 1px solid #cbd5df;
+  background: white;
+  color: var(--text);
+}
+
+.btn.primary {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+}
+
+.btn:hover {
+  filter: brightness(0.96);
+}
+
+.hidden { display: none !important; }
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin: 23px 0;
+}
+
+.metric strong {
+  display: block;
+  font-size: 25px;
+}
+
+.metric span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 11px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  background: #fafbfc;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+td.sku {
+  font-family: monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.warning { color: #a06c1e; }
+
+.message {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* QUICK LINKS */
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.quick-link {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  color: var(--text);
+  text-decoration: none;
+  background: white;
+}
+
+.quick-link:hover {
+  border-color: #a4b5c8;
+}
+
+.quick-link strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.quick-link p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.section-label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 650;
+  margin: 26px 0 12px;
+}
+
+/* HANDBOOK */
+
+.notice {
+  background: var(--soft);
+  border-radius: 9px;
+  padding: 16px;
+  font-size: 12px;
+}
+
+.document-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.document-row a {
+  color: var(--navy);
+  overflow-wrap: anywhere;
+}
+
+footer {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 40px;
+}
+
+svg.lucide {
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.8;
+}
+
+@media(max-width:650px) {
+  main { padding: 25px 14px; }
+
+  .dashboard-grid,
+  .link-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tile.wide {
+    grid-column: auto;
+  }
+
+  .panel { padding: 17px; }
+
+  h1 { font-size: 27px; }
+
+  .header-inner { padding: 14px; }
 }
 </style>
 </head>
+
 <body>
 
 <header>
-  <div class="head">
-    <div class="logo">MY D2C WORKSPACE</div>
-    <button class="home-btn" onclick="showPage('home')">⌂ Home</button>
+  <div class="header-inner">
+    <button class="home-button" onclick="showPage('home')">
+      <i data-lucide="house"></i>
+      Home
+    </button>
+
+    <div class="brand">D2C WORKSPACE</div>
   </div>
 </header>
 
 <main>
 
-<!-- HOME -->
+<!-- ========================= -->
+<!-- HOME PAGE -->
+<!-- ========================= -->
+
 <section id="home" class="page active">
+
   <div class="eyebrow">WAREHOUSE OPERATIONS</div>
+
   <h1>My D2C Dashboard</h1>
-  <p class="muted">Your daily tools, reports, and resources — all in one place.</p>
 
-  <div class="grid">
-    <div class="card featured" onclick="showPage('links')">
-      <div class="card-icon">▦</div>
-      <h3>D2C Warehouse Dashboard</h3>
-      <p class="muted small">
-        Your task management system and other important work links.
-      </p>
-    </div>
+  <p class="muted intro">
+    Everything you need, all in one place.
+  </p>
 
-    <div class="card" onclick="showPage('shortage')">
-      <div class="card-icon">▤</div>
-      <h3>Shortage Center</h3>
-      <p class="muted small">
-        Find additional storage pulls not covered by replenishment.
-      </p>
-    </div>
+  <div class="dashboard-grid">
 
-    <div class="card" onclick="showPage('hats')">
-      <div class="card-icon">▣</div>
-      <h3>The Game POD Hats</h3>
-      <p class="muted small">
-        Find hats, quantities, locations, and LPNs for the task board.
-      </p>
-    </div>
+    <!-- MAIN TASK BOARD -->
 
-    <div class="card" onclick="showPage('emergency')">
-      <div class="card-icon">♧</div>
-      <h3>Break Glass in Case of Emergency</h3>
-      <p class="muted small">
-        How-to guides, daily procedures, and everything someone
-        needs if you're not here.
-      </p>
-    </div>
+    <a
+      class="tile wide featured"
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span class="tile-arrow">
+        <i data-lucide="arrow-up-right"></i>
+      </span>
 
-    <div class="card" onclick="showPage('links')">
-      <div class="card-icon">↗</div>
-      <h3>Quick Links</h3>
-      <p class="muted small">
-        POD Orders Dashboard, BSN Order Lookup, Shopify, and more.
-      </p>
-    </div>
+      <div class="icon-box">
+        <i data-lucide="clipboard-check"></i>
+      </div>
 
-    <div class="card" style="cursor:default">
-      <div class="card-icon">＋</div>
-      <h3>Room to Grow</h3>
-      <p class="muted small">
-        More tools and workflows can be added whenever you need them.
+      <span class="tile-title">
+        D2C Warehouse Dashboard
+      </span>
+
+      <p class="tile-description">
+        Open your main task management system.
       </p>
-    </div>
+    </a>
+
+    <!-- SHORTAGE CENTER -->
+
+    <button class="tile" onclick="showPage('shortage')">
+
+      <div class="icon-box">
+        <i data-lucide="package-search"></i>
+      </div>
+
+      <span class="tile-title">
+        Shortage Center
+      </span>
+
+      <p class="tile-description">
+        Storage pulls, shortage reports, and replenishment coverage.
+      </p>
+
+    </button>
+
+    <!-- THE GAME -->
+
+    <button class="tile" onclick="showPage('hats')">
+
+      <div class="icon-box">
+        <i data-lucide="layers"></i>
+      </div>
+
+      <span class="tile-title">
+        The Game POD Hats
+      </span>
+
+      <p class="tile-description">
+        Hat quantities, inventory locations, and LPNs.
+      </p>
+
+    </button>
+
+    <!-- QUICK LINKS -->
+
+    <button class="tile wide" onclick="showPage('links')">
+
+      <span class="tile-arrow">
+        <i data-lucide="chevron-right"></i>
+      </span>
+
+      <div class="icon-box">
+        <i data-lucide="link"></i>
+      </div>
+
+      <span class="tile-title">
+        Quick Links
+      </span>
+
+      <p class="tile-description">
+        Shopify, POD Orders Dashboard, BSN Order Lookup, and more.
+      </p>
+
+    </button>
+
   </div>
+
+  <!-- LITTLE EMERGENCY LINK -->
+
+  <button
+    class="emergency-link"
+    onclick="showPage('emergency')"
+  >
+
+    <span class="intro-text">
+      In the unlikely event that I'm not here...
+    </span>
+
+    <span class="main-text">
+      <i data-lucide="siren"></i>
+      Break Glass in Case of Emergency
+    </span>
+
+    <span class="sub-text">
+      Proceed with caution. Good luck. ♡
+    </span>
+
+  </button>
+
 </section>
 
+<!-- ========================= -->
 <!-- SHORTAGE CENTER -->
+<!-- ========================= -->
+
 <section id="shortage" class="page">
+
   <div class="eyebrow">OPERATIONS / REPORTS</div>
+
   <h1>Shortage Center</h1>
+
   <p class="muted small">
-    Compare shortages, free shelf stock, and replenishment tasks
-    to identify only your additional pulls.
+    Find additional storage pulls that aren't covered by
+    available shelf inventory or existing replenishment tasks.
   </p>
 
   <div class="panel">
-    <h3>Upload Logiwa Reports</h3>
+
+    <h2>Upload Logiwa Reports</h2>
+
     <div class="row">
+
       <div class="field">
         <label>1. Shortage Report</label>
-        <input type="file" id="shortageFile" accept=".xlsx,.xls,.csv">
+        <input
+          id="shortageFile"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
       </div>
+
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input type="file" id="inventoryFile" accept=".xlsx,.xls,.csv">
+        <input
+          id="inventoryFile"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
       </div>
+
       <div class="field">
         <label>3. Replenishment Task List</label>
-        <input type="file" id="taskFile" accept=".xlsx,.xls,.csv">
+        <input
+          id="taskFile"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
       </div>
+
     </div>
 
     <h3 style="margin-top:25px">Report Date</h3>
+
     <div class="row">
+
       <div class="field">
         <label>Include orders</label>
         <select id="dateMode" onchange="toggleDate()">
-          <option value="all">All Outstanding Shortages</option>
-          <option value="custom">Created Before Custom Date & Time</option>
+          <option value="all">
+            All Outstanding Shortages
+          </option>
+          <option value="custom">
+            Created Before Custom Date & Time
+          </option>
         </select>
       </div>
+
       <div class="field hidden" id="dateBox">
         <label>Date</label>
-        <input type="date" id="customDate">
+        <input id="customDate" type="date">
       </div>
+
       <div class="field hidden" id="timeBox">
         <label>Time (Eastern)</label>
-        <input type="time" id="customTime" value="14:00">
+        <input id="customTime" type="time" value="14:00">
       </div>
+
     </div>
 
     <div class="actions">
-      <button class="primary" onclick="generateShortage()">
+      <button
+        class="btn primary"
+        onclick="generateShortage()"
+      >
         Generate My Pull List
       </button>
     </div>
-    <p id="shortageMessage" class="muted small">
-      Upload all three files to begin.
+
+    <p class="message" id="shortageMessage">
+      Upload all three reports to begin.
     </p>
+
   </div>
 
-  <div id="shortageOutput" class="panel hidden">
-    <h3>Additional Storage Pulls</h3>
+  <div class="panel hidden" id="shortageOutput">
+
+    <h2>Additional Storage Pulls</h2>
 
     <div class="metrics">
+
       <div class="metric">
         <strong id="shortageTotal">0</strong>
         <span>Shortage Units</span>
       </div>
+
       <div class="metric">
         <strong id="shelfTotal">0</strong>
         <span>Covered by Shelf</span>
       </div>
+
       <div class="metric">
         <strong id="taskTotal">0</strong>
         <span>Covered by Replenishment</span>
       </div>
+
       <div class="metric">
         <strong id="pullTotal">0</strong>
         <span>Additional Pull Units</span>
       </div>
+
     </div>
 
     <div class="actions">
-      <button class="primary" onclick="printPulls()">Print Pull List</button>
-      <button onclick="copyShortageBrand('MagnaReady')">
+
+      <button class="btn primary" onclick="printPulls()">
+        Print Pull List
+      </button>
+
+      <button
+        class="btn"
+        onclick="copyShortageBrand('MagnaReady')"
+      >
         Copy MagnaReady for Task Board
       </button>
-      <button onclick="copyShortageBrand('Swoveralls')">
+
+      <button
+        class="btn"
+        onclick="copyShortageBrand('Swoveralls')"
+      >
         Copy Swoveralls for Task Board
       </button>
+
     </div>
 
-    <p class="muted small" id="shortageCopyStatus"></p>
+    <p class="message" id="shortageCopyStatus"></p>
 
-    <div class="tablewrap">
+    <div class="table-wrap">
       <table>
-        <thead><tr>
-          <th>Brand</th><th>SKU</th><th>QTY</th>
-          <th>Location</th><th>LPN</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>SKU</th>
+            <th>QTY</th>
+            <th>Location</th>
+            <th>LPN</th>
+          </tr>
+        </thead>
+
         <tbody id="pullTable"></tbody>
       </table>
     </div>
 
-    <h3 style="margin-top:25px">Needs Follow-up</h3>
-    <div class="tablewrap">
+    <h3 style="margin-top:28px">Needs Follow-up</h3>
+
+    <div class="table-wrap">
       <table>
-        <thead><tr>
-          <th>Brand</th><th>SKU</th><th>QTY</th><th>Reason</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>Brand</th>
+            <th>SKU</th>
+            <th>QTY</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+
         <tbody id="followTable"></tbody>
       </table>
     </div>
+
   </div>
+
 </section>
 
-<!-- THE GAME -->
+<!-- ========================= -->
+<!-- THE GAME POD HATS -->
+<!-- ========================= -->
+
 <section id="hats" class="page">
+
   <div class="eyebrow">THE GAME / POD</div>
+
   <h1>The Game POD Hats</h1>
+
   <p class="muted small">
-    Upload Shipment Orders and Inventory by Location to find
-    the hats you need from building 88.
+    Upload your Shipment Orders and Inventory by Location
+    reports to find the hats you need from building 88.
   </p>
 
   <div class="panel">
+
+    <h2>Upload Logiwa Reports</h2>
+
     <div class="row">
+
       <div class="field">
-        <label>1. Shipment Orders Export</label>
-        <input type="file" id="hatOrders" accept=".xlsx,.xls,.csv">
+        <label>1. Shipment Orders</label>
+        <input
+          id="hatOrders"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
       </div>
+
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input type="file" id="hatInventory" accept=".xlsx,.xls,.csv">
+        <input
+          id="hatInventory"
+          type="file"
+          accept=".xlsx,.xls,.csv"
+        >
       </div>
+
     </div>
 
     <div class="actions">
-      <button class="primary" onclick="generateHats()">Find My Hats</button>
+      <button
+        class="btn primary"
+        onclick="generateHats()"
+      >
+        Find My Hats
+      </button>
     </div>
 
-    <p id="hatMessage" class="muted small">
+    <p class="message" id="hatMessage">
       Upload both reports to begin.
     </p>
+
   </div>
 
-  <div id="hatOutput" class="panel hidden">
-    <h3>Hats to Retrieve</h3>
+  <div class="panel hidden" id="hatOutput">
+
+    <h2>Hats to Retrieve</h2>
 
     <div class="metrics">
+
       <div class="metric">
         <strong id="hatNeeded">0</strong>
         <span>Units Needed</span>
       </div>
+
       <div class="metric">
         <strong id="hatLocated">0</strong>
         <span>Units Located</span>
       </div>
+
     </div>
 
     <div class="actions">
-      <button class="primary" onclick="copyHats()">
+      <button class="btn primary" onclick="copyHats()">
         Copy The Game for Task Board
       </button>
     </div>
 
-    <p class="muted small" id="hatCopyStatus"></p>
+    <p class="message" id="hatCopyStatus"></p>
 
-    <div class="tablewrap">
+    <div class="table-wrap">
       <table>
-        <thead><tr>
-          <th>SKU</th><th>QTY</th><th>Location</th><th>LPN</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>QTY</th>
+            <th>Location</th>
+            <th>LPN</th>
+          </tr>
+        </thead>
+
         <tbody id="hatTable"></tbody>
       </table>
     </div>
 
-    <h3 style="margin-top:25px">Unable to Locate</h3>
-    <div class="tablewrap">
+    <h3 style="margin-top:28px">Unable to Locate</h3>
+
+    <div class="table-wrap">
       <table>
-        <thead><tr>
-          <th>SKU</th><th>QTY</th><th>Reason</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>QTY</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+
         <tbody id="hatMissing"></tbody>
       </table>
     </div>
+
   </div>
+
 </section>
 
+<!-- ========================= -->
 <!-- QUICK LINKS -->
+<!-- ========================= -->
+
 <section id="links" class="page">
+
   <div class="eyebrow">WORKSPACE / RESOURCES</div>
+
   <h1>Quick Links</h1>
-  <p class="muted">Your most-used systems, one click away.</p>
+
+  <p class="muted">
+    Your most-used systems, one click away.
+  </p>
 
   <div class="section-label">Most Important</div>
 
   <div class="link-grid">
-    <a class="link feature-link"
-       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
-       target="_blank" rel="noopener">
-      <strong>▦ D2C Warehouse Dashboard ↗</strong>
-      <span class="muted small">
-        Your main task management board.
-      </span>
+
+    <a
+      class="quick-link"
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <strong>D2C Warehouse Dashboard ↗</strong>
+      <p>Main task management system.</p>
     </a>
+
   </div>
 
   <div class="section-label">Other Tools</div>
 
   <div class="link-grid">
-    <a class="link"
-       href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
-       target="_blank" rel="noopener">
+
+    <a
+      class="quick-link"
+      href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <strong>POD Orders Dashboard ↗</strong>
-      <span class="muted small">
+      <p>
         Artwork, cancellations, and replacement orders.
-      </span>
+      </p>
     </a>
 
-    <a class="link"
-       href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
-       target="_blank" rel="noopener">
+    <a
+      class="quick-link"
+      href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <strong>BSN Order Lookup ↗</strong>
-      <span class="muted small">
-        Tracking and order details.
-      </span>
+      <p>Order lookup and tracking information.</p>
     </a>
 
-    <a class="link"
-       href="https://admin.shopify.com/store/"
-       target="_blank" rel="noopener">
+    <a
+      class="quick-link"
+      href="https://admin.shopify.com/store/"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       <strong>Shopify Admin ↗</strong>
-      <span class="muted small">
-        Store and order management.
-      </span>
+      <p>Brand stores and order management.</p>
     </a>
+
   </div>
+
 </section>
 
-<!-- EMERGENCY HANDBOOK -->
+<!-- ========================= -->
+<!-- BREAK GLASS -->
+<!-- ========================= -->
+
 <section id="emergency" class="page">
+
   <div class="eyebrow">BACKUP PLAN / PROCEDURES</div>
+
   <h1>Break Glass in Case of Emergency</h1>
+
   <p class="muted">
-    Everything you need to survive a day without me.
+    How-to guides, daily procedures, and important resources.
   </p>
 
-  <div class="notice">
-    <strong>Dear person covering for me,</strong>
-    <p style="margin-bottom:0">
-      First of all, good luck. Second, don't panic.
-      Everything you should need is organized below.
-      If something isn't here... I probably forgot to add it.
-    </p>
-  </div>
-
   <div class="panel">
-    <h3>Daily Must-Dos</h3>
-    <div class="tablewrap">
+
+    <h2>Daily Must-Dos</h2>
+
+    <div class="table-wrap">
       <table>
-        <thead><tr><th>Time</th><th>Task</th></tr></thead>
+
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Task</th>
+          </tr>
+        </thead>
+
         <tbody>
-          <tr><td>8:30 AM</td><td>The Game — assign stock requests to Marc</td></tr>
-          <tr><td>2:00 PM</td><td>Amazon orders</td></tr>
-          <tr><td>After replenishment</td><td>Review shortage report</td></tr>
-          <tr><td>4:30 PM</td><td>Check and clear Job Queue</td></tr>
+          <tr>
+            <td>8:30 AM</td>
+            <td>The Game stock requests — assign to Marc</td>
+          </tr>
+
+          <tr>
+            <td>2:00 PM</td>
+            <td>Amazon orders</td>
+          </tr>
+
+          <tr>
+            <td>After replenishment</td>
+            <td>Review shortage report</td>
+          </tr>
+
+          <tr>
+            <td>4:30 PM</td>
+            <td>Check and clear Job Queue</td>
+          </tr>
         </tbody>
+
       </table>
     </div>
+
   </div>
 
   <div class="panel">
-    <h3>How-To Guides & Procedures</h3>
+
+    <h2>How-To Guides & Procedures</h2>
+
     <p class="muted small">
-      Add links to PDFs, training documents, Scribe guides,
-      or shared company files. Saved links will appear here
-      whenever you reopen this dashboard in the same browser.
+      We'll continue adding your actual guides,
+      training documents, and procedures here.
     </p>
 
-    <div id="documentList"></div>
+    <div class="section-label">
+      Daily Procedures
+    </div>
+    <div id="dailyDocs"></div>
 
-    <h3 style="margin-top:24px">Add a Document</h3>
+    <div class="section-label">
+      Logiwa How-Tos
+    </div>
+    <div id="logiwaDocs"></div>
+
+    <div class="section-label">
+      Customer Service
+    </div>
+    <div id="csDocs"></div>
+
+    <div class="section-label">
+      Inventory & Troubleshooting
+    </div>
+    <div id="inventoryDocs"></div>
+
+    <div class="section-label">
+      Important Contacts
+    </div>
+    <div id="contactDocs"></div>
+
+  </div>
+
+  <div class="panel">
+
+    <h2>Add a Guide</h2>
+
+    <p class="muted small">
+      Add a link to an approved shared document,
+      PDF, or training guide.
+    </p>
+
     <div class="row">
+
+      <div class="field">
+        <label>Category</label>
+        <select id="docCategory">
+          <option value="daily">Daily Procedures</option>
+          <option value="logiwa">Logiwa How-Tos</option>
+          <option value="cs">Customer Service</option>
+          <option value="inventory">
+            Inventory & Troubleshooting
+          </option>
+          <option value="contact">Important Contacts</option>
+        </select>
+      </div>
+
       <div class="field">
         <label>Document Name</label>
-        <input type="text" id="docName"
-               placeholder="Example: Directed Put Away Guide">
+        <input
+          id="docName"
+          type="text"
+          placeholder="Directed Put Away Guide"
+        >
       </div>
+
       <div class="field">
         <label>Document Link</label>
-        <input type="url" id="docUrl"
-               placeholder="https://...">
+        <input
+          id="docUrl"
+          type="url"
+          placeholder="https://..."
+        >
       </div>
+
     </div>
 
     <div class="actions">
-      <button class="primary" onclick="addDocument()">
-        Add to Handbook
+      <button class="btn primary" onclick="addDocument()">
+        Add Guide
       </button>
     </div>
 
-    <p class="muted small" id="documentMessage"></p>
+    <p id="documentMessage" class="message"></p>
 
     <div class="notice">
-      <strong>Important:</strong> Links added here are saved only
-      in this browser. They are not automatically published to
-      your Vercel website for other employees. For a shared
-      emergency handbook, the links should eventually be added
-      to the site's source code or a shared document system.
+      <strong>Note:</strong>
+      Links added here are saved in this browser only.
+      They will not automatically appear for other employees.
+      Later, we can connect this handbook to a shared,
+      company-approved document location.
     </div>
+
   </div>
+
 </section>
 
 <footer>
-  Personal D2C workspace · Reports use uploaded Logiwa snapshots,
-  not live inventory. Verify quantities before physical transfers.
+  Personal D2C workspace · Reports are based on uploaded
+  Logiwa exports, not live inventory.
 </footer>
+
 </main>
 
 <script>
 "use strict";
 
-const $=id=>document.getElementById(id);
-const clean=v=>String(v??"").trim();
-const norm=v=>clean(v).toUpperCase().replace(/\s+/g,"");
-const num=v=>{
-  const n=Number(clean(v).replace(/,/g,""));
-  return Number.isFinite(n)?Math.max(0,n):0;
-};
-const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",
-  '"':"&quot;","'":"&#39;"
-}[c]));
+/* GENERAL HELPERS */
 
-function get(row,...names){
-  for(const n of names){
-    const key=Object.keys(row||{}).find(k=>norm(k)===norm(n));
-    if(key!==undefined&&clean(row[key])!=="")return row[key];
+const $ = id => document.getElementById(id);
+
+function clean(value) {
+  return String(value ?? "").trim();
+}
+
+function norm(value) {
+  return clean(value).toUpperCase().replace(/\s+/g, "");
+}
+
+function number(value) {
+  const n = Number(clean(value).replace(/,/g, ""));
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
+}
+
+function get(row, ...names) {
+  for (const name of names) {
+    const key = Object.keys(row || {}).find(
+      k => norm(k) === norm(name)
+    );
+
+    if (key !== undefined && clean(row[key]) !== "") {
+      return row[key];
+    }
   }
   return "";
 }
 
-function hasColumn(rows,...names){
-  return !!rows.length&&names.some(n=>
-    Object.keys(rows[0]).some(k=>norm(k)===norm(n))
+function hasColumn(rows, ...names) {
+  if (!rows.length) return false;
+
+  return names.some(name =>
+    Object.keys(rows[0]).some(
+      key => norm(key) === norm(name)
+    )
   );
 }
 
-function brand(v){
-  const s=norm(v).replace(/[^A-Z0-9]/g,"");
-  if(s.includes("MAGNAREADY"))return "MagnaReady";
-  if(s.includes("SWOVERALL"))return "Swoveralls";
-  if(s.includes("THEGAME"))return "The Game";
-  return clean(v)||"Other";
+function brand(value) {
+  const s = norm(value).replace(/[^A-Z0-9]/g, "");
+
+  if (s.includes("MAGNAREADY")) return "MagnaReady";
+  if (s.includes("SWOVERALL")) return "Swoveralls";
+  if (s.includes("THEGAME")) return "The Game";
+
+  return clean(value) || "Other";
 }
 
-function client(r){
-  return brand(get(r,"Client","Client Display Name","Brand"));
+function client(row) {
+  return brand(get(
+    row,
+    "Client",
+    "Client Display Name",
+    "Brand"
+  ));
 }
 
-function typeOfLocation(v){
-  const s=norm(v);
-  if(!s)return "Unknown";
-  if(["MV-M1","0M1","0M5"].includes(s))return "Virtual";
-  if(/STAGING|STAGE|PACKING|SHIPPING/.test(s))return "Excluded";
-  if(/^(100|88)\.\d/.test(s))return "Shelf";
+function locationType(value) {
+  const s = norm(value);
+
+  if (!s) return "Unknown";
+
+  if (["MV-M1", "0M1", "0M5"].includes(s)) {
+    return "Virtual";
+  }
+
+  if (/STAGING|STAGE|PACKING|SHIPPING/.test(s)) {
+    return "Excluded";
+  }
+
+  if (/^(100|88)\.\d/.test(s)) {
+    return "Shelf";
+  }
+
   return "Storage";
 }
 
-function area(v){
-  const s=norm(v);
-  if(s.startsWith("REC-SOUTH"))return 0;
-  if(s.startsWith("R-100"))return 1;
-  if(s.startsWith("STN"))return 2;
-  if(s.startsWith("STW"))return 3;
-  if(s.startsWith("STS"))return 4;
-  if(s.startsWith("RECEIVING"))return 5;
+function locationArea(value) {
+  const s = norm(value);
+
+  if (s.startsWith("REC-SOUTH")) return 0;
+  if (s.startsWith("R-100")) return 1;
+  if (s.startsWith("STN")) return 2;
+  if (s.startsWith("STW")) return 3;
+  if (s.startsWith("STS")) return 4;
+  if (s.startsWith("RECEIVING")) return 5;
+
   return 6;
 }
 
-function sortLocations(a,b){
-  return area(a)-area(b)||
-    clean(a).localeCompare(clean(b),undefined,{numeric:true});
+function sortLocations(a, b) {
+  return locationArea(a) - locationArea(b) ||
+    clean(a).localeCompare(
+      clean(b),
+      undefined,
+      { numeric: true }
+    );
 }
 
-function matches(item,group){
-  return norm(item.sku)===norm(group.sku)&&
-    (item.brand===group.brand||
-     item.brand==="Other"||group.brand==="Other");
+function matches(item, group) {
+  return norm(item.sku) === norm(group.sku) &&
+    (
+      item.brand === group.brand ||
+      item.brand === "Other" ||
+      group.brand === "Other"
+    );
 }
 
-function inventoryData(rows){
-  const seen=new Map();
+/* NAVIGATION */
 
-  for(const r of rows){
-    const sku=clean(get(r,"SKU"));
-    const loc=clean(get(r,"Location","Location Code"));
-    const lpn=clean(get(r,"LPN","License Plate Number"));
-    const free=num(get(r,"Free UOM QTY","Free Qty"));
-    const b=client(r);
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.toggle("active", page.id === id);
+  });
 
-    if(!sku||!loc||free<=0)continue;
+  window.scrollTo(0, 0);
+}
 
-    const key=[norm(b),norm(sku),norm(loc),norm(lpn)].join("|");
+/* FILE READING */
 
-    if(seen.has(key)){
-      const existing=seen.get(key);
-      if(existing.free!==free)existing.conflict=true;
-      continue;
-    }
-
-    seen.set(key,{
-      sku,loc,lpn,free,brand:b,
-      type:typeOfLocation(loc),used:0,conflict:false
-    });
+async function readFile(file) {
+  if (!file) {
+    throw new Error("Please upload all required files.");
   }
-  return [...seen.values()];
-}
 
-function showPage(id){
-  document.querySelectorAll(".page").forEach(p=>
-    p.classList.toggle("active",p.id===id)
-  );
-  window.scrollTo(0,0);
-}
-
-let excelPromise=null;
-
-async function loadExcel(){
-  if(window.XLSX)return;
-  if(!excelPromise){
-    excelPromise=new Promise((resolve,reject)=>{
-      const script=document.createElement("script");
-      script.src=
-        "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-      script.onload=resolve;
-      script.onerror=()=>reject(
-        Error("Could not load Excel reader. Check your connection.")
-      );
-      document.head.appendChild(script);
-    });
+  if (!window.XLSX) {
+    throw new Error(
+      "Excel reader could not load. Check your connection."
+    );
   }
-  await excelPromise;
-}
-
-async function readFile(file){
-  if(!file)throw Error("Please upload all required files.");
-
-  await loadExcel();
 
   let workbook;
-  if(file.name.toLowerCase().endsWith(".csv")){
-    workbook=XLSX.read(await file.text(),{type:"string"});
-  }else{
-    workbook=XLSX.read(await file.arrayBuffer(),{
-      type:"array",cellDates:true
-    });
+
+  if (file.name.toLowerCase().endsWith(".csv")) {
+    workbook = XLSX.read(
+      await file.text(),
+      { type: "string" }
+    );
+  } else {
+    workbook = XLSX.read(
+      await file.arrayBuffer(),
+      { type: "array", cellDates: true }
+    );
   }
 
   return XLSX.utils.sheet_to_json(
     workbook.Sheets[workbook.SheetNames[0]],
-    {defval:"",raw:false}
+    { defval: "", raw: false }
   );
 }
 
-async function copyText(text,statusId){
-  if(!text.trim()){
+async function copyText(text, statusId) {
+  if (!text.trim()) {
     alert("Nothing to copy.");
     return;
   }
 
-  try{
+  try {
     await navigator.clipboard.writeText(text);
-    $(statusId).textContent="Copied! Ready to paste into the D2C task board.";
-  }catch(e){
-    prompt("Copy this text:",text);
+
+    $(statusId).textContent =
+      "Copied! Ready to paste into the D2C task board.";
+  } catch {
+    prompt("Copy this text:", text);
   }
 }
 
-function dateNumber(v){
-  const s=clean(v);
-  if(!s)return NaN;
-  if(v instanceof Date)return v.getTime();
-  if(typeof v==="number")return (v-25569)*86400000;
+/* INVENTORY */
 
-  const m=s.match(
+function inventoryData(rows) {
+  const seen = new Map();
+
+  for (const row of rows) {
+    const sku = clean(get(row, "SKU"));
+    const loc = clean(get(row, "Location", "Location Code"));
+    const lpn = clean(get(row, "LPN", "License Plate Number"));
+    const free = number(get(
+      row,
+      "Free UOM QTY",
+      "Free Qty"
+    ));
+    const b = client(row);
+
+    if (!sku || !loc || free <= 0) continue;
+
+    const key = [
+      norm(b),
+      norm(sku),
+      norm(loc),
+      norm(lpn)
+    ].join("|");
+
+    if (seen.has(key)) {
+      const existing = seen.get(key);
+
+      if (existing.free !== free) {
+        existing.conflict = true;
+      }
+      continue;
+    }
+
+    seen.set(key, {
+      sku,
+      loc,
+      lpn,
+      free,
+      brand: b,
+      type: locationType(loc),
+      used: 0,
+      conflict: false
+    });
+  }
+
+  return [...seen.values()];
+}
+
+/* DATE FILTER */
+
+function dateValue(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+
+  if (typeof value === "number") {
+    return (value - 25569) * 86400000;
+  }
+
+  const s = clean(value);
+
+  if (!s) return NaN;
+
+  const match = s.match(
     /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/
   );
-  if(m){
+
+  if (match) {
     return new Date(
-      +m[1],+m[2]-1,+m[3],
-      +(m[4]||0),+(m[5]||0),+(m[6]||0)
+      +match[1],
+      +match[2] - 1,
+      +match[3],
+      +(match[4] || 0),
+      +(match[5] || 0),
+      +(match[6] || 0)
     ).getTime();
   }
 
   return new Date(s).getTime();
 }
 
-// SHORTAGE CENTER
-let shortageSource=[],inventorySource=[],taskSource=[];
-let shortagePulls=[],shortageFollow=[];
-let shortageStats={total:0,shelf:0,tasks:0};
+function toggleDate() {
+  const custom = $("dateMode").value === "custom";
 
-function toggleDate(){
-  const custom=$("dateMode").value==="custom";
-  $("dateBox").classList.toggle("hidden",!custom);
-  $("timeBox").classList.toggle("hidden",!custom);
+  $("dateBox").classList.toggle("hidden", !custom);
+  $("timeBox").classList.toggle("hidden", !custom);
 }
 
-function selectedShortages(){
-  let rows=shortageSource.filter(r=>
-    num(get(r,"Shortage UOM Qty"))>0
-  );
+/* SHORTAGE CENTER */
 
-  if($("dateMode").value==="custom"){
-    if(!$("customDate").value||!$("customTime").value){
-      throw Error("Choose a custom date and time.");
+let shortagePulls = [];
+let shortageFollow = [];
+let shortageStats = {
+  total: 0,
+  shelf: 0,
+  tasks: 0
+};
+
+function activeTasks(rows) {
+  const result = [];
+  const seen = new Set();
+
+  for (const row of rows) {
+    const sku = clean(get(row, "SKU"));
+    const status = norm(get(row, "Task Status"));
+    const qty = number(get(
+      row,
+      "Task UOM Qty",
+      "Task Qty"
+    ));
+
+    if (!sku || !qty) continue;
+
+    if (/COMPLETE|CANCEL|CLOSED|FAILED/.test(status)) {
+      continue;
     }
 
-    const cutoff=dateNumber(
-      $("customDate").value+"T"+$("customTime").value+":00"
-    );
-
-    rows=rows.filter(r=>{
-      const d=dateNumber(get(r,"Order Creation Date"));
-      return Number.isFinite(d)&&d<cutoff;
-    });
-  }
-
-  return rows;
-}
-
-function activeTasks(){
-  const result=[];
-  const seen=new Set();
-
-  for(const r of taskSource){
-    const sku=clean(get(r,"SKU"));
-    const status=norm(get(r,"Task Status"));
-    const quantity=num(get(r,"Task UOM Qty","Task Qty"));
-
-    if(!sku||!quantity)continue;
-    if(/COMPLETE|CANCEL|CLOSED|FAILED/.test(status))continue;
-    if(!/PENDING|PROGRESS|START|ASSIGN|OPEN|CREATED/.test(status))
+    if (!/PENDING|PROGRESS|START|ASSIGN|OPEN|CREATED/.test(status)) {
       continue;
+    }
 
-    const item={
-      sku,brand:client(r),qty:quantity,
-      loc:clean(get(r,"Source location","Source Location")),
-      lpn:clean(get(r,"Source LPN")),
-      id:clean(get(r,"Task Id","Task ID"))
+    const task = {
+      sku,
+      brand: client(row),
+      qty,
+      loc: clean(get(row, "Source location")),
+      lpn: clean(get(row, "Source LPN")),
+      id: clean(get(row, "Task Id", "Task ID"))
     };
 
-    const key=item.id||
-      [item.brand,norm(sku),norm(item.loc),
-       norm(item.lpn),quantity].join("|");
+    const key = task.id || [
+      task.brand,
+      norm(sku),
+      norm(task.loc),
+      norm(task.lpn),
+      qty
+    ].join("|");
 
-    if(seen.has(key))continue;
+    if (seen.has(key)) continue;
+
     seen.add(key);
-    result.push(item);
+    result.push(task);
   }
+
   return result;
 }
 
-function calculateShortages(){
-  const groups=new Map();
+function calculateShortages(shortages, inventory, tasks) {
+  const groups = new Map();
 
-  for(const r of selectedShortages()){
-    const sku=clean(get(r,"SKU"));
-    const b=client(r);
-    if(!sku)continue;
+  let cutoff = Infinity;
 
-    const key=norm(b)+"|"+norm(sku);
-    if(!groups.has(key)){
-      groups.set(key,{
-        sku,brand:b,need:0,
-        oldest:dateNumber(get(r,"Order Creation Date"))
-      });
+  if ($("dateMode").value === "custom") {
+    if (!$("customDate").value || !$("customTime").value) {
+      throw new Error("Choose a custom date and time.");
     }
 
-    const g=groups.get(key);
-    g.need+=num(get(r,"Shortage UOM Qty"));
-    const d=dateNumber(get(r,"Order Creation Date"));
-    if(Number.isFinite(d)){
-      g.oldest=Number.isFinite(g.oldest)?Math.min(g.oldest,d):d;
-    }
+    cutoff = dateValue(
+      $("customDate").value +
+      "T" +
+      $("customTime").value +
+      ":00"
+    );
   }
 
-  const ordered=[...groups.values()].sort(
-    (a,b)=>(a.oldest||0)-(b.oldest||0)
-  );
-  const stock=inventoryData(inventorySource);
-  const tasks=activeTasks();
+  for (const row of shortages) {
+    const sku = clean(get(row, "SKU"));
+    const b = client(row);
+    const qty = number(get(row, "Shortage UOM Qty"));
+    const date = dateValue(get(row, "Order Creation Date"));
 
-  shortagePulls=[];
-  shortageFollow=[];
-  shortageStats={
-    total:ordered.reduce((s,g)=>s+g.need,0),
-    shelf:0,tasks:0
-  };
+    if (!sku || !qty) continue;
 
-  const coverage=new Map();
-
-  // Reserve inventory already assigned to replenishers.
-  for(const t of tasks){
-    const key=norm(t.brand)+"|"+norm(t.sku);
-    coverage.set(key,(coverage.get(key)||0)+t.qty);
-
-    let remaining=t.qty;
-
-    const sources=stock.filter(i=>
-      matches(i,t)&&i.type==="Storage"&&!i.conflict&&
-      (!t.loc||norm(i.loc)===norm(t.loc))&&
-      (!t.lpn||norm(i.lpn)===norm(t.lpn))
-    );
-
-    for(const i of sources){
-      if(remaining<=0)break;
-      const take=Math.min(remaining,Math.max(0,i.free-i.used));
-      i.used+=take;
-      remaining-=take;
-    }
-  }
-
-  for(const g of ordered){
-    const matching=stock.filter(i=>matches(i,g));
-    const shelf=matching.filter(i=>
-      i.type==="Shelf"&&!i.conflict
-    );
-
-    const freeShelf=shelf.reduce(
-      (s,i)=>s+Math.max(0,i.free-i.used),0
-    );
-
-    const covered=Math.min(g.need,freeShelf);
-    shortageStats.shelf+=covered;
-
-    let remaining=g.need-covered;
-    let reserve=covered;
-
-    for(const i of shelf){
-      if(reserve<=0)break;
-      const take=Math.min(reserve,Math.max(0,i.free-i.used));
-      i.used+=take;
-      reserve-=take;
-    }
-
-    const key=norm(g.brand)+"|"+norm(g.sku);
-    const generic="OTHER|"+norm(g.sku);
-    const assigned=(coverage.get(key)||0)+
-      (key===generic?0:(coverage.get(generic)||0));
-
-    const taskTake=Math.min(remaining,assigned);
-    shortageStats.tasks+=taskTake;
-    remaining-=taskTake;
-
-    const sources=matching.filter(i=>
-      i.type==="Storage"&&!i.conflict
-    ).sort((a,b)=>sortLocations(a.loc,b.loc));
-
-    for(const i of sources){
-      if(remaining<=0)break;
-
-      const available=Math.max(0,i.free-i.used);
-      const take=Math.min(remaining,available);
-
-      if(take>0){
-        shortagePulls.push({
-          brand:g.brand,sku:g.sku,qty:take,
-          loc:i.loc,lpn:i.lpn||"—",oldest:g.oldest
-        });
-        i.used+=take;
-        remaining-=take;
+    if ($("dateMode").value === "custom") {
+      if (!Number.isFinite(date) || date >= cutoff) {
+        continue;
       }
     }
 
-    if(remaining>0){
-      const virtual=matching.filter(i=>i.type==="Virtual");
-      const conflict=matching.some(i=>i.conflict);
+    const key = norm(b) + "|" + norm(sku);
 
-      let reason="No additional free physical inventory";
-      if(conflict){
-        reason="Conflicting inventory quantities — verify";
-      }else if(virtual.length){
-        reason="Virtual: "+virtual.map(i=>
-          i.loc+" / "+(i.lpn||"No LPN")
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sku,
+        brand: b,
+        need: 0,
+        oldest: date
+      });
+    }
+
+    const group = groups.get(key);
+    group.need += qty;
+
+    if (Number.isFinite(date)) {
+      group.oldest = Number.isFinite(group.oldest)
+        ? Math.min(group.oldest, date)
+        : date;
+    }
+  }
+
+  const ordered = [...groups.values()].sort(
+    (a, b) => (a.oldest || 0) - (b.oldest || 0)
+  );
+
+  const stock = inventoryData(inventory);
+  const assignedTasks = activeTasks(tasks);
+
+  shortagePulls = [];
+  shortageFollow = [];
+
+  shortageStats = {
+    total: ordered.reduce((s, g) => s + g.need, 0),
+    shelf: 0,
+    tasks: 0
+  };
+
+  const taskCoverage = new Map();
+
+  // Reserve source stock assigned to replenishment tasks.
+  for (const task of assignedTasks) {
+    const key = norm(task.brand) + "|" + norm(task.sku);
+
+    taskCoverage.set(
+      key,
+      (taskCoverage.get(key) || 0) + task.qty
+    );
+
+    let remaining = task.qty;
+
+    const sources = stock.filter(item =>
+      matches(item, task) &&
+      item.type === "Storage" &&
+      !item.conflict &&
+      (!task.loc || norm(item.loc) === norm(task.loc)) &&
+      (!task.lpn || norm(item.lpn) === norm(task.lpn))
+    );
+
+    for (const item of sources) {
+      if (remaining <= 0) break;
+
+      const take = Math.min(
+        remaining,
+        Math.max(0, item.free - item.used)
+      );
+
+      item.used += take;
+      remaining -= take;
+    }
+  }
+
+  for (const group of ordered) {
+    const matching = stock.filter(item =>
+      matches(item, group)
+    );
+
+    const shelf = matching.filter(item =>
+      item.type === "Shelf" && !item.conflict
+    );
+
+    const freeShelf = shelf.reduce(
+      (s, item) => s + Math.max(0, item.free - item.used),
+      0
+    );
+
+    const covered = Math.min(group.need, freeShelf);
+
+    shortageStats.shelf += covered;
+
+    let remaining = group.need - covered;
+    let reserve = covered;
+
+    for (const item of shelf) {
+      if (reserve <= 0) break;
+
+      const take = Math.min(
+        reserve,
+        Math.max(0, item.free - item.used)
+      );
+
+      item.used += take;
+      reserve -= take;
+    }
+
+    const key = norm(group.brand) + "|" + norm(group.sku);
+    const generic = "OTHER|" + norm(group.sku);
+
+    const assigned = Math.min(
+      remaining,
+      (taskCoverage.get(key) || 0) +
+      (key === generic ? 0 : (taskCoverage.get(generic) || 0))
+    );
+
+    remaining -= assigned;
+    shortageStats.tasks += assigned;
+
+    const sources = matching
+      .filter(item =>
+        item.type === "Storage" &&
+        !item.conflict
+      )
+      .sort((a, b) => sortLocations(a.loc, b.loc));
+
+    for (const item of sources) {
+      if (remaining <= 0) break;
+
+      const available = Math.max(
+        0,
+        item.free - item.used
+      );
+
+      const take = Math.min(remaining, available);
+
+      if (take > 0) {
+        shortagePulls.push({
+          brand: group.brand,
+          sku: group.sku,
+          qty: take,
+          loc: item.loc,
+          lpn: item.lpn || "—",
+          oldest: group.oldest
+        });
+
+        item.used += take;
+        remaining -= take;
+      }
+    }
+
+    if (remaining > 0) {
+      const virtual = matching.filter(
+        item => item.type === "Virtual"
+      );
+
+      let reason = "No additional free physical inventory";
+
+      if (matching.some(item => item.conflict)) {
+        reason = "Conflicting inventory quantities — verify";
+      } else if (virtual.length) {
+        reason = "Virtual: " + virtual.map(
+          item => item.loc + " / " + (item.lpn || "No LPN")
         ).join("; ");
       }
 
       shortageFollow.push({
-        brand:g.brand,sku:g.sku,qty:remaining,reason
+        brand: group.brand,
+        sku: group.sku,
+        qty: remaining,
+        reason
       });
     }
   }
 
-  shortagePulls.sort((a,b)=>
-    sortLocations(a.loc,b.loc)||
-    (a.oldest||0)-(b.oldest||0)
+  shortagePulls.sort(
+    (a, b) =>
+      sortLocations(a.loc, b.loc) ||
+      (a.oldest || 0) - (b.oldest || 0)
   );
 }
 
-function renderShortages(){
-  calculateShortages();
-
-  $("shortageTotal").textContent=shortageStats.total;
-  $("shelfTotal").textContent=shortageStats.shelf;
-  $("taskTotal").textContent=shortageStats.tasks;
-  $("pullTotal").textContent=shortagePulls.reduce(
-    (s,p)=>s+p.qty,0
-  );
-
-  $("pullTable").innerHTML=shortagePulls.map(p=>`
-    <tr>
-      <td>${escapeHTML(p.brand)}</td>
-      <td class="sku">${escapeHTML(p.sku)}</td>
-      <td><b>${p.qty}</b></td>
-      <td>${escapeHTML(p.loc)}</td>
-      <td>${escapeHTML(p.lpn)}</td>
-    </tr>
-  `).join("")||
-  '<tr><td colspan="5">No additional pulls.</td></tr>';
-
-  $("followTable").innerHTML=shortageFollow.map(p=>`
-    <tr>
-      <td>${escapeHTML(p.brand)}</td>
-      <td class="sku">${escapeHTML(p.sku)}</td>
-      <td>${p.qty}</td>
-      <td class="warning">${escapeHTML(p.reason)}</td>
-    </tr>
-  `).join("")||
-  '<tr><td colspan="4">No follow-ups.</td></tr>';
-
-  $("shortageOutput").classList.remove("hidden");
-}
-
-async function generateShortage(){
-  $("shortageMessage").textContent="Reading files...";
+async function generateShortage() {
+  $("shortageMessage").textContent = "Reading files...";
   $("shortageOutput").classList.add("hidden");
 
-  try{
-    const [s,i,t]=await Promise.all([
+  try {
+    const [shortages, inventory, tasks] = await Promise.all([
       readFile($("shortageFile").files[0]),
       readFile($("inventoryFile").files[0]),
       readFile($("taskFile").files[0])
     ]);
 
-    if(!hasColumn(s,"SKU")||!hasColumn(s,"Shortage UOM Qty")){
-      throw Error("Shortage export needs SKU and Shortage UOM Qty.");
+    if (
+      !hasColumn(shortages, "SKU") ||
+      !hasColumn(shortages, "Shortage UOM Qty")
+    ) {
+      throw new Error(
+        "Shortage export needs SKU and Shortage UOM Qty."
+      );
     }
-    if(!hasColumn(i,"SKU")||!hasColumn(i,"Location")||
-       !hasColumn(i,"Free UOM QTY")){
-      throw Error(
+
+    if (
+      !hasColumn(inventory, "SKU") ||
+      !hasColumn(inventory, "Location") ||
+      !hasColumn(inventory, "Free UOM QTY")
+    ) {
+      throw new Error(
         "Inventory export needs SKU, Location, and Free UOM QTY."
       );
     }
-    if(!hasColumn(t,"SKU")||!hasColumn(t,"Task Status")||
-       !hasColumn(t,"Task UOM Qty")){
-      throw Error(
+
+    if (
+      !hasColumn(tasks, "SKU") ||
+      !hasColumn(tasks, "Task Status") ||
+      !hasColumn(tasks, "Task UOM Qty")
+    ) {
+      throw new Error(
         "Task export needs SKU, Task Status, and Task UOM Qty."
       );
     }
 
-    shortageSource=s;
-    inventorySource=i;
-    taskSource=t;
+    calculateShortages(shortages, inventory, tasks);
 
-    renderShortages();
+    $("shortageTotal").textContent = shortageStats.total;
+    $("shelfTotal").textContent = shortageStats.shelf;
+    $("taskTotal").textContent = shortageStats.tasks;
 
-    $("shortageMessage").textContent=
-      `Loaded ${s.length} shortage lines, `+
-      `${i.length} inventory rows, and ${t.length} task rows.`;
+    $("pullTotal").textContent = shortagePulls.reduce(
+      (sum, item) => sum + item.qty,
+      0
+    );
 
-  }catch(e){
-    $("shortageMessage").textContent="Error: "+e.message;
+    $("pullTable").innerHTML = shortagePulls.map(item => `
+      <tr>
+        <td>${escapeHTML(item.brand)}</td>
+        <td class="sku">${escapeHTML(item.sku)}</td>
+        <td><b>${item.qty}</b></td>
+        <td>${escapeHTML(item.loc)}</td>
+        <td>${escapeHTML(item.lpn)}</td>
+      </tr>
+    `).join("") ||
+      '<tr><td colspan="5">No additional pulls needed.</td></tr>';
+
+    $("followTable").innerHTML = shortageFollow.map(item => `
+      <tr>
+        <td>${escapeHTML(item.brand)}</td>
+        <td class="sku">${escapeHTML(item.sku)}</td>
+        <td>${item.qty}</td>
+        <td class="warning">${escapeHTML(item.reason)}</td>
+      </tr>
+    `).join("") ||
+      '<tr><td colspan="4">No follow-ups.</td></tr>';
+
+    $("shortageOutput").classList.remove("hidden");
+
+    $("shortageMessage").textContent =
+      `Loaded ${shortages.length} shortage lines, ` +
+      `${inventory.length} inventory rows, ` +
+      `and ${tasks.length} task rows.`;
+
+  } catch (error) {
+    $("shortageMessage").textContent =
+      "Error: " + error.message;
   }
 }
 
-function copyShortageBrand(b){
-  const lines=shortagePulls.filter(p=>p.brand===b).map(p=>
-    `(${p.qty}) ${p.sku} — ${p.loc} — ${p.lpn}`
-  );
-  copyText(lines.join("\n"),"shortageCopyStatus");
+function copyShortageBrand(b) {
+  const text = shortagePulls
+    .filter(item => item.brand === b)
+    .map(item =>
+      `(${item.qty}) ${item.sku} — ${item.loc} — ${item.lpn}`
+    )
+    .join("\n");
+
+  copyText(text, "shortageCopyStatus");
 }
 
-function printPulls(){
-  if(!shortagePulls.length){
+function printPulls() {
+  if (!shortagePulls.length) {
     alert("No additional pulls to print.");
     return;
   }
 
-  const rows=shortagePulls.map(p=>`
-    <tr>
-      <td>□</td><td><b>${p.qty}</b></td>
-      <td>${escapeHTML(p.sku)}</td>
-      <td>${escapeHTML(p.loc)}</td>
-      <td>${escapeHTML(p.lpn)}</td>
-    </tr>
-  `).join("");
+  const windowRef = window.open("", "_blank");
 
-  const w=window.open("","_blank");
-  if(!w){
-    alert("Please allow pop-ups.");
+  if (!windowRef) {
+    alert("Please allow pop-ups to print.");
     return;
   }
 
-  w.document.write(`<!DOCTYPE html><html><head>
-  <title>Additional Storage Pulls</title>
-  <style>
-    @page{size:letter;margin:.45in}
-    body{font:10px Arial;color:black}
-    h1{text-align:center;font-size:16px}
-    p{text-align:center}
-    table{width:100%;border-collapse:collapse}
-    th,td{border:1px solid #888;padding:7px 5px}
-    th{background:#eee;text-align:left}
-    tr{break-inside:avoid}
-  </style></head><body>
-  <h1>ADDITIONAL STORAGE PULLS</h1>
-  <p>Not covered by shelf stock or active replenishment tasks</p>
-  <table><thead><tr>
-    <th>✓</th><th>QTY</th><th>SKU</th>
-    <th>LOCATION</th><th>LPN</th>
-  </tr></thead><tbody>${rows}</tbody></table>
-  </body></html>`);
+  const rows = shortagePulls.map(item => `
+    <tr>
+      <td>□</td>
+      <td>${item.qty}</td>
+      <td>${escapeHTML(item.sku)}</td>
+      <td>${escapeHTML(item.loc)}</td>
+      <td>${escapeHTML(item.lpn)}</td>
+    </tr>
+  `).join("");
 
-  w.document.close();
-  w.focus();
-  setTimeout(()=>w.print(),300);
+  windowRef.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Additional Storage Pulls</title>
+      <style>
+        @page { size: letter; margin: .45in; }
+        body { font: 10px Arial; }
+        h1 { text-align: center; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #888; padding: 7px; }
+        th { background: #eee; text-align: left; }
+        tr { break-inside: avoid; }
+      </style>
+    </head>
+    <body>
+      <h1>ADDITIONAL STORAGE PULLS</h1>
+      <table>
+        <thead>
+          <tr>
+            <th>✓</th>
+            <th>QTY</th>
+            <th>SKU</th>
+            <th>LOCATION</th>
+            <th>LPN</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body>
+    </html>
+  `);
+
+  windowRef.document.close();
+  windowRef.focus();
+
+  setTimeout(() => windowRef.print(), 300);
 }
 
-// THE GAME POD HATS
-let hatPulls=[],hatMissing=[];
+/* THE GAME POD HATS */
 
-// G-series hat SKUs are included. Other SKUs are included
-// only when their product description identifies headwear.
-// Ambiguous items are excluded rather than guessed.
-function isHat(sku,name){
-  const s=norm(sku);
-  const n=norm(name);
+let hatPulls = [];
+let hatMissing = [];
 
-  if(/TEE|SHIRT|HOODIE|SWEATSHIRT|PANT|SHORTS|JACKET/.test(n))
+function isHat(sku, name) {
+  const s = norm(sku);
+  const n = norm(name);
+
+  if (/TEE|SHIRT|HOODIE|SWEATSHIRT|PANT|SHORTS|JACKET/.test(n)) {
     return false;
+  }
 
-  return /^G\d/.test(s)||
+  return /^G\d/.test(s) ||
     /HAT|CAP|TRUCKER|SNAPBACK|BEANIE|VISOR/.test(n);
 }
 
-function calculateHats(orders,inventory){
-  const groups=new Map();
+function calculateHats(orders, inventory) {
+  const groups = new Map();
 
-  for(const r of orders){
-    if(client(r)!=="The Game")continue;
+  for (const row of orders) {
+    if (client(row) !== "The Game") continue;
 
-    const status=norm(get(r,"Status"));
-    if(/CANCEL|SHIPPED|DELIVERED/.test(status))continue;
+    const status = norm(get(row, "Status"));
 
-    const sku=clean(get(r,"SKU"));
-    const name=clean(get(r,"Product Name"));
-    const amount=num(get(r,"Pack Quantity"));
+    if (/CANCEL|SHIPPED|DELIVERED/.test(status)) {
+      continue;
+    }
 
-    if(!sku||!amount||!isHat(sku,name))continue;
+    const sku = clean(get(row, "SKU"));
+    const name = clean(get(row, "Product Name"));
+    const qty = number(get(row, "Pack Quantity"));
 
-    const key=norm(sku);
-    if(!groups.has(key))groups.set(key,{sku,need:0});
-    groups.get(key).need+=amount;
+    if (!sku || !qty || !isHat(sku, name)) continue;
+
+    const key = norm(sku);
+
+    if (!groups.has(key)) {
+      groups.set(key, { sku, need: 0 });
+    }
+
+    groups.get(key).need += qty;
   }
 
-  const stock=inventoryData(inventory);
-  hatPulls=[];
-  hatMissing=[];
+  const stock = inventoryData(inventory);
 
-  for(const g of groups.values()){
-    let remaining=g.need;
+  hatPulls = [];
+  hatMissing = [];
 
-    const options=stock.filter(i=>
-      norm(i.sku)===norm(g.sku)&&
-      i.brand==="The Game"&&
-      i.type!=="Virtual"&&
-      i.type!=="Excluded"&&
-      !i.conflict&&
-      norm(i.loc).startsWith("88")
-    ).sort((a,b)=>
-      (a.type==="Shelf"?0:1)-(b.type==="Shelf"?0:1)||
-      sortLocations(a.loc,b.loc)
-    );
+  for (const group of groups.values()) {
+    let remaining = group.need;
 
-    for(const i of options){
-      if(remaining<=0)break;
+    const options = stock
+      .filter(item =>
+        norm(item.sku) === norm(group.sku) &&
+        item.brand === "The Game" &&
+        item.type !== "Virtual" &&
+        item.type !== "Excluded" &&
+        !item.conflict &&
+        norm(item.loc).startsWith("88")
+      )
+      .sort(
+        (a, b) =>
+          (a.type === "Shelf" ? 0 : 1) -
+          (b.type === "Shelf" ? 0 : 1) ||
+          sortLocations(a.loc, b.loc)
+      );
 
-      const take=Math.min(remaining,Math.max(0,i.free-i.used));
-      if(take>0){
+    for (const item of options) {
+      if (remaining <= 0) break;
+
+      const available = Math.max(
+        0,
+        item.free - item.used
+      );
+
+      const take = Math.min(remaining, available);
+
+      if (take > 0) {
         hatPulls.push({
-          sku:g.sku,qty:take,
-          loc:i.loc,lpn:i.lpn||"—"
+          sku: group.sku,
+          qty: take,
+          loc: item.loc,
+          lpn: item.lpn || "—"
         });
-        i.used+=take;
-        remaining-=take;
+
+        item.used += take;
+        remaining -= take;
       }
     }
 
-    if(remaining>0){
+    if (remaining > 0) {
       hatMissing.push({
-        sku:g.sku,qty:remaining,
-        reason:"Not enough free inventory in building 88"
+        sku: group.sku,
+        qty: remaining,
+        reason: "Insufficient free inventory in building 88"
       });
     }
   }
 
-  hatPulls.sort((a,b)=>sortLocations(a.loc,b.loc));
+  hatPulls.sort(
+    (a, b) => sortLocations(a.loc, b.loc)
+  );
 
   return {
-    needed:[...groups.values()].reduce((s,g)=>s+g.need,0),
-    located:hatPulls.reduce((s,p)=>s+p.qty,0)
+    needed: [...groups.values()].reduce(
+      (sum, group) => sum + group.need,
+      0
+    ),
+    located: hatPulls.reduce(
+      (sum, item) => sum + item.qty,
+      0
+    )
   };
 }
 
-async function generateHats(){
-  $("hatMessage").textContent="Reading files...";
+async function generateHats() {
+  $("hatMessage").textContent = "Reading files...";
   $("hatOutput").classList.add("hidden");
 
-  try{
-    const [orders,inventory]=await Promise.all([
+  try {
+    const [orders, inventory] = await Promise.all([
       readFile($("hatOrders").files[0]),
       readFile($("hatInventory").files[0])
     ]);
 
-    if(!hasColumn(orders,"SKU")||
-       !hasColumn(orders,"Pack Quantity")||
-       !hasColumn(orders,"Client Display Name")){
-      throw Error(
+    if (
+      !hasColumn(orders, "SKU") ||
+      !hasColumn(orders, "Pack Quantity") ||
+      !hasColumn(orders, "Client Display Name")
+    ) {
+      throw new Error(
         "Shipment Orders needs SKU, Pack Quantity, and Client Display Name."
       );
     }
 
-    if(!hasColumn(inventory,"SKU")||
-       !hasColumn(inventory,"Location")||
-       !hasColumn(inventory,"Free UOM QTY")){
-      throw Error(
+    if (
+      !hasColumn(inventory, "SKU") ||
+      !hasColumn(inventory, "Location") ||
+      !hasColumn(inventory, "Free UOM QTY")
+    ) {
+      throw new Error(
         "Inventory needs SKU, Location, and Free UOM QTY."
       );
     }
 
-    const summary=calculateHats(orders,inventory);
+    const summary = calculateHats(orders, inventory);
 
-    $("hatNeeded").textContent=summary.needed;
-    $("hatLocated").textContent=summary.located;
+    $("hatNeeded").textContent = summary.needed;
+    $("hatLocated").textContent = summary.located;
 
-    $("hatTable").innerHTML=hatPulls.map(p=>`
+    $("hatTable").innerHTML = hatPulls.map(item => `
       <tr>
-        <td class="sku">${escapeHTML(p.sku)}</td>
-        <td><b>${p.qty}</b></td>
-        <td>${escapeHTML(p.loc)}</td>
-        <td>${escapeHTML(p.lpn)}</td>
+        <td class="sku">${escapeHTML(item.sku)}</td>
+        <td><b>${item.qty}</b></td>
+        <td>${escapeHTML(item.loc)}</td>
+        <td>${escapeHTML(item.lpn)}</td>
       </tr>
-    `).join("")||
-    '<tr><td colspan="4">No hat locations found.</td></tr>';
+    `).join("") ||
+      '<tr><td colspan="4">No available hat locations found.</td></tr>';
 
-    $("hatMissing").innerHTML=hatMissing.map(p=>`
+    $("hatMissing").innerHTML = hatMissing.map(item => `
       <tr>
-        <td class="sku">${escapeHTML(p.sku)}</td>
-        <td>${p.qty}</td>
-        <td class="warning">${escapeHTML(p.reason)}</td>
+        <td class="sku">${escapeHTML(item.sku)}</td>
+        <td>${item.qty}</td>
+        <td class="warning">${escapeHTML(item.reason)}</td>
       </tr>
-    `).join("")||
-    '<tr><td colspan="3">No unlocated hats.</td></tr>';
+    `).join("") ||
+      '<tr><td colspan="3">All identified hats are covered.</td></tr>';
 
     $("hatOutput").classList.remove("hidden");
 
-    $("hatMessage").textContent=
-      `Loaded ${orders.length} shipment lines and `+
+    $("hatMessage").textContent =
+      `Loaded ${orders.length} shipment lines and ` +
       `${inventory.length} inventory rows.`;
 
-  }catch(e){
-    $("hatMessage").textContent="Error: "+e.message;
+  } catch (error) {
+    $("hatMessage").textContent =
+      "Error: " + error.message;
   }
 }
 
-function copyHats(){
-  const text=hatPulls.map(p=>
-    `(${p.qty}) ${p.sku} — ${p.loc} — ${p.lpn}`
+function copyHats() {
+  const text = hatPulls.map(item =>
+    `(${item.qty}) ${item.sku} — ${item.loc} — ${item.lpn}`
   ).join("\n");
-  copyText(text,"hatCopyStatus");
+
+  copyText(text, "hatCopyStatus");
 }
 
-// EMERGENCY DOCUMENT LIBRARY
-// Saved in this browser only, not across employees/devices.
-const DOCUMENT_KEY="d2c_emergency_docs_v1";
+/* BREAK GLASS DOCUMENT LIBRARY */
 
-function documents(){
-  try{
-    return JSON.parse(localStorage.getItem(DOCUMENT_KEY)||"[]");
-  }catch(e){
+const DOC_KEY = "d2c_handbook_links_v2";
+
+const docCategories = {
+  daily: "dailyDocs",
+  logiwa: "logiwaDocs",
+  cs: "csDocs",
+  inventory: "inventoryDocs",
+  contact: "contactDocs"
+};
+
+function documents() {
+  try {
+    const data = JSON.parse(
+      localStorage.getItem(DOC_KEY) || "[]"
+    );
+
+    return Array.isArray(data) ? data : [];
+  } catch {
     return [];
   }
 }
 
-function renderDocuments(){
-  const docs=documents();
-  const container=$("documentList");
-  container.innerHTML="";
+function renderDocuments() {
+  const docs = documents();
 
-  if(!docs.length){
-    container.innerHTML=
-      '<p class="muted small">No documents added yet.</p>';
-    return;
+  for (const [category, id] of Object.entries(docCategories)) {
+    const container = $(id);
+
+    container.replaceChildren();
+
+    const items = docs
+      .map((doc, index) => ({ ...doc, index }))
+      .filter(doc => doc.category === category);
+
+    if (!items.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted small";
+      empty.textContent = "No guides added yet.";
+      container.append(empty);
+    }
+
+    for (const doc of items) {
+      const row = document.createElement("div");
+      row.className = "document-row";
+
+      const link = document.createElement("a");
+      link.href = doc.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = doc.name;
+
+      const remove = document.createElement("button");
+      remove.className = "btn";
+      remove.textContent = "Remove";
+      remove.onclick = () => removeDocument(doc.index);
+
+      row.append(link, remove);
+      container.append(row);
+    }
   }
-
-  docs.forEach((d,index)=>{
-    const row=document.createElement("div");
-    row.className="doc";
-
-    const a=document.createElement("a");
-    a.textContent="▤ "+d.name;
-    a.href=d.url;
-    a.target="_blank";
-    a.rel="noopener noreferrer";
-
-    const remove=document.createElement("button");
-    remove.textContent="Remove";
-    remove.className="light";
-    remove.onclick=()=>removeDocument(index);
-
-    row.append(a,remove);
-    container.append(row);
-  });
 }
 
-function addDocument(){
-  const name=clean($("docName").value);
-  const url=clean($("docUrl").value);
+function addDocument() {
+  const category = $("docCategory").value;
+  const name = clean($("docName").value);
+  const url = clean($("docUrl").value);
 
-  if(!name||!url){
-    $("documentMessage").textContent=
-      "Please enter a document name and link.";
+  if (!name || !url) {
+    $("documentMessage").textContent =
+      "Enter a document name and link.";
     return;
   }
 
   let parsed;
-  try{
-    parsed=new URL(url);
-    if(!["https:","http:"].includes(parsed.protocol))
-      throw Error("Invalid protocol");
-  }catch(e){
-    $("documentMessage").textContent=
-      "Please enter a valid http or https link.";
+
+  try {
+    parsed = new URL(url);
+
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new Error("Invalid URL");
+    }
+  } catch {
+    $("documentMessage").textContent =
+      "Enter a valid http or https link.";
     return;
   }
 
-  const docs=documents();
-  docs.push({name,url:parsed.href});
+  const docs = documents();
 
-  try{
-    localStorage.setItem(DOCUMENT_KEY,JSON.stringify(docs));
-    $("docName").value="";
-    $("docUrl").value="";
-    $("documentMessage").textContent="Document link added.";
+  docs.push({
+    category,
+    name,
+    url: parsed.href
+  });
+
+  try {
+    localStorage.setItem(
+      DOC_KEY,
+      JSON.stringify(docs)
+    );
+
+    $("docName").value = "";
+    $("docUrl").value = "";
+
+    $("documentMessage").textContent =
+      "Document link saved in this browser.";
+
     renderDocuments();
-  }catch(e){
-    $("documentMessage").textContent=
+  } catch {
+    $("documentMessage").textContent =
       "This browser could not save the link.";
   }
 }
 
-function removeDocument(index){
-  const docs=documents();
-  docs.splice(index,1);
-  localStorage.setItem(DOCUMENT_KEY,JSON.stringify(docs));
-  renderDocuments();
+function removeDocument(index) {
+  const docs = documents();
+
+  docs.splice(index, 1);
+
+  try {
+    localStorage.setItem(
+      DOC_KEY,
+      JSON.stringify(docs)
+    );
+
+    renderDocuments();
+  } catch {
+    alert("Could not save the change.");
+  }
 }
 
-// INITIALIZE
-const today=new Date();
-$("customDate").value=
-  today.getFullYear()+"-"+
-  String(today.getMonth()+1).padStart(2,"0")+"-"+
-  String(today.getDate()).padStart(2,"0");
+/* INITIALIZE */
+
+const today = new Date();
+
+$("customDate").value =
+  today.getFullYear() + "-" +
+  String(today.getMonth() + 1).padStart(2, "0") + "-" +
+  String(today.getDate()).padStart(2, "0");
 
 renderDocuments();
+
+if (window.lucide) {
+  lucide.createIcons();
+}
+
 </script>
+
 </body>
 </html>

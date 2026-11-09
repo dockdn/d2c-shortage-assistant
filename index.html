@@ -4,74 +4,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My D2C Dashboard</title>
+<title>My D2C Workspace</title>
 <style>
 :root{
-  --bg:#f7f8fa;--card:#fff;--ink:#263347;
-  --muted:#728093;--line:#e2e7ed;--accent:#344d6d;
+  --bg:#f7f8fa;
+  --card:#ffffff;
+  --text:#293548;
+  --muted:#718094;
+  --line:#e3e8ef;
+  --navy:#344b68;
+  --soft:#f1f4f8;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px Arial,sans-serif}
-header{background:white;border-bottom:1px solid var(--line);padding:21px 5%}
-.shell{max-width:1100px;margin:auto}
-.eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted)}
-h1{font-size:26px;margin:8px 0}
-h2{font-size:21px;margin:0 0 12px}
-h3{font-size:15px;margin:20px 0 10px}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font:14px Arial,Helvetica,sans-serif;
+}
+header{
+  background:white;border-bottom:1px solid var(--line);
+  padding:20px 5%;
+}
+.head{
+  max-width:1120px;margin:auto;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.logo{font-size:12px;font-weight:bold;letter-spacing:1px}
+main{max-width:1120px;margin:auto;padding:32px 20px}
+h1{font-size:29px;margin:8px 0}
+h2{font-size:22px;margin:0 0 12px}
+h3{font-size:16px;margin:0 0 12px}
 p{line-height:1.6}
 .muted{color:var(--muted)}
 .small{font-size:12px}
-main{max-width:1100px;margin:auto;padding:28px 18px}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
-nav button{border:0;background:#f1f3f6;padding:10px 15px}
-nav button.active{background:var(--accent);color:white}
-button,input,select{font:inherit;border:1px solid #cbd4df;border-radius:7px;padding:11px;background:white}
+.eyebrow{font-size:10px;letter-spacing:2px;color:var(--muted)}
+button,input,select{
+  font:inherit;padding:11px;border:1px solid #cbd5e0;
+  border-radius:7px;background:white;
+}
 button{cursor:pointer}
-button.primary{background:var(--accent);border-color:var(--accent);color:white}
-button:hover{filter:brightness(.96)}
-button:disabled{opacity:.5;cursor:not-allowed}
+button:hover{filter:brightness(.97)}
+button.primary{background:var(--navy);color:white;border-color:var(--navy)}
+button.light{background:var(--soft);border-color:var(--soft)}
+.home-btn{padding:9px 16px}
 .page{display:none}
 .page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:23px}
-.card,.panel{
-  background:var(--card);border:1px solid var(--line);
-  border-radius:12px;padding:23px;
+.grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;margin-top:25px;
 }
-.card{cursor:pointer;min-height:160px;transition:border-color .15s}
-.card:hover{border-color:#8096b1}
-.card .symbol{font-size:24px;margin-bottom:20px}
-.card h3{font-size:17px;margin:0 0 8px}
-.panel{margin-bottom:18px}
-.row{display:flex;gap:13px;flex-wrap:wrap;align-items:end}
+.card,.panel{
+  background:white;border:1px solid var(--line);
+  border-radius:13px;padding:24px;
+}
+.card{
+  cursor:pointer;min-height:150px;
+  transition:border-color .15s,transform .15s;
+}
+.card:hover{border-color:#9aaec6;transform:translateY(-2px)}
+.card h3{margin:14px 0 7px}
+.card p{margin:0}
+.card-icon{font-size:24px;color:var(--navy)}
+.card.featured{border-color:#c4d0df}
+.panel{margin:18px 0}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:end}
 .field{flex:1;min-width:185px}
-label{display:block;font-weight:bold;font-size:12px;color:var(--muted);margin-bottom:8px}
+label{
+  display:block;font-size:12px;color:var(--muted);
+  font-weight:bold;margin-bottom:8px;
+}
 input[type=file]{width:100%}
+input[type=text],input[type=url]{width:100%}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
 .hidden{display:none!important}
-.metrics{display:flex;gap:32px;flex-wrap:wrap;margin:22px 0}
+.metrics{display:flex;gap:28px;flex-wrap:wrap;margin:20px 0}
 .metric strong{display:block;font-size:24px}
 .metric span{font-size:11px;color:var(--muted)}
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th,td{padding:11px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:11px;background:#fafbfc;color:var(--muted)}
-.sku{font:12px monospace;overflow-wrap:anywhere}
-.warning{color:#a0681a}
-.error{color:#ae3d3d}
-.success{color:#17734c}
-.back{margin-bottom:20px;border:0;padding:0;background:none;color:var(--accent)}
-.links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.link{
-  display:block;text-decoration:none;color:var(--ink);
-  border:1px solid var(--line);border-radius:9px;padding:18px;
+th,td{
+  padding:11px 8px;text-align:left;
+  border-bottom:1px solid var(--line);vertical-align:top;
 }
-.link:hover{border-color:#8096b1}
+th{background:#fafbfc;font-size:11px;color:var(--muted)}
+.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
+.warning{color:#a16a1c}
+.error{color:#b13e3e}
+.success{color:#16754a}
+.link-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;margin-top:18px;
+}
+.link{
+  display:block;text-decoration:none;color:var(--text);
+  background:white;border:1px solid var(--line);
+  border-radius:10px;padding:20px;
+}
+.link:hover{border-color:#9aaec6}
 .link strong{display:block;margin-bottom:7px}
-.footer{margin:25px 0;font-size:11px;color:var(--muted);line-height:1.6}
+.feature-link{border-color:#bdcadb;background:#f9fbfe}
+.section-label{
+  font-size:11px;font-weight:bold;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-top:25px;
+}
+.doc{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-bottom:1px solid var(--line);padding:13px 0;
+}
+.doc a{color:var(--navy);text-decoration:none;overflow-wrap:anywhere}
+.doc a:hover{text-decoration:underline}
+.notice{
+  background:var(--soft);border-radius:8px;
+  padding:13px 15px;font-size:12px;line-height:1.6;
+}
+footer{color:var(--muted);font-size:11px;margin:30px 0}
 @media(max-width:650px){
-  .cards,.links{grid-template-columns:1fr}
-  .card{min-height:120px}
-  main{padding:16px 12px}
+  main{padding:20px 12px}
+  .grid,.link-grid{grid-template-columns:1fr}
+  .card{min-height:115px}
   .panel{padding:16px}
 }
 </style>
@@ -79,58 +128,67 @@ th{font-size:11px;background:#fafbfc;color:var(--muted)}
 <body>
 
 <header>
-<div class="shell">
-  <div class="eyebrow">MV SPORT / PERSONAL WORKSPACE</div>
-  <h1>My D2C Dashboard</h1>
-  <div class="muted small">Warehouse Operations</div>
-  <nav>
-    <button data-page="home" class="active">Home</button>
-    <button data-page="shortage">Shortage Center</button>
-    <button data-page="hats">The Game POD Hats</button>
-    <button data-page="links">Quick Links</button>
-  </nav>
-</div>
+  <div class="head">
+    <div class="logo">MY D2C WORKSPACE</div>
+    <button class="home-btn" onclick="showPage('home')">⌂ Home</button>
+  </div>
 </header>
 
 <main>
 
-<!-- LANDING PAGE -->
+<!-- HOME -->
 <section id="home" class="page active">
-  <h2>My Workspace</h2>
-  <p class="muted">Everything you need for your daily D2C operations, in one place.</p>
+  <div class="eyebrow">WAREHOUSE OPERATIONS</div>
+  <h1>My D2C Dashboard</h1>
+  <p class="muted">Your daily tools, reports, and resources — all in one place.</p>
 
-  <div class="cards">
-    <div class="card" data-open="shortage">
-      <div class="symbol">▤</div>
+  <div class="grid">
+    <div class="card featured" onclick="showPage('links')">
+      <div class="card-icon">▦</div>
+      <h3>D2C Warehouse Dashboard</h3>
+      <p class="muted small">
+        Your task management system and other important work links.
+      </p>
+    </div>
+
+    <div class="card" onclick="showPage('shortage')">
+      <div class="card-icon">▤</div>
       <h3>Shortage Center</h3>
       <p class="muted small">
-        Compare shortages, free inventory, and replenishment tasks.
-        Generate your additional storage pull list.
+        Find additional storage pulls not covered by replenishment.
       </p>
     </div>
 
-    <div class="card" data-open="hats">
-      <div class="symbol">▣</div>
+    <div class="card" onclick="showPage('hats')">
+      <div class="card-icon">▣</div>
       <h3>The Game POD Hats</h3>
       <p class="muted small">
-        Upload shipment orders and inventory. Find hats,
-        locations, quantities, and LPNs for Jira.
+        Find hats, quantities, locations, and LPNs for the task board.
       </p>
     </div>
 
-    <div class="card" data-open="links">
-      <div class="symbol">↗</div>
+    <div class="card" onclick="showPage('emergency')">
+      <div class="card-icon">♧</div>
+      <h3>Break Glass in Case of Emergency</h3>
+      <p class="muted small">
+        How-to guides, daily procedures, and everything someone
+        needs if you're not here.
+      </p>
+    </div>
+
+    <div class="card" onclick="showPage('links')">
+      <div class="card-icon">↗</div>
       <h3>Quick Links</h3>
       <p class="muted small">
-        POD Dashboard, BSN Order Lookup, Shopify, and more.
+        POD Orders Dashboard, BSN Order Lookup, Shopify, and more.
       </p>
     </div>
 
     <div class="card" style="cursor:default">
-      <div class="symbol">＋</div>
-      <h3>More Tools Coming Soon</h3>
+      <div class="card-icon">＋</div>
+      <h3>Room to Grow</h3>
       <p class="muted small">
-        Add new workflows as your responsibilities grow.
+        More tools and workflows can be added whenever you need them.
       </p>
     </div>
   </div>
@@ -138,15 +196,15 @@ th{font-size:11px;background:#fafbfc;color:var(--muted)}
 
 <!-- SHORTAGE CENTER -->
 <section id="shortage" class="page">
-  <button class="back" data-open="home">← Back to Dashboard</button>
-  <h2>Shortage Center</h2>
+  <div class="eyebrow">OPERATIONS / REPORTS</div>
+  <h1>Shortage Center</h1>
   <p class="muted small">
-    Only retrieve quantities not already covered by free shelf
-    inventory or active replenishment tasks.
+    Compare shortages, free shelf stock, and replenishment tasks
+    to identify only your additional pulls.
   </p>
 
   <div class="panel">
-    <h3>Upload Logiwa Exports</h3>
+    <h3>Upload Logiwa Reports</h3>
     <div class="row">
       <div class="field">
         <label>1. Shortage Report</label>
@@ -162,85 +220,85 @@ th{font-size:11px;background:#fafbfc;color:var(--muted)}
       </div>
     </div>
 
-    <h3>Report Date</h3>
+    <h3 style="margin-top:25px">Report Date</h3>
     <div class="row">
       <div class="field">
         <label>Include orders</label>
-        <select id="dateMode">
+        <select id="dateMode" onchange="toggleDate()">
           <option value="all">All Outstanding Shortages</option>
           <option value="custom">Created Before Custom Date & Time</option>
         </select>
       </div>
-      <div class="field hidden" id="dateField">
+      <div class="field hidden" id="dateBox">
         <label>Date</label>
         <input type="date" id="customDate">
       </div>
-      <div class="field hidden" id="timeField">
+      <div class="field hidden" id="timeBox">
         <label>Time (Eastern)</label>
         <input type="time" id="customTime" value="14:00">
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="generateShortage">Generate Pull Report</button>
+      <button class="primary" onclick="generateShortage()">
+        Generate My Pull List
+      </button>
     </div>
-    <p class="muted small" id="shortageMessage">
+    <p id="shortageMessage" class="muted small">
       Upload all three files to begin.
     </p>
   </div>
 
-  <div class="panel hidden" id="shortageOutput">
-    <h3>My Additional Pulls</h3>
+  <div id="shortageOutput" class="panel hidden">
+    <h3>Additional Storage Pulls</h3>
 
     <div class="metrics">
       <div class="metric">
-        <strong id="totalShortage">0</strong>
+        <strong id="shortageTotal">0</strong>
         <span>Shortage Units</span>
       </div>
       <div class="metric">
-        <strong id="shelfCovered">0</strong>
+        <strong id="shelfTotal">0</strong>
         <span>Covered by Shelf</span>
       </div>
       <div class="metric">
-        <strong id="taskCovered">0</strong>
+        <strong id="taskTotal">0</strong>
         <span>Covered by Replenishment</span>
       </div>
       <div class="metric">
-        <strong id="extraPulls">0</strong>
-        <span>Additional Units to Pull</span>
+        <strong id="pullTotal">0</strong>
+        <span>Additional Pull Units</span>
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="printPull">Print My Pull List</button>
-      <button id="copyMagna">Copy MagnaReady Jira</button>
-      <button id="copySwoveralls">Copy Swoveralls Jira</button>
+      <button class="primary" onclick="printPulls()">Print Pull List</button>
+      <button onclick="copyShortageBrand('MagnaReady')">
+        Copy MagnaReady for Task Board
+      </button>
+      <button onclick="copyShortageBrand('Swoveralls')">
+        Copy Swoveralls for Task Board
+      </button>
     </div>
+
     <p class="muted small" id="shortageCopyStatus"></p>
 
     <div class="tablewrap">
       <table>
-        <thead>
-          <tr>
-            <th>Brand</th><th>SKU</th><th>QTY</th>
-            <th>Location</th><th>LPN</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Brand</th><th>SKU</th><th>QTY</th>
+          <th>Location</th><th>LPN</th>
+        </tr></thead>
         <tbody id="pullTable"></tbody>
       </table>
     </div>
 
-    <h3>Needs Follow-up</h3>
-    <p class="muted small">
-      Items that cannot be fully covered by eligible physical inventory.
-    </p>
+    <h3 style="margin-top:25px">Needs Follow-up</h3>
     <div class="tablewrap">
       <table>
-        <thead>
-          <tr>
-            <th>Brand</th><th>SKU</th><th>QTY</th><th>Reason</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Brand</th><th>SKU</th><th>QTY</th><th>Reason</th>
+        </tr></thead>
         <tbody id="followTable"></tbody>
       </table>
     </div>
@@ -249,76 +307,72 @@ th{font-size:11px;background:#fafbfc;color:var(--muted)}
 
 <!-- THE GAME -->
 <section id="hats" class="page">
-  <button class="back" data-open="home">← Back to Dashboard</button>
-  <h2>The Game — POD Hats</h2>
+  <div class="eyebrow">THE GAME / POD</div>
+  <h1>The Game POD Hats</h1>
   <p class="muted small">
-    Upload the Shipment Orders export and the matching
-    Inventory by Location export. Only hat products will be included.
+    Upload Shipment Orders and Inventory by Location to find
+    the hats you need from building 88.
   </p>
 
   <div class="panel">
     <div class="row">
       <div class="field">
-        <label>1. Shipment Orders</label>
-        <input type="file" id="hatOrdersFile" accept=".xlsx,.xls,.csv">
+        <label>1. Shipment Orders Export</label>
+        <input type="file" id="hatOrders" accept=".xlsx,.xls,.csv">
       </div>
       <div class="field">
         <label>2. Inventory by Location</label>
-        <input type="file" id="hatInventoryFile" accept=".xlsx,.xls,.csv">
+        <input type="file" id="hatInventory" accept=".xlsx,.xls,.csv">
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="generateHats">Find My Hats</button>
+      <button class="primary" onclick="generateHats()">Find My Hats</button>
     </div>
 
-    <p class="muted small" id="hatMessage">
-      Upload both The Game files to begin.
+    <p id="hatMessage" class="muted small">
+      Upload both reports to begin.
     </p>
   </div>
 
-  <div class="panel hidden" id="hatOutput">
+  <div id="hatOutput" class="panel hidden">
     <h3>Hats to Retrieve</h3>
 
     <div class="metrics">
       <div class="metric">
-        <strong id="hatSkuCount">0</strong>
-        <span>Hat SKUs</span>
-      </div>
-      <div class="metric">
-        <strong id="hatUnitCount">0</strong>
+        <strong id="hatNeeded">0</strong>
         <span>Units Needed</span>
       </div>
       <div class="metric">
-        <strong id="hatFoundCount">0</strong>
+        <strong id="hatLocated">0</strong>
         <span>Units Located</span>
       </div>
     </div>
 
     <div class="actions">
-      <button class="primary" id="copyHatJira">Copy The Game Jira</button>
+      <button class="primary" onclick="copyHats()">
+        Copy The Game for Task Board
+      </button>
     </div>
+
     <p class="muted small" id="hatCopyStatus"></p>
 
     <div class="tablewrap">
       <table>
-        <thead>
-          <tr>
-            <th>SKU</th><th>QTY</th>
-            <th>Location</th><th>LPN</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>SKU</th><th>QTY</th><th>Location</th><th>LPN</th>
+        </tr></thead>
         <tbody id="hatTable"></tbody>
       </table>
     </div>
 
-    <h3>Unlocated Hats</h3>
+    <h3 style="margin-top:25px">Unable to Locate</h3>
     <div class="tablewrap">
       <table>
-        <thead>
-          <tr><th>SKU</th><th>QTY</th><th>Reason</th></tr>
-        </thead>
-        <tbody id="hatMissingTable"></tbody>
+        <thead><tr>
+          <th>SKU</th><th>QTY</th><th>Reason</th>
+        </tr></thead>
+        <tbody id="hatMissing"></tbody>
       </table>
     </div>
   </div>
@@ -326,108 +380,187 @@ th{font-size:11px;background:#fafbfc;color:var(--muted)}
 
 <!-- QUICK LINKS -->
 <section id="links" class="page">
-  <button class="back" data-open="home">← Back to Dashboard</button>
-  <h2>Quick Links</h2>
-  <p class="muted small">Frequently used D2C operations tools.</p>
+  <div class="eyebrow">WORKSPACE / RESOURCES</div>
+  <h1>Quick Links</h1>
+  <p class="muted">Your most-used systems, one click away.</p>
+
+  <div class="section-label">Most Important</div>
+
+  <div class="link-grid">
+    <a class="link feature-link"
+       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+       target="_blank" rel="noopener">
+      <strong>▦ D2C Warehouse Dashboard ↗</strong>
+      <span class="muted small">
+        Your main task management board.
+      </span>
+    </a>
+  </div>
+
+  <div class="section-label">Other Tools</div>
+
+  <div class="link-grid">
+    <a class="link"
+       href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
+       target="_blank" rel="noopener">
+      <strong>POD Orders Dashboard ↗</strong>
+      <span class="muted small">
+        Artwork, cancellations, and replacement orders.
+      </span>
+    </a>
+
+    <a class="link"
+       href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
+       target="_blank" rel="noopener">
+      <strong>BSN Order Lookup ↗</strong>
+      <span class="muted small">
+        Tracking and order details.
+      </span>
+    </a>
+
+    <a class="link"
+       href="https://admin.shopify.com/store/"
+       target="_blank" rel="noopener">
+      <strong>Shopify Admin ↗</strong>
+      <span class="muted small">
+        Store and order management.
+      </span>
+    </a>
+  </div>
+</section>
+
+<!-- EMERGENCY HANDBOOK -->
+<section id="emergency" class="page">
+  <div class="eyebrow">BACKUP PLAN / PROCEDURES</div>
+  <h1>Break Glass in Case of Emergency</h1>
+  <p class="muted">
+    Everything you need to survive a day without me.
+  </p>
+
+  <div class="notice">
+    <strong>Dear person covering for me,</strong>
+    <p style="margin-bottom:0">
+      First of all, good luck. Second, don't panic.
+      Everything you should need is organized below.
+      If something isn't here... I probably forgot to add it.
+    </p>
+  </div>
 
   <div class="panel">
-    <div class="links">
-      <a class="link" target="_blank" rel="noopener"
-         href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard">
-        <strong>POD Orders Dashboard ↗</strong>
-        <span class="muted small">
-          Artwork, cancellations, and replacement orders.
-        </span>
-      </a>
+    <h3>Daily Must-Dos</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Time</th><th>Task</th></tr></thead>
+        <tbody>
+          <tr><td>8:30 AM</td><td>The Game — assign stock requests to Marc</td></tr>
+          <tr><td>2:00 PM</td><td>Amazon orders</td></tr>
+          <tr><td>After replenishment</td><td>Review shortage report</td></tr>
+          <tr><td>4:30 PM</td><td>Check and clear Job Queue</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-      <a class="link" target="_blank" rel="noopener"
-         href="https://bespokeapp.mylocker.net/api/tools/orderlookup/">
-        <strong>BSN Order Lookup ↗</strong>
-        <span class="muted small">
-          Order lookup and tracking information.
-        </span>
-      </a>
+  <div class="panel">
+    <h3>How-To Guides & Procedures</h3>
+    <p class="muted small">
+      Add links to PDFs, training documents, Scribe guides,
+      or shared company files. Saved links will appear here
+      whenever you reopen this dashboard in the same browser.
+    </p>
 
-      <a class="link" target="_blank" rel="noopener"
-         href="https://admin.shopify.com/store/">
-        <strong>Shopify Admin ↗</strong>
-        <span class="muted small">
-          Brand stores and order information.
-        </span>
-      </a>
+    <div id="documentList"></div>
 
-      <a class="link" target="_blank" rel="noopener"
-         href="https://www.atlassian.com/software/jira">
-        <strong>Jira ↗</strong>
-        <span class="muted small">
-          Open Jira. Replace this link with your actual board URL.
-        </span>
-      </a>
+    <h3 style="margin-top:24px">Add a Document</h3>
+    <div class="row">
+      <div class="field">
+        <label>Document Name</label>
+        <input type="text" id="docName"
+               placeholder="Example: Directed Put Away Guide">
+      </div>
+      <div class="field">
+        <label>Document Link</label>
+        <input type="url" id="docUrl"
+               placeholder="https://...">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="addDocument()">
+        Add to Handbook
+      </button>
+    </div>
+
+    <p class="muted small" id="documentMessage"></p>
+
+    <div class="notice">
+      <strong>Important:</strong> Links added here are saved only
+      in this browser. They are not automatically published to
+      your Vercel website for other employees. For a shared
+      emergency handbook, the links should eventually be added
+      to the site's source code or a shared document system.
     </div>
   </div>
 </section>
 
-<div class="footer">
-  Personal warehouse reporting tool. Uploaded spreadsheets are processed
-  in your browser. Data is based on exports rather than live Logiwa
-  availability. Confirm company approval before using work data
-  with externally hosted tools or scripts.
-</div>
-
+<footer>
+  Personal D2C workspace · Reports use uploaded Logiwa snapshots,
+  not live inventory. Verify quantities before physical transfers.
+</footer>
 </main>
 
 <script>
 "use strict";
 
 const $=id=>document.getElementById(id);
-
-function txt(v){return String(v??"").trim();}
-function norm(v){return txt(v).toUpperCase().replace(/\s+/g,"");}
-function qty(v){
-  const n=Number(txt(v).replace(/,/g,""));
+const clean=v=>String(v??"").trim();
+const norm=v=>clean(v).toUpperCase().replace(/\s+/g,"");
+const num=v=>{
+  const n=Number(clean(v).replace(/,/g,""));
   return Number.isFinite(n)?Math.max(0,n):0;
-}
-function esc(v){
-  return String(v??"").replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",
-    '"':"&quot;","'":"&#39;"
-  }[c]));
-}
-function field(row,...names){
-  const keys=Object.keys(row||{});
+};
+const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+}[c]));
+
+function get(row,...names){
   for(const n of names){
-    const key=keys.find(k=>norm(k)===norm(n));
-    if(key!==undefined&&txt(row[key])!=="")return row[key];
+    const key=Object.keys(row||{}).find(k=>norm(k)===norm(n));
+    if(key!==undefined&&clean(row[key])!=="")return row[key];
   }
   return "";
 }
-function has(rows,...names){
-  if(!rows.length)return false;
-  return names.some(n=>
+
+function hasColumn(rows,...names){
+  return !!rows.length&&names.some(n=>
     Object.keys(rows[0]).some(k=>norm(k)===norm(n))
   );
 }
+
 function brand(v){
-  const s=norm(v);
+  const s=norm(v).replace(/[^A-Z0-9]/g,"");
   if(s.includes("MAGNAREADY"))return "MagnaReady";
   if(s.includes("SWOVERALL"))return "Swoveralls";
   if(s.includes("THEGAME"))return "The Game";
-  return txt(v)||"Other";
+  return clean(v)||"Other";
 }
+
 function client(r){
-  return brand(field(r,"Client","Client Display Name","Brand"));
+  return brand(get(r,"Client","Client Display Name","Brand"));
 }
-function locationType(loc){
-  const s=norm(loc);
+
+function typeOfLocation(v){
+  const s=norm(v);
   if(!s)return "Unknown";
   if(["MV-M1","0M1","0M5"].includes(s))return "Virtual";
   if(/STAGING|STAGE|PACKING|SHIPPING/.test(s))return "Excluded";
-  // Logiwa exports sometimes put spaces around dots.
   if(/^(100|88)\.\d/.test(s))return "Shelf";
   return "Storage";
 }
-function area(loc){
-  const s=norm(loc);
+
+function area(v){
+  const s=norm(v);
   if(s.startsWith("REC-SOUTH"))return 0;
   if(s.startsWith("R-100"))return 1;
   if(s.startsWith("STN"))return 2;
@@ -436,104 +569,57 @@ function area(loc){
   if(s.startsWith("RECEIVING"))return 5;
   return 6;
 }
-function locCompare(a,b){
+
+function sortLocations(a,b){
   return area(a)-area(b)||
-    txt(a).localeCompare(txt(b),undefined,{numeric:true});
+    clean(a).localeCompare(clean(b),undefined,{numeric:true});
 }
-function dateValue(v){
-  if(v instanceof Date)return v.getTime();
-  if(typeof v==="number")return (v-25569)*86400000;
-  const s=txt(v);
-  const m=s.match(
-    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/
-  );
-  if(m){
-    return new Date(+m[1],+m[2]-1,+m[3],
-      +(m[4]||0),+(m[5]||0),+(m[6]||0)).getTime();
-  }
-  const d=new Date(s);
-  return d.getTime();
+
+function matches(item,group){
+  return norm(item.sku)===norm(group.sku)&&
+    (item.brand===group.brand||
+     item.brand==="Other"||group.brand==="Other");
 }
-function keyFor(b,sku){return norm(b)+"|"+norm(sku);}
+
 function inventoryData(rows){
-  const out=[];
   const seen=new Map();
 
   for(const r of rows){
-    const sku=txt(field(r,"SKU"));
-    const loc=txt(field(r,"Location","Location Code"));
-    const lpn=txt(field(r,"LPN","License Plate Number"));
-    const free=qty(field(r,"Free UOM QTY","Free Qty"));
+    const sku=clean(get(r,"SKU"));
+    const loc=clean(get(r,"Location","Location Code"));
+    const lpn=clean(get(r,"LPN","License Plate Number"));
+    const free=num(get(r,"Free UOM QTY","Free Qty"));
     const b=client(r);
 
     if(!sku||!loc||free<=0)continue;
 
     const key=[norm(b),norm(sku),norm(loc),norm(lpn)].join("|");
 
-    // Duplicate rows with the same SKU, location, LPN,
-    // and client must not inflate free stock.
     if(seen.has(key)){
       const existing=seen.get(key);
       if(existing.free!==free)existing.conflict=true;
       continue;
     }
 
-    const item={
+    seen.set(key,{
       sku,loc,lpn,free,brand:b,
-      type:locationType(loc),used:0,conflict:false
-    };
-    seen.set(key,item);
-    out.push(item);
+      type:typeOfLocation(loc),used:0,conflict:false
+    });
   }
-  return out;
-}
-function matches(i,g){
-  return norm(i.sku)===norm(g.sku)&&
-    (norm(i.brand)===norm(g.brand)||
-     i.brand==="Other"||g.brand==="Other");
+  return [...seen.values()];
 }
 
-// NAVIGATION
-function showPage(page){
-  document.querySelectorAll(".page").forEach(el=>
-    el.classList.toggle("active",el.id===page)
-  );
-  document.querySelectorAll("nav button").forEach(el=>
-    el.classList.toggle("active",el.dataset.page===page)
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>
+    p.classList.toggle("active",p.id===id)
   );
   window.scrollTo(0,0);
 }
-document.querySelectorAll("[data-page]").forEach(el=>
-  el.addEventListener("click",()=>showPage(el.dataset.page))
-);
-document.querySelectorAll("[data-open]").forEach(el=>
-  el.addEventListener("click",()=>showPage(el.dataset.open))
-);
 
-// FILE IMPORT
 let excelPromise=null;
-async function readFile(file){
-  if(!file)throw Error("Please select all required files.");
 
-  if(file.name.toLowerCase().endsWith(".csv")){
-    const text=await file.text();
-    if(!window.XLSX)await loadExcel();
-    const wb=XLSX.read(text,{type:"string"});
-    return XLSX.utils.sheet_to_json(
-      wb.Sheets[wb.SheetNames[0]],{defval:"",raw:false}
-    );
-  }
-
-  await loadExcel();
-  const wb=XLSX.read(await file.arrayBuffer(),{
-    type:"array",cellDates:true
-  });
-  return XLSX.utils.sheet_to_json(
-    wb.Sheets[wb.SheetNames[0]],{defval:"",raw:false}
-  );
-}
-function loadExcel(){
-  if(window.XLSX)return Promise.resolve();
+async function loadExcel(){
+  if(window.XLSX)return;
   if(!excelPromise){
     excelPromise=new Promise((resolve,reject)=>{
       const script=document.createElement("script");
@@ -541,188 +627,239 @@ function loadExcel(){
         "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
       script.onload=resolve;
       script.onerror=()=>reject(
-        Error("Excel reader could not load.")
+        Error("Could not load Excel reader. Check your connection.")
       );
       document.head.appendChild(script);
     });
   }
-  return excelPromise;
+  await excelPromise;
 }
-async function copy(text,target,message){
+
+async function readFile(file){
+  if(!file)throw Error("Please upload all required files.");
+
+  await loadExcel();
+
+  let workbook;
+  if(file.name.toLowerCase().endsWith(".csv")){
+    workbook=XLSX.read(await file.text(),{type:"string"});
+  }else{
+    workbook=XLSX.read(await file.arrayBuffer(),{
+      type:"array",cellDates:true
+    });
+  }
+
+  return XLSX.utils.sheet_to_json(
+    workbook.Sheets[workbook.SheetNames[0]],
+    {defval:"",raw:false}
+  );
+}
+
+async function copyText(text,statusId){
   if(!text.trim()){
     alert("Nothing to copy.");
     return;
   }
+
   try{
     await navigator.clipboard.writeText(text);
-    $(target).textContent=message;
+    $(statusId).textContent="Copied! Ready to paste into the D2C task board.";
   }catch(e){
     prompt("Copy this text:",text);
   }
 }
 
+function dateNumber(v){
+  const s=clean(v);
+  if(!s)return NaN;
+  if(v instanceof Date)return v.getTime();
+  if(typeof v==="number")return (v-25569)*86400000;
+
+  const m=s.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/
+  );
+  if(m){
+    return new Date(
+      +m[1],+m[2]-1,+m[3],
+      +(m[4]||0),+(m[5]||0),+(m[6]||0)
+    ).getTime();
+  }
+
+  return new Date(s).getTime();
+}
+
 // SHORTAGE CENTER
-let shortageSource=[],stockSource=[],taskSource=[];
-let shortagePlan=[],shortageFollow=[],shortageSummary=null;
+let shortageSource=[],inventorySource=[],taskSource=[];
+let shortagePulls=[],shortageFollow=[];
+let shortageStats={total:0,shelf:0,tasks:0};
+
+function toggleDate(){
+  const custom=$("dateMode").value==="custom";
+  $("dateBox").classList.toggle("hidden",!custom);
+  $("timeBox").classList.toggle("hidden",!custom);
+}
 
 function selectedShortages(){
   let rows=shortageSource.filter(r=>
-    qty(field(r,"Shortage UOM Qty"))>0
+    num(get(r,"Shortage UOM Qty"))>0
   );
 
   if($("dateMode").value==="custom"){
-    const date=$("customDate").value;
-    const time=$("customTime").value;
-    if(!date||!time)throw Error("Select a date and time.");
+    if(!$("customDate").value||!$("customTime").value){
+      throw Error("Choose a custom date and time.");
+    }
 
-    const limit=dateValue(date+"T"+time+":00");
+    const cutoff=dateNumber(
+      $("customDate").value+"T"+$("customTime").value+":00"
+    );
+
     rows=rows.filter(r=>{
-      const t=dateValue(field(r,"Order Creation Date"));
-      return Number.isFinite(t)&&t<limit;
+      const d=dateNumber(get(r,"Order Creation Date"));
+      return Number.isFinite(d)&&d<cutoff;
     });
   }
+
   return rows;
 }
+
 function activeTasks(){
-  const out=[];
+  const result=[];
   const seen=new Set();
 
   for(const r of taskSource){
-    const sku=txt(field(r,"SKU"));
-    const status=norm(field(r,"Task Status"));
-    const amount=qty(field(r,"Task UOM Qty","Task Qty"));
-    if(!sku||!amount)continue;
+    const sku=clean(get(r,"SKU"));
+    const status=norm(get(r,"Task Status"));
+    const quantity=num(get(r,"Task UOM Qty","Task Qty"));
 
-    // Completed and cancelled tasks do not count as
-    // outstanding work.
+    if(!sku||!quantity)continue;
     if(/COMPLETE|CANCEL|CLOSED|FAILED/.test(status))continue;
-
-    // Unrecognized statuses are not silently counted.
     if(!/PENDING|PROGRESS|START|ASSIGN|OPEN|CREATED/.test(status))
       continue;
 
-    const task={
-      sku,brand:client(r),qty:amount,
-      loc:txt(field(r,"Source location","Source Location")),
-      lpn:txt(field(r,"Source LPN")),
-      id:txt(field(r,"Task Id","Task ID"))
+    const item={
+      sku,brand:client(r),qty:quantity,
+      loc:clean(get(r,"Source location","Source Location")),
+      lpn:clean(get(r,"Source LPN")),
+      id:clean(get(r,"Task Id","Task ID"))
     };
 
-    const k=task.id||
-      [norm(task.brand),norm(sku),norm(task.loc),
-       norm(task.lpn),amount].join("|");
+    const key=item.id||
+      [item.brand,norm(sku),norm(item.loc),
+       norm(item.lpn),quantity].join("|");
 
-    if(seen.has(k))continue;
-    seen.add(k);
-    out.push(task);
+    if(seen.has(key))continue;
+    seen.add(key);
+    result.push(item);
   }
-  return out;
+  return result;
 }
-function calculateShortage(){
-  const grouped=new Map();
+
+function calculateShortages(){
+  const groups=new Map();
 
   for(const r of selectedShortages()){
-    const sku=txt(field(r,"SKU"));
+    const sku=clean(get(r,"SKU"));
     const b=client(r);
     if(!sku)continue;
-    const k=keyFor(b,sku);
-    if(!grouped.has(k)){
-      grouped.set(k,{
+
+    const key=norm(b)+"|"+norm(sku);
+    if(!groups.has(key)){
+      groups.set(key,{
         sku,brand:b,need:0,
-        oldest:dateValue(field(r,"Order Creation Date"))
+        oldest:dateNumber(get(r,"Order Creation Date"))
       });
     }
-    const g=grouped.get(k);
-    g.need+=qty(field(r,"Shortage UOM Qty"));
-    const d=dateValue(field(r,"Order Creation Date"));
+
+    const g=groups.get(key);
+    g.need+=num(get(r,"Shortage UOM Qty"));
+    const d=dateNumber(get(r,"Order Creation Date"));
     if(Number.isFinite(d)){
       g.oldest=Number.isFinite(g.oldest)?Math.min(g.oldest,d):d;
     }
   }
 
-  const groups=[...grouped.values()].sort(
+  const ordered=[...groups.values()].sort(
     (a,b)=>(a.oldest||0)-(b.oldest||0)
   );
-  const stock=inventoryData(stockSource);
+  const stock=inventoryData(inventorySource);
   const tasks=activeTasks();
 
-  shortagePlan=[];
+  shortagePulls=[];
   shortageFollow=[];
+  shortageStats={
+    total:ordered.reduce((s,g)=>s+g.need,0),
+    shelf:0,tasks:0
+  };
 
-  // Reserve physical source inventory already assigned
-  // to replenishment tasks.
-  const taskCoverage=new Map();
+  const coverage=new Map();
 
+  // Reserve inventory already assigned to replenishers.
   for(const t of tasks){
-    const k=keyFor(t.brand,t.sku);
-    taskCoverage.set(k,(taskCoverage.get(k)||0)+t.qty);
+    const key=norm(t.brand)+"|"+norm(t.sku);
+    coverage.set(key,(coverage.get(key)||0)+t.qty);
 
     let remaining=t.qty;
+
     const sources=stock.filter(i=>
-      matches(i,t)&&i.type==="Storage"&&
-      (!t.loc||norm(t.loc)===norm(i.loc))&&
-      (!t.lpn||norm(t.lpn)===norm(i.lpn))
+      matches(i,t)&&i.type==="Storage"&&!i.conflict&&
+      (!t.loc||norm(i.loc)===norm(t.loc))&&
+      (!t.lpn||norm(i.lpn)===norm(t.lpn))
     );
 
     for(const i of sources){
-      const n=Math.min(remaining,Math.max(0,i.free-i.used));
-      i.used+=n;
-      remaining-=n;
       if(remaining<=0)break;
+      const take=Math.min(remaining,Math.max(0,i.free-i.used));
+      i.used+=take;
+      remaining-=take;
     }
   }
 
-  let shelfCovered=0;
-  let taskCovered=0;
-
-  for(const g of groups){
+  for(const g of ordered){
     const matching=stock.filter(i=>matches(i,g));
     const shelf=matching.filter(i=>
       i.type==="Shelf"&&!i.conflict
     );
 
-    const shelfFree=shelf.reduce(
-      (sum,i)=>sum+Math.max(0,i.free-i.used),0
+    const freeShelf=shelf.reduce(
+      (s,i)=>s+Math.max(0,i.free-i.used),0
     );
 
-    const covered=Math.min(g.need,shelfFree);
-    shelfCovered+=covered;
+    const covered=Math.min(g.need,freeShelf);
+    shortageStats.shelf+=covered;
 
     let remaining=g.need-covered;
-
-    // Reserve shelf units once.
     let reserve=covered;
+
     for(const i of shelf){
-      const n=Math.min(reserve,Math.max(0,i.free-i.used));
-      i.used+=n;
-      reserve-=n;
       if(reserve<=0)break;
+      const take=Math.min(reserve,Math.max(0,i.free-i.used));
+      i.used+=take;
+      reserve-=take;
     }
 
-    const exact=keyFor(g.brand,g.sku);
-    const generic=keyFor("Other",g.sku);
-    const taskQty=(taskCoverage.get(exact)||0)+
-      (exact===generic?0:(taskCoverage.get(generic)||0));
+    const key=norm(g.brand)+"|"+norm(g.sku);
+    const generic="OTHER|"+norm(g.sku);
+    const assigned=(coverage.get(key)||0)+
+      (key===generic?0:(coverage.get(generic)||0));
 
-    const assigned=Math.min(remaining,taskQty);
-    remaining-=assigned;
-    taskCovered+=assigned;
+    const taskTake=Math.min(remaining,assigned);
+    shortageStats.tasks+=taskTake;
+    remaining-=taskTake;
 
-    const physical=matching.filter(i=>
+    const sources=matching.filter(i=>
       i.type==="Storage"&&!i.conflict
-    ).sort((a,b)=>locCompare(a.loc,b.loc));
+    ).sort((a,b)=>sortLocations(a.loc,b.loc));
 
-    for(const i of physical){
+    for(const i of sources){
       if(remaining<=0)break;
 
       const available=Math.max(0,i.free-i.used);
       const take=Math.min(remaining,available);
 
       if(take>0){
-        shortagePlan.push({
-          brand:g.brand,sku:g.sku,
-          qty:take,loc:i.loc,lpn:i.lpn||"—",
-          oldest:g.oldest
+        shortagePulls.push({
+          brand:g.brand,sku:g.sku,qty:take,
+          loc:i.loc,lpn:i.lpn||"—",oldest:g.oldest
         });
         i.used+=take;
         remaining-=take;
@@ -732,10 +869,10 @@ function calculateShortage(){
     if(remaining>0){
       const virtual=matching.filter(i=>i.type==="Virtual");
       const conflict=matching.some(i=>i.conflict);
-      let reason="No additional free physical inventory";
 
+      let reason="No additional free physical inventory";
       if(conflict){
-        reason="Inventory rows conflict — verify quantities";
+        reason="Conflicting inventory quantities — verify";
       }else if(virtual.length){
         reason="Virtual: "+virtual.map(i=>
           i.loc+" / "+(i.lpn||"No LPN")
@@ -748,106 +885,47 @@ function calculateShortage(){
     }
   }
 
-  shortagePlan.sort((a,b)=>
-    locCompare(a.loc,b.loc)||
+  shortagePulls.sort((a,b)=>
+    sortLocations(a.loc,b.loc)||
     (a.oldest||0)-(b.oldest||0)
   );
-
-  shortageSummary={
-    total:groups.reduce((s,g)=>s+g.need,0),
-    shelfCovered,taskCovered
-  };
 }
-function renderShortage(){
-  calculateShortage();
 
-  $("totalShortage").textContent=shortageSummary.total;
-  $("shelfCovered").textContent=shortageSummary.shelfCovered;
-  $("taskCovered").textContent=shortageSummary.taskCovered;
-  $("extraPulls").textContent=shortagePlan.reduce(
+function renderShortages(){
+  calculateShortages();
+
+  $("shortageTotal").textContent=shortageStats.total;
+  $("shelfTotal").textContent=shortageStats.shelf;
+  $("taskTotal").textContent=shortageStats.tasks;
+  $("pullTotal").textContent=shortagePulls.reduce(
     (s,p)=>s+p.qty,0
   );
 
-  $("pullTable").innerHTML=shortagePlan.map(p=>`
+  $("pullTable").innerHTML=shortagePulls.map(p=>`
     <tr>
-      <td>${esc(p.brand)}</td>
-      <td class="sku">${esc(p.sku)}</td>
+      <td>${escapeHTML(p.brand)}</td>
+      <td class="sku">${escapeHTML(p.sku)}</td>
       <td><b>${p.qty}</b></td>
-      <td>${esc(p.loc)}</td>
-      <td>${esc(p.lpn)}</td>
+      <td>${escapeHTML(p.loc)}</td>
+      <td>${escapeHTML(p.lpn)}</td>
     </tr>
   `).join("")||
-  '<tr><td colspan="5">No additional pulls needed.</td></tr>';
+  '<tr><td colspan="5">No additional pulls.</td></tr>';
 
   $("followTable").innerHTML=shortageFollow.map(p=>`
     <tr>
-      <td>${esc(p.brand)}</td>
-      <td class="sku">${esc(p.sku)}</td>
+      <td>${escapeHTML(p.brand)}</td>
+      <td class="sku">${escapeHTML(p.sku)}</td>
       <td>${p.qty}</td>
-      <td class="warning">${esc(p.reason)}</td>
+      <td class="warning">${escapeHTML(p.reason)}</td>
     </tr>
   `).join("")||
   '<tr><td colspan="4">No follow-ups.</td></tr>';
 
   $("shortageOutput").classList.remove("hidden");
 }
-function printShortage(){
-  if(!shortagePlan.length){
-    alert("No additional pulls to print.");
-    return;
-  }
 
-  const w=window.open("","_blank");
-  if(!w){
-    alert("Please allow pop-ups.");
-    return;
-  }
-
-  const rows=shortagePlan.map(p=>`
-    <tr>
-      <td style="text-align:center">□</td>
-      <td><b>${p.qty}</b></td>
-      <td>${esc(p.sku)}</td>
-      <td>${esc(p.loc)}</td>
-      <td>${esc(p.lpn)}</td>
-    </tr>
-  `).join("");
-
-  w.document.write(`<!doctype html><html><head>
-  <title>Additional Storage Pulls</title>
-  <style>
-  @page{size:letter;margin:.45in}
-  body{font:10px Arial;color:black}
-  h1{text-align:center;font-size:16px}
-  p{text-align:center}
-  table{width:100%;border-collapse:collapse}
-  th,td{border:1px solid #888;padding:7px 5px;text-align:left}
-  th{background:#eee}
-  tr{break-inside:avoid}
-  </style></head><body>
-  <h1>MY ADDITIONAL STORAGE PULLS</h1>
-  <p>Not covered by shelf inventory or existing replenishment tasks</p>
-  <table><thead><tr>
-    <th>✓</th><th>QTY</th><th>SKU</th>
-    <th>LOCATION</th><th>LPN</th>
-  </tr></thead><tbody>${rows}</tbody></table>
-  </body></html>`);
-
-  w.document.close();
-  w.focus();
-  setTimeout(()=>w.print(),300);
-}
-function copyShortageBrand(b){
-  const items=shortagePlan.filter(p=>norm(p.brand)===norm(b));
-  const text=items.map(p=>
-    `(${p.qty}) ${p.sku} — ${p.loc} — ${p.lpn}`
-  ).join("\n");
-
-  copy(text,"shortageCopyStatus",
-    "Copied "+items.length+" "+b+" pull lines.");
-}
-
-$("generateShortage").onclick=async()=>{
+async function generateShortage(){
   $("shortageMessage").textContent="Reading files...";
   $("shortageOutput").classList.add("hidden");
 
@@ -858,64 +936,100 @@ $("generateShortage").onclick=async()=>{
       readFile($("taskFile").files[0])
     ]);
 
-    if(!has(s,"SKU")||!has(s,"Shortage UOM Qty"))
-      throw Error("Shortage file needs SKU and Shortage UOM Qty.");
-
-    if(!has(i,"SKU")||!has(i,"Location")||
-       !has(i,"Free UOM QTY"))
-      throw Error("Inventory file needs SKU, Location, Free UOM QTY.");
-
-    if(!has(t,"SKU")||!has(t,"Task Status")||
-       !has(t,"Task UOM Qty"))
+    if(!hasColumn(s,"SKU")||!hasColumn(s,"Shortage UOM Qty")){
+      throw Error("Shortage export needs SKU and Shortage UOM Qty.");
+    }
+    if(!hasColumn(i,"SKU")||!hasColumn(i,"Location")||
+       !hasColumn(i,"Free UOM QTY")){
       throw Error(
-        "Task file needs SKU, Task Status, Task UOM Qty."
+        "Inventory export needs SKU, Location, and Free UOM QTY."
       );
+    }
+    if(!hasColumn(t,"SKU")||!hasColumn(t,"Task Status")||
+       !hasColumn(t,"Task UOM Qty")){
+      throw Error(
+        "Task export needs SKU, Task Status, and Task UOM Qty."
+      );
+    }
 
     shortageSource=s;
-    stockSource=i;
+    inventorySource=i;
     taskSource=t;
 
-    renderShortage();
+    renderShortages();
 
     $("shortageMessage").textContent=
-      "Loaded "+s.length+" shortage lines, "+
-      i.length+" inventory rows, and "+
-      t.length+" task rows.";
+      `Loaded ${s.length} shortage lines, `+
+      `${i.length} inventory rows, and ${t.length} task rows.`;
 
   }catch(e){
     $("shortageMessage").textContent="Error: "+e.message;
   }
-};
+}
 
-$("dateMode").onchange=()=>{
-  const custom=$("dateMode").value==="custom";
-  $("dateField").classList.toggle("hidden",!custom);
-  $("timeField").classList.toggle("hidden",!custom);
-  if(shortageSource.length){
-    try{renderShortage();}
-    catch(e){$("shortageMessage").textContent=e.message;}
+function copyShortageBrand(b){
+  const lines=shortagePulls.filter(p=>p.brand===b).map(p=>
+    `(${p.qty}) ${p.sku} — ${p.loc} — ${p.lpn}`
+  );
+  copyText(lines.join("\n"),"shortageCopyStatus");
+}
+
+function printPulls(){
+  if(!shortagePulls.length){
+    alert("No additional pulls to print.");
+    return;
   }
-};
-$("customDate").onchange=()=>{
-  if(shortageSource.length){
-    try{renderShortage();}
-    catch(e){$("shortageMessage").textContent=e.message;}
+
+  const rows=shortagePulls.map(p=>`
+    <tr>
+      <td>□</td><td><b>${p.qty}</b></td>
+      <td>${escapeHTML(p.sku)}</td>
+      <td>${escapeHTML(p.loc)}</td>
+      <td>${escapeHTML(p.lpn)}</td>
+    </tr>
+  `).join("");
+
+  const w=window.open("","_blank");
+  if(!w){
+    alert("Please allow pop-ups.");
+    return;
   }
-};
-$("customTime").onchange=$("customDate").onchange;
-$("printPull").onclick=printShortage;
-$("copyMagna").onclick=()=>copyShortageBrand("MagnaReady");
-$("copySwoveralls").onclick=()=>copyShortageBrand("Swoveralls");
+
+  w.document.write(`<!DOCTYPE html><html><head>
+  <title>Additional Storage Pulls</title>
+  <style>
+    @page{size:letter;margin:.45in}
+    body{font:10px Arial;color:black}
+    h1{text-align:center;font-size:16px}
+    p{text-align:center}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #888;padding:7px 5px}
+    th{background:#eee;text-align:left}
+    tr{break-inside:avoid}
+  </style></head><body>
+  <h1>ADDITIONAL STORAGE PULLS</h1>
+  <p>Not covered by shelf stock or active replenishment tasks</p>
+  <table><thead><tr>
+    <th>✓</th><th>QTY</th><th>SKU</th>
+    <th>LOCATION</th><th>LPN</th>
+  </tr></thead><tbody>${rows}</tbody></table>
+  </body></html>`);
+
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),300);
+}
 
 // THE GAME POD HATS
-let hatPlan=[],hatMissing=[];
+let hatPulls=[],hatMissing=[];
 
+// G-series hat SKUs are included. Other SKUs are included
+// only when their product description identifies headwear.
+// Ambiguous items are excluded rather than guessed.
 function isHat(sku,name){
   const s=norm(sku);
   const n=norm(name);
 
-  // The Game cap/hats SKUs generally use the G series.
-  // Product names provide a secondary check.
   if(/TEE|SHIRT|HOODIE|SWEATSHIRT|PANT|SHORTS|JACKET/.test(n))
     return false;
 
@@ -924,37 +1038,32 @@ function isHat(sku,name){
 }
 
 function calculateHats(orders,inventory){
-  const grouped=new Map();
+  const groups=new Map();
 
   for(const r of orders){
-    const b=client(r);
-    if(b!=="The Game")continue;
+    if(client(r)!=="The Game")continue;
 
-    const status=norm(field(r,"Status"));
+    const status=norm(get(r,"Status"));
     if(/CANCEL|SHIPPED|DELIVERED/.test(status))continue;
 
-    const sku=txt(field(r,"SKU"));
-    const name=txt(field(r,"Product Name"));
-    const amount=qty(field(r,"Pack Quantity"));
+    const sku=clean(get(r,"SKU"));
+    const name=clean(get(r,"Product Name"));
+    const amount=num(get(r,"Pack Quantity"));
 
     if(!sku||!amount||!isHat(sku,name))continue;
 
     const key=norm(sku);
-    if(!grouped.has(key)){
-      grouped.set(key,{sku,need:0});
-    }
-    grouped.get(key).need+=amount;
+    if(!groups.has(key))groups.set(key,{sku,need:0});
+    groups.get(key).need+=amount;
   }
 
   const stock=inventoryData(inventory);
-  hatPlan=[];
+  hatPulls=[];
   hatMissing=[];
 
-  for(const g of grouped.values()){
+  for(const g of groups.values()){
     let remaining=g.need;
 
-    // Hats should be sourced from building 88.
-    // Prioritize pickable 88 shelf locations.
     const options=stock.filter(i=>
       norm(i.sku)===norm(g.sku)&&
       i.brand==="The Game"&&
@@ -964,17 +1073,15 @@ function calculateHats(orders,inventory){
       norm(i.loc).startsWith("88")
     ).sort((a,b)=>
       (a.type==="Shelf"?0:1)-(b.type==="Shelf"?0:1)||
-      locCompare(a.loc,b.loc)
+      sortLocations(a.loc,b.loc)
     );
 
     for(const i of options){
       if(remaining<=0)break;
 
-      const available=Math.max(0,i.free-i.used);
-      const take=Math.min(remaining,available);
-
+      const take=Math.min(remaining,Math.max(0,i.free-i.used));
       if(take>0){
-        hatPlan.push({
+        hatPulls.push({
           sku:g.sku,qty:take,
           loc:i.loc,lpn:i.lpn||"—"
         });
@@ -986,102 +1093,181 @@ function calculateHats(orders,inventory){
     if(remaining>0){
       hatMissing.push({
         sku:g.sku,qty:remaining,
-        reason:"Insufficient free stock in building 88"
+        reason:"Not enough free inventory in building 88"
       });
     }
   }
 
-  hatPlan.sort((a,b)=>locCompare(a.loc,b.loc));
+  hatPulls.sort((a,b)=>sortLocations(a.loc,b.loc));
 
   return {
-    skus:grouped.size,
-    need:[...grouped.values()].reduce((s,g)=>s+g.need,0),
-    found:hatPlan.reduce((s,p)=>s+p.qty,0)
+    needed:[...groups.values()].reduce((s,g)=>s+g.need,0),
+    located:hatPulls.reduce((s,p)=>s+p.qty,0)
   };
 }
 
-function renderHats(summary){
-  $("hatSkuCount").textContent=summary.skus;
-  $("hatUnitCount").textContent=summary.need;
-  $("hatFoundCount").textContent=summary.found;
-
-  $("hatTable").innerHTML=hatPlan.map(p=>`
-    <tr>
-      <td class="sku">${esc(p.sku)}</td>
-      <td><b>${p.qty}</b></td>
-      <td>${esc(p.loc)}</td>
-      <td>${esc(p.lpn)}</td>
-    </tr>
-  `).join("")||
-  '<tr><td colspan="4">No available hat locations found.</td></tr>';
-
-  $("hatMissingTable").innerHTML=hatMissing.map(p=>`
-    <tr>
-      <td class="sku">${esc(p.sku)}</td>
-      <td>${p.qty}</td>
-      <td class="warning">${esc(p.reason)}</td>
-    </tr>
-  `).join("")||
-  '<tr><td colspan="3">All identified hats are covered.</td></tr>';
-
-  $("hatOutput").classList.remove("hidden");
-}
-
-$("generateHats").onclick=async()=>{
-  $("hatMessage").textContent="Reading The Game files...";
+async function generateHats(){
+  $("hatMessage").textContent="Reading files...";
   $("hatOutput").classList.add("hidden");
 
   try{
     const [orders,inventory]=await Promise.all([
-      readFile($("hatOrdersFile").files[0]),
-      readFile($("hatInventoryFile").files[0])
+      readFile($("hatOrders").files[0]),
+      readFile($("hatInventory").files[0])
     ]);
 
-    if(!has(orders,"SKU")||
-       !has(orders,"Pack Quantity")||
-       !has(orders,"Client Display Name")){
+    if(!hasColumn(orders,"SKU")||
+       !hasColumn(orders,"Pack Quantity")||
+       !hasColumn(orders,"Client Display Name")){
       throw Error(
-        "Shipment Orders must contain SKU, Pack Quantity, and Client Display Name."
+        "Shipment Orders needs SKU, Pack Quantity, and Client Display Name."
       );
     }
 
-    if(!has(inventory,"SKU")||
-       !has(inventory,"Location")||
-       !has(inventory,"Free UOM QTY")){
+    if(!hasColumn(inventory,"SKU")||
+       !hasColumn(inventory,"Location")||
+       !hasColumn(inventory,"Free UOM QTY")){
       throw Error(
-        "Inventory must contain SKU, Location, and Free UOM QTY."
+        "Inventory needs SKU, Location, and Free UOM QTY."
       );
     }
 
     const summary=calculateHats(orders,inventory);
-    renderHats(summary);
+
+    $("hatNeeded").textContent=summary.needed;
+    $("hatLocated").textContent=summary.located;
+
+    $("hatTable").innerHTML=hatPulls.map(p=>`
+      <tr>
+        <td class="sku">${escapeHTML(p.sku)}</td>
+        <td><b>${p.qty}</b></td>
+        <td>${escapeHTML(p.loc)}</td>
+        <td>${escapeHTML(p.lpn)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="4">No hat locations found.</td></tr>';
+
+    $("hatMissing").innerHTML=hatMissing.map(p=>`
+      <tr>
+        <td class="sku">${escapeHTML(p.sku)}</td>
+        <td>${p.qty}</td>
+        <td class="warning">${escapeHTML(p.reason)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="3">No unlocated hats.</td></tr>';
+
+    $("hatOutput").classList.remove("hidden");
 
     $("hatMessage").textContent=
-      "Loaded "+orders.length+" shipment lines and "+
-      inventory.length+" inventory rows. "+
-      "Showing The Game hat products only.";
+      `Loaded ${orders.length} shipment lines and `+
+      `${inventory.length} inventory rows.`;
 
   }catch(e){
     $("hatMessage").textContent="Error: "+e.message;
   }
-};
+}
 
-$("copyHatJira").onclick=()=>{
-  const text=hatPlan.map(p=>
+function copyHats(){
+  const text=hatPulls.map(p=>
     `(${p.qty}) ${p.sku} — ${p.loc} — ${p.lpn}`
   ).join("\n");
+  copyText(text,"hatCopyStatus");
+}
 
-  copy(text,"hatCopyStatus",
-    "Copied "+hatPlan.length+" hat pull lines for Jira.");
-};
+// EMERGENCY DOCUMENT LIBRARY
+// Saved in this browser only, not across employees/devices.
+const DOCUMENT_KEY="d2c_emergency_docs_v1";
 
-// DEFAULT CUSTOM DATE
+function documents(){
+  try{
+    return JSON.parse(localStorage.getItem(DOCUMENT_KEY)||"[]");
+  }catch(e){
+    return [];
+  }
+}
+
+function renderDocuments(){
+  const docs=documents();
+  const container=$("documentList");
+  container.innerHTML="";
+
+  if(!docs.length){
+    container.innerHTML=
+      '<p class="muted small">No documents added yet.</p>';
+    return;
+  }
+
+  docs.forEach((d,index)=>{
+    const row=document.createElement("div");
+    row.className="doc";
+
+    const a=document.createElement("a");
+    a.textContent="▤ "+d.name;
+    a.href=d.url;
+    a.target="_blank";
+    a.rel="noopener noreferrer";
+
+    const remove=document.createElement("button");
+    remove.textContent="Remove";
+    remove.className="light";
+    remove.onclick=()=>removeDocument(index);
+
+    row.append(a,remove);
+    container.append(row);
+  });
+}
+
+function addDocument(){
+  const name=clean($("docName").value);
+  const url=clean($("docUrl").value);
+
+  if(!name||!url){
+    $("documentMessage").textContent=
+      "Please enter a document name and link.";
+    return;
+  }
+
+  let parsed;
+  try{
+    parsed=new URL(url);
+    if(!["https:","http:"].includes(parsed.protocol))
+      throw Error("Invalid protocol");
+  }catch(e){
+    $("documentMessage").textContent=
+      "Please enter a valid http or https link.";
+    return;
+  }
+
+  const docs=documents();
+  docs.push({name,url:parsed.href});
+
+  try{
+    localStorage.setItem(DOCUMENT_KEY,JSON.stringify(docs));
+    $("docName").value="";
+    $("docUrl").value="";
+    $("documentMessage").textContent="Document link added.";
+    renderDocuments();
+  }catch(e){
+    $("documentMessage").textContent=
+      "This browser could not save the link.";
+  }
+}
+
+function removeDocument(index){
+  const docs=documents();
+  docs.splice(index,1);
+  localStorage.setItem(DOCUMENT_KEY,JSON.stringify(docs));
+  renderDocuments();
+}
+
+// INITIALIZE
 const today=new Date();
 $("customDate").value=
   today.getFullYear()+"-"+
   String(today.getMonth()+1).padStart(2,"0")+"-"+
   String(today.getDate()).padStart(2,"0");
 
+renderDocuments();
 </script>
 </body>
 </html>

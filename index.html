@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>D2C Operations Hub</title>
+<title>D2C Assist</title>
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -24,18 +24,10 @@ button{cursor:pointer}
 .lucide{width:19px;height:19px;stroke-width:1.8}
 .app{display:flex;min-height:100vh}
 .sidebar{
-  width:246px;
-  flex-shrink:0;
-  background:var(--sidebar);
-  border-right:1px solid var(--border);
-  padding:28px 16px;
-  display:flex;
-  flex-direction:column;
-  position:sticky;
-  top:0;
-  height:100vh;
-  overflow-y:auto;
-  z-index:100;
+  width:246px;flex-shrink:0;background:var(--sidebar);
+  border-right:1px solid var(--border);padding:28px 16px;
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;z-index:100;
 }
 .logo{
   padding:0 12px 30px;font-size:12px;letter-spacing:1.4px;
@@ -335,6 +327,91 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 }
 .invest-by{margin-top:12px;font-size:11px}
 
+/* FLOATING SMART SEARCH */
+#assist-launcher{
+  position:fixed;right:22px;bottom:22px;z-index:9998;
+  width:58px;height:58px;border:0;border-radius:50%;
+  background:var(--navy);color:white;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 5px 22px #34435838;cursor:pointer;
+  transition:transform .2s;
+}
+#assist-launcher:hover{transform:scale(1.06)}
+#assist-launcher svg{width:25px;height:25px}
+#assist-chat{
+  position:fixed;right:22px;bottom:92px;
+  width:370px;height:min(530px,calc(100dvh - 115px));
+  z-index:9999;background:white;
+  border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 12px 45px #26344425;
+  display:none;flex-direction:column;overflow:hidden;
+}
+#assist-chat.open{display:flex}
+.assist-header{
+  padding:17px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.assist-header-title{font-size:14px;font-weight:700}
+.assist-subtitle{font-size:11px;color:var(--muted);margin-top:3px}
+.assist-close{
+  border:0;background:transparent;color:var(--slate);
+  font-size:24px;line-height:1;padding:2px 5px;cursor:pointer;
+}
+.assist-messages{
+  flex:1;overflow-y:auto;padding:18px 15px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.assist-message{
+  max-width:90%;padding:12px 13px;font-size:12px;
+  line-height:1.65;border-radius:12px;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.assist-message.bot{align-self:flex-start;background:#f1f4f1}
+.assist-message.user{
+  align-self:flex-end;background:var(--navy);color:white;
+}
+.assist-source{
+  margin-top:10px;padding-top:9px;
+  border-top:1px solid #dce3df;
+  font-size:10px;color:var(--slate);
+}
+.assist-source button{
+  display:block;margin-top:6px;border:0;padding:0;
+  color:var(--navy);background:transparent;
+  font-size:11px;font-weight:700;cursor:pointer;text-align:left;
+}
+.assist-suggestions{
+  display:flex;gap:7px;flex-wrap:wrap;padding:0 15px 12px;
+}
+.assist-suggestion{
+  background:white;border:1px solid #dce3df;
+  border-radius:20px;padding:7px 10px;
+  color:#526579;font-size:11px;cursor:pointer;
+}
+.assist-suggestion:hover{background:#f1f4f1}
+.assist-form{
+  display:flex;gap:8px;align-items:center;
+  padding:12px;border-top:1px solid var(--border);
+}
+.assist-input{
+  flex:1;min-width:0;padding:11px 12px;
+  border:1px solid #dce3df;border-radius:9px;
+  outline:none;font-size:12px;background:white;color:var(--text);
+}
+.assist-input:focus{border-color:var(--slate)}
+.assist-send{
+  width:39px;height:39px;border:0;border-radius:9px;
+  background:var(--navy);color:white;cursor:pointer;font-size:19px;
+}
+.assist-highlight{
+  animation:assistPulse 2.5s ease-out;
+  scroll-margin-top:25px;
+}
+@keyframes assistPulse{
+  0%,40%{outline:3px solid #8fae9b;outline-offset:5px}
+  100%{outline:3px solid transparent;outline-offset:5px}
+}
+
 @media(max-width:850px){
   .sidebar{width:205px}
   .content{padding:0 23px 40px}
@@ -342,14 +419,8 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 @media(max-width:620px){
   .app{display:block}
   .sidebar{
-    width:100%;
-    padding:12px;
-    position:sticky;
-    top:0;
-    height:auto;
-    max-height:100vh;
-    overflow-y:auto;
-    z-index:100;
+    width:100%;padding:12px;position:sticky;top:0;
+    height:auto;max-height:100vh;overflow-y:auto;z-index:100;
   }
   .logo{padding:5px 8px 12px}
   .nav-heading,.nav-divider{display:none}
@@ -369,6 +440,12 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     grid-template-columns:1fr 1fr;
   }
   .scribe-frame{height:680px}
+  #assist-chat{
+    right:10px;bottom:80px;width:calc(100vw - 20px);
+    height:min(530px,calc(100dvh - 105px));
+  }
+  #assist-launcher{right:16px;bottom:16px}
+  .assist-highlight{scroll-margin-top:125px}
 }
 </style>
 </head>
@@ -377,7 +454,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 <div class="app">
 
 <aside class="sidebar">
-  <div class="logo">D2C OPERATIONS</div>
+  <div class="logo">D2C ASSIST</div>
   <div class="nav-heading">WORKSPACE</div>
   <nav>
     <button class="nav-item active" data-page="home"
@@ -432,10 +509,8 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 <!-- HOME -->
 <section id="home" class="page active">
   <div class="home-center">
-    <div class="home-icon">
-      <i data-lucide="warehouse"></i>
-    </div>
-    <h1>D2C Operations Hub</h1>
+    <div class="home-icon"><i data-lucide="warehouse"></i></div>
+    <h1>D2C Assist</h1>
     <p>Warehouse tools & resources</p>
   </div>
 </section>
@@ -887,8 +962,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     Everything needed to cover D2C operations for the day.
   </p>
 
-  <!-- DAILY OPERATIONS STAYS FIRST -->
-  <div class="panel">
+  <div class="panel" id="guide-daily">
     <h2>Daily Operations</h2>
     <p class="muted small">
       Follow this schedule to stay on top of daily responsibilities.
@@ -899,14 +973,8 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           <tr><th>Time</th><th>Responsibility</th></tr>
         </thead>
         <tbody>
-          <tr>
-            <td>8:30 AM</td>
-            <td>The Game stock request</td>
-          </tr>
-          <tr>
-            <td>2:00 PM</td>
-            <td>Amazon orders</td>
-          </tr>
+          <tr><td>8:30 AM</td><td>The Game stock request</td></tr>
+          <tr><td>2:00 PM</td><td>Amazon orders</td></tr>
           <tr>
             <td>~2:40 PM</td>
             <td>Shortage report — after replenishment</td>
@@ -920,8 +988,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </div>
   </div>
 
-  <!-- INTERACTIVE END-OF-DAY CHECKLIST -->
-  <div class="panel">
+  <div class="panel" id="guide-checklist">
     <div class="check-progress">
       <div>
         <h2 style="margin-bottom:4px">End-of-Day Checklist</h2>
@@ -968,8 +1035,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </p>
   </div>
 
-  <!-- SCRIBE TUTORIALS -->
-  <div class="panel">
+  <div class="panel" id="guide-tutorials">
     <h2>Logiwa Tutorials</h2>
     <p class="muted small">
       Select a procedure to view the step-by-step Scribe.
@@ -981,7 +1047,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       <p>Shipment orders, address changes, and order status filters.</p>
     </div>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-cancel">
       <summary>Cancel a Shipment Order</summary>
       <div class="guide-body">
         <div class="guide-note">
@@ -992,8 +1058,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
         <iframe
           data-src="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
           title="Cancel a Shipment Order in Logiwa"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
@@ -1003,7 +1068,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </div>
     </details>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-address">
       <summary>Update Shipment Order Address Details</summary>
       <div class="guide-body">
         <div class="guide-note">
@@ -1012,8 +1077,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
         <iframe
           data-src="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
           title="Update Shipment Order Address Details"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
@@ -1023,14 +1087,13 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </div>
     </details>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-filter">
       <summary>Filter Shipped and Canceled Orders</summary>
       <div class="guide-body">
         <iframe
           data-src="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
           title="Filter Shipped and Canceled Orders"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
@@ -1045,14 +1108,13 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       <p>Return labels and shipping label reprints.</p>
     </div>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-return">
       <summary>Create a Return Label in Logiwa</summary>
       <div class="guide-body">
         <iframe
           data-src="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
           title="Create a Return Label in Logiwa"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
@@ -1062,14 +1124,13 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </div>
     </details>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-reprint">
       <summary>Reprint a Shipping Label in Logiwa</summary>
       <div class="guide-body">
         <iframe
           data-src="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
           title="Reprint a Shipping Label in Logiwa"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
@@ -1084,14 +1145,13 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       <p>Creating stock request orders.</p>
     </div>
 
-    <details class="guide-item">
+    <details class="guide-item" id="tutorial-stock">
       <summary>Create a Stock Request Order</summary>
       <div class="guide-body">
         <iframe
           data-src="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
           title="Create a Stock Request Order"
-          class="scribe-frame"
-          allow="fullscreen"
+          class="scribe-frame" allow="fullscreen"
           loading="lazy"></iframe>
         <a class="guide-link"
           href="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
@@ -1102,8 +1162,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </details>
   </div>
 
-  <!-- BRAND CONTACTS -->
-  <div class="panel">
+  <div class="panel" id="guide-contacts">
     <h2>Brand Points of Contact</h2>
     <p class="muted small">
       Reference for brand-related communications.
@@ -1127,8 +1186,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </div>
   </div>
 
-  <!-- LOCATIONS -->
-  <div class="panel">
+  <div class="panel" id="guide-locations">
     <h2>Warehouse Locations & Definitions</h2>
     <p class="muted small">
       Quick reference for inventory locations in Logiwa.
@@ -1149,7 +1207,10 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           </tr>
           <tr>
             <td>Receiving Dock</td>
-            <td>Inventory may be physically present but not yet on a pickable shelf.</td>
+            <td>
+              Inventory may be physically present but not yet
+              on a pickable shelf.
+            </td>
           </tr>
           <tr>
             <td>MV-M1 / 0M1 / 0M5</td>
@@ -1157,7 +1218,9 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           </tr>
           <tr>
             <td>LPN</td>
-            <td>License Plate Number, used to identify inventory containers.</td>
+            <td>
+              License Plate Number, used to identify inventory containers.
+            </td>
           </tr>
           <tr>
             <td>The Game Hats</td>
@@ -1168,8 +1231,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </div>
   </div>
 
-  <!-- ESSENTIAL SYSTEMS -->
-  <div class="panel">
+  <div class="panel" id="guide-systems">
     <h2>Essential Systems</h2>
     <p class="muted small">
       Quick access to the tools needed throughout the day.
@@ -1206,8 +1268,61 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     </a>
   </div>
 </section>
-
 </main>
+</div>
+
+<!-- FLOATING CHAT -->
+<button id="assist-launcher"
+  type="button"
+  aria-label="Open D2C Assist help"
+  aria-expanded="false"
+  aria-controls="assist-chat">
+  <svg viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8
+    8.5 8.5 0 0 1-7.6 4.7
+    8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7
+    a8.4 8.4 0 0 1-.9-3.8
+    8.5 8.5 0 0 1 4.7-7.6
+    8.4 8.4 0 0 1 3.8-.9h.5
+    a8.5 8.5 0 0 1 8 8v.5z"/>
+    <path d="M9.5 9a2.5 2.5 0 0 1 5 0
+    c0 1.7-2.5 2-2.5 3.5"/>
+    <path d="M12 16h.01"/>
+  </svg>
+</button>
+
+<div id="assist-chat"
+  role="dialog"
+  aria-label="Ask D2C Assist">
+  <div class="assist-header">
+    <div>
+      <div class="assist-header-title">Ask D2C Assist</div>
+      <div class="assist-subtitle">
+        Your warehouse knowledge assistant
+      </div>
+    </div>
+    <button class="assist-close" id="assist-close"
+      type="button" aria-label="Close chat">×</button>
+  </div>
+
+  <div class="assist-messages" id="assist-messages"
+    aria-live="polite"></div>
+
+  <div class="assist-suggestions"
+    id="assist-suggestions"></div>
+
+  <form class="assist-form" id="assist-form">
+    <input class="assist-input"
+      id="assist-input"
+      placeholder="Ask a question..."
+      autocomplete="off"
+      maxlength="300"
+      aria-label="Ask a question">
+    <button class="assist-send" type="submit"
+      aria-label="Send question">↑</button>
+  </form>
 </div>
 
 <script>
@@ -1351,8 +1466,8 @@ document.querySelectorAll(".guide-item").forEach(item=>{
     if(!item.open)return;
 
     const iframe=item.querySelector("iframe[data-src]");
-    if(iframe&&!iframe.src){
-      iframe.src=iframe.dataset.src;
+    if(iframe&&!iframe.hasAttribute("src")){
+      iframe.setAttribute("src",iframe.dataset.src);
     }
   });
 });
@@ -2554,6 +2669,486 @@ function clearTicket(){
   $("investDate").value=easternDate();
   $("ticketOutput").classList.add("hidden");
 }
+
+/* SMART SEARCH KNOWLEDGE BASE */
+
+const assistKnowledge=[
+  {
+    title:"Daily Operations Schedule",
+    keywords:["schedule","daily","routine","time","morning",
+      "afternoon","responsibilities","workday","what do i do"],
+    answer:"The daily D2C schedule is:\n\n"+
+      "8:30 AM — The Game stock request\n"+
+      "2:00 PM — Amazon orders\n"+
+      "Around 2:40 PM — Shortage report, after replenishment\n"+
+      "4:30 PM — Check and clear the Job Queue.",
+    page:"emergency",target:"guide-daily",
+    source:"Break Glass → Daily Operations"
+  },
+  {
+    title:"Amazon Orders",
+    keywords:["amazon","amazon orders","2pm","two pm"],
+    answer:"Amazon orders are a daily responsibility "+
+      "scheduled for 2:00 PM.",
+    page:"emergency",target:"guide-daily",
+    source:"Break Glass → Daily Operations"
+  },
+  {
+    title:"Job Queue",
+    keywords:["job queue","queue","4:30","430","clear queue"],
+    answer:"Check and clear the Job Queue at 4:30 PM "+
+      "as part of the daily operations schedule.",
+    page:"emergency",target:"guide-daily",
+    source:"Break Glass → Daily Operations"
+  },
+  {
+    title:"Shortage Report Timing",
+    keywords:["shortage","shortage report","replenishment",
+      "2:40","240","shortages"],
+    answer:"The shortage report is scheduled for approximately "+
+      "2:40 PM, after replenishment.\n\n"+
+      "Use Shortage Center to upload Logiwa exports and "+
+      "review additional storage pulls.",
+    page:"shortage",target:"shortage",
+    source:"Shortage Center"
+  },
+  {
+    title:"The Game Stock Request",
+    keywords:["the game","stock request","8:30","830",
+      "stock order","create stock request"],
+    answer:"The Game stock request is scheduled for "+
+      "8:30 AM.\n\n"+
+      "For instructions, open the Create a Stock Request "+
+      "Order tutorial.",
+    page:"emergency",target:"tutorial-stock",
+    source:"Break Glass → Create a Stock Request Order"
+  },
+  {
+    title:"Cancel Shipment Orders",
+    keywords:["cancel","cancellation","shipment",
+      "shipment order","ready to pick","ready to pack",
+      "open order","picking task"],
+    answer:"Use the Cancel a Shipment Order tutorial.\n\n"+
+      "Important: For Ready to Pick orders, cancel the "+
+      "picking task first.\n\n"+
+      "The tutorial covers OPEN, READY TO PICK, "+
+      "and READY TO PACK statuses.",
+    page:"emergency",target:"tutorial-cancel",
+    source:"Break Glass → Cancel a Shipment Order"
+  },
+  {
+    title:"Change an Order Address",
+    keywords:["address","change address","edit address",
+      "update address","shipping address","customer address"],
+    answer:"Use the Update Shipment Order Address Details "+
+      "tutorial.\n\n"+
+      "The documented procedure applies to orders "+
+      "in OPEN status.",
+    page:"emergency",target:"tutorial-address",
+    source:"Break Glass → Update Address"
+  },
+  {
+    title:"Create a Return Label",
+    keywords:["return","return label","returns",
+      "customer return","shipping return"],
+    answer:"Use the Create a Return Label in Logiwa "+
+      "tutorial for step-by-step instructions.",
+    page:"emergency",target:"tutorial-return",
+    source:"Break Glass → Create a Return Label"
+  },
+  {
+    title:"Reprint Shipping Labels",
+    keywords:["reprint","shipping label","label",
+      "print label","lost label","reprint label"],
+    answer:"Use the Reprint a Shipping Label in Logiwa "+
+      "tutorial for the documented procedure.",
+    page:"emergency",target:"tutorial-reprint",
+    source:"Break Glass → Reprint Shipping Label"
+  },
+  {
+    title:"Find Shipped or Canceled Orders",
+    keywords:["shipped","canceled","cancelled",
+      "filter orders","order status","find orders"],
+    answer:"Use the Filter Shipped and Canceled Orders "+
+      "tutorial to locate orders using those "+
+      "status filters in Logiwa.",
+    page:"emergency",target:"tutorial-filter",
+    source:"Break Glass → Filter Orders"
+  },
+  {
+    title:"MagnaReady Contact",
+    keywords:["magnaready","mauran","horton",
+      "magnaready contact"],
+    answer:"Mauran Horton is the listed point "+
+      "of contact for MagnaReady.",
+    page:"emergency",target:"guide-contacts",
+    source:"Break Glass → Brand Points of Contact"
+  },
+  {
+    title:"Swoveralls and Duderobes Contact",
+    keywords:["swoveralls","duderobes","duderobe",
+      "gabriela","rangel"],
+    answer:"Gabriela Rangel is the listed point "+
+      "of contact for Swoveralls and Duderobes.",
+    page:"emergency",target:"guide-contacts",
+    source:"Break Glass → Brand Points of Contact"
+  },
+  {
+    title:"The Game and Weatherproof Contact",
+    keywords:["daniela","diaz","weatherproof",
+      "weatherproof vintage","the game contact"],
+    answer:"Daniela Diaz is the listed point "+
+      "of contact for The Game and Weatherproof Vintage.",
+    page:"emergency",target:"guide-contacts",
+    source:"Break Glass → Brand Points of Contact"
+  },
+  {
+    title:"Warehouse Shelf Locations",
+    keywords:["shelf","shelf location","pickable",
+      "100","88","pick location"],
+    answer:"Locations in the 100 and 88 shelf areas "+
+      "are pickable inventory locations.\n\n"+
+      "Storage locations may require replenishment.",
+    page:"emergency",target:"guide-locations",
+    source:"Break Glass → Warehouse Locations & Definitions"
+  },
+  {
+    title:"Storage Locations",
+    keywords:["storage","r-100","stn","sts",
+      "storage location","receiving dock","replenish"],
+    answer:"R-100, STN, STS, and similar locations "+
+      "are storage locations.\n\n"+
+      "Receiving Dock may contain inventory that "+
+      "is not yet on a pickable shelf.",
+    page:"emergency",target:"guide-locations",
+    source:"Break Glass → Warehouse Locations & Definitions"
+  },
+  {
+    title:"Virtual and Exception Locations",
+    keywords:["virtual","virtual location","mv-m1",
+      "0m1","0m5","exception","notify maren","maren"],
+    answer:"MV-M1, 0M1, and 0M5 are virtual or "+
+      "exception locations.\n\n"+
+      "Notify Maren when dealing with inventory "+
+      "in these locations.",
+    page:"emergency",target:"guide-locations",
+    source:"Break Glass → Warehouse Locations & Definitions"
+  },
+  {
+    title:"LPN Meaning",
+    keywords:["lpn","license plate","license plate number",
+      "what is lpn","box number"],
+    answer:"LPN stands for License Plate Number.\n\n"+
+      "It is used to identify inventory containers "+
+      "in the warehouse.",
+    page:"emergency",target:"guide-locations",
+    source:"Break Glass → Warehouse Locations & Definitions"
+  },
+  {
+    title:"The Game Hats Locations",
+    keywords:["hats","hat","caps","the game hats",
+      "building 88","pod hats","retrieve hats"],
+    answer:"The Game hats should be retrieved "+
+      "from building 88 only.\n\n"+
+      "Use POD Hats to identify required quantities "+
+      "and available inventory locations.",
+    page:"hats",target:"hats",
+    source:"POD Hats"
+  },
+  {
+    title:"POD Orders Dashboard",
+    keywords:["pod","artwork","replacement",
+      "replacement order","bsn","pod dashboard"],
+    answer:"The POD Orders Dashboard is used to search "+
+      "artwork, cancel orders, and create replacement "+
+      "orders for BSN/POD orders.",
+    page:"links",target:"links",
+    source:"Quick Links → POD Orders Dashboard"
+  },
+  {
+    title:"BSN Order Lookup",
+    keywords:["bsn lookup","tracking","track order",
+      "bsn tracking","order lookup"],
+    answer:"BSN Order Lookup is used to look up "+
+      "BSN orders and tracking information.",
+    page:"links",target:"links",
+    source:"Quick Links → BSN Order Lookup"
+  },
+  {
+    title:"Shopify Admin",
+    keywords:["shopify","store","brand store",
+      "shopify admin","shopify orders"],
+    answer:"Shopify Admin is available under "+
+      "Quick Links for brand store and "+
+      "order management.",
+    page:"links",target:"links",
+    source:"Quick Links → Shopify Admin"
+  },
+  {
+    title:"Task Board",
+    keywords:["jira","task board","tasks","to do",
+      "task management","dashboard tasks"],
+    answer:"The D2C Task Board is linked in "+
+      "the sidebar and Quick Links.",
+    page:"links",target:"links",
+    source:"Quick Links → D2C Task Board"
+  },
+  {
+    title:"Printable Lists",
+    keywords:["list","printable","worksheet",
+      "todo list","to do list","sku list",
+      "inventory adjustment","4x6 list","copy jira"],
+    answer:"List Generator can create To-Do Lists, "+
+      "SKU / Location / LPN Lists, Inventory "+
+      "Adjustment Lists, and Custom Two-Column Lists.\n\n"+
+      "You can print them or copy the entire list for Jira.",
+    page:"lists",target:"lists",
+    source:"List Generator"
+  },
+  {
+    title:"Rush Order Tickets",
+    keywords:["rush","rush order","rush ticket",
+      "urgent order","d2c office"],
+    answer:"Use Ticket Generator → Rush Order.\n\n"+
+      "The 4×6 ticket includes Job Code, Order Number, "+
+      "Notes, and a PLEASE BRING TO D2C OFFICE message.",
+    page:"tickets",target:"tickets",
+    source:"Ticket Generator → Rush Order"
+  },
+  {
+    title:"Under Investigation Tickets",
+    keywords:["investigation","under investigation",
+      "investigation ticket","cart issue",
+      "missing sku","damaged item","not scanning"],
+    answer:"Use Ticket Generator → Under Investigation.\n\n"+
+      "The ticket includes Job Number, Cart Number, "+
+      "Date, Time, Quantity Affected, Reason, Notes, "+
+      "and Investigated By.",
+    page:"tickets",target:"tickets",
+    source:"Ticket Generator → Under Investigation"
+  },
+  {
+    title:"End-of-Day Checklist",
+    keywords:["checklist","end of day","closeout",
+      "closing","finish day","done for day"],
+    answer:"The End-of-Day Checklist covers Amazon orders, "+
+      "shortage report, shortage follow-ups, Job Queue, "+
+      "and unfinished tasks for tomorrow.\n\n"+
+      "Progress is saved in this browser and "+
+      "resets on the next Eastern Time day.",
+    page:"emergency",target:"guide-checklist",
+    source:"Break Glass → End-of-Day Checklist"
+  }
+];
+
+/* SMART SEARCH */
+
+const assistLauncher=$("assist-launcher");
+const assistChat=$("assist-chat");
+const assistMessages=$("assist-messages");
+const assistSuggestions=$("assist-suggestions");
+const assistInput=$("assist-input");
+
+const assistStopwords=new Set([
+  "a","an","the","i","me","my","we","our",
+  "you","your","is","are","was","were",
+  "do","does","did","how","what","where",
+  "when","who","why","can","could","would",
+  "should","to","for","from","of","on",
+  "in","at","with","and","or","it","this",
+  "that","there","have","has","need",
+  "please","tell","about","find","get",
+  "some","something","someone","help"
+]);
+
+function assistNormalize(text){
+  return String(text||"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g," ")
+    .trim();
+}
+
+function assistTokenize(text){
+  return assistNormalize(text).split(/\s+/)
+    .filter(w=>w.length>1&&!assistStopwords.has(w));
+}
+
+function assistSearch(question){
+  const q=assistNormalize(question);
+  const words=assistTokenize(question);
+  if(!q||!words.length)return null;
+
+  let best=null;
+  let bestScore=0;
+
+  for(const entry of assistKnowledge){
+    let score=0;
+    const title=assistNormalize(entry.title);
+    const keywords=entry.keywords.map(assistNormalize);
+    const corpus=assistNormalize(
+      entry.title+" "+entry.keywords.join(" ")
+    );
+    const corpusWords=new Set(assistTokenize(corpus));
+
+    for(const keyword of keywords){
+      if(keyword===q){
+        score+=15;
+      }else if(keyword.includes(" ")&&
+        (" "+q+" ").includes(" "+keyword+" ")){
+        score+=8;
+      }
+    }
+
+    if(title===q)score+=18;
+    if(q.length>=5&&title.includes(q))score+=9;
+
+    for(const word of words){
+      if(corpusWords.has(word))score+=3;
+    }
+
+    if(score>bestScore){
+      bestScore=score;
+      best=entry;
+    }
+  }
+
+  return bestScore>=3?best:null;
+}
+
+/* DIRECT LINKS TO THE EXACT SOURCE */
+
+function assistNavigate(entry){
+  assistToggle(false);
+
+  if(typeof showPage==="function"){
+    showPage(entry.page);
+  }
+
+  const target=$(entry.target);
+  if(!target)return;
+
+  if(target.tagName==="DETAILS"){
+    target.open=true;
+  }
+
+  setTimeout(()=>{
+    target.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+
+    target.classList.remove("assist-highlight");
+    void target.offsetWidth;
+    target.classList.add("assist-highlight");
+
+    setTimeout(()=>{
+      target.classList.remove("assist-highlight");
+    },2600);
+  },120);
+}
+
+function assistAddMessage(text,type,entry){
+  const bubble=document.createElement("div");
+  bubble.className="assist-message "+type;
+  bubble.textContent=text;
+
+  if(entry){
+    const source=document.createElement("div");
+    source.className="assist-source";
+
+    const label=document.createElement("div");
+    label.textContent="Source: "+entry.source;
+    source.append(label);
+
+    const button=document.createElement("button");
+    button.type="button";
+    button.textContent="Go directly to instructions →";
+    button.addEventListener("click",()=>{
+      assistNavigate(entry);
+    });
+
+    source.append(button);
+    bubble.append(source);
+  }
+
+  assistMessages.append(bubble);
+  assistMessages.scrollTop=assistMessages.scrollHeight;
+}
+
+function assistAsk(question){
+  const text=String(question||"").trim();
+  if(!text)return;
+
+  assistAddMessage(text,"user");
+  assistInput.value="";
+  assistSuggestions.style.display="none";
+
+  const found=assistSearch(text);
+
+  if(found){
+    assistAddMessage(found.answer,"bot",found);
+  }else{
+    assistAddMessage(
+      "I couldn't find a reliable answer to that "+
+      "in the D2C Assist knowledge guide.\n\n"+
+      "Try asking about Logiwa tutorials, "+
+      "daily operations, warehouse locations, "+
+      "brand contacts, or printable tools.\n\n"+
+      "For anything not documented, please check with Maren.",
+      "bot"
+    );
+  }
+}
+
+function assistToggle(force){
+  const open=typeof force==="boolean"?
+    force:!assistChat.classList.contains("open");
+
+  assistChat.classList.toggle("open",open);
+  assistLauncher.setAttribute("aria-expanded",String(open));
+
+  if(open)assistInput.focus();
+  else assistLauncher.focus();
+}
+
+assistLauncher.addEventListener("click",()=>assistToggle());
+$("assist-close").addEventListener("click",()=>assistToggle(false));
+
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"&&assistChat.classList.contains("open")){
+    assistToggle(false);
+  }
+});
+
+$("assist-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  assistAsk(assistInput.value);
+});
+
+const assistExamples=[
+  "How do I cancel an order?",
+  "What does LPN mean?",
+  "Who handles MagnaReady?",
+  "What's my daily schedule?"
+];
+
+for(const question of assistExamples){
+  const button=document.createElement("button");
+  button.className="assist-suggestion";
+  button.type="button";
+  button.textContent=question;
+  button.addEventListener("click",()=>assistAsk(question));
+  assistSuggestions.append(button);
+}
+
+assistAddMessage(
+  "Hi! 👋 I'm here to help you find information "+
+  "in D2C Assist.\n\n"+
+  "Ask me about daily operations, Logiwa tutorials, "+
+  "warehouse locations, brand contacts, "+
+  "or the tools available on this website.",
+  "bot"
+);
 
 /* START THE APP */
 

@@ -1,67 +1,3340 @@
 
-<!-- ==========================================
-     QUICK LINKS
-     Direct access to warehouse systems
-========================================== -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2C Assist</title>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f8f9f7;--sidebar:#f0f2ef;--navy:#344358;
+  --slate:#71839a;--text:#303c4b;--muted:#7b8793;
+  --border:#e2e6e3;--sage:#eaf0eb;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,
+  "Segoe UI",Arial,sans-serif;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.lucide{width:19px;height:19px;stroke-width:1.8}
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:246px;flex-shrink:0;background:var(--sidebar);
+  border-right:1px solid var(--border);padding:28px 16px;
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;z-index:100;
+}
+.logo{
+  padding:0 12px 30px;font-size:12px;letter-spacing:1.4px;
+  font-weight:750;color:var(--navy);
+}
+.nav-heading{
+  font-size:10px;letter-spacing:1.5px;font-weight:700;
+  color:var(--muted);margin:0 12px 13px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:12px;margin:3px 0;border:0;border-radius:9px;
+  background:transparent;text-decoration:none;text-align:left;
+  color:var(--text);font-size:13px;
+}
+.nav-item svg{color:var(--slate);flex-shrink:0}
+.nav-item:hover{background:#e6ebe7}
+.nav-item.active{
+  background:white;color:var(--navy);font-weight:650;
+  box-shadow:0 1px 4px #00000008;
+}
+.nav-divider{height:1px;background:#dce2de;margin:18px 12px}
+.sidebar-bottom{margin-top:auto;padding-top:30px}
+.content{flex:1;min-width:0;padding:0 42px 55px}
+.topbar{
+  min-height:73px;display:flex;justify-content:space-between;
+  align-items:center;gap:15px;border-bottom:1px solid var(--border);
+}
+.topbar-label{
+  font-size:11px;letter-spacing:1.3px;font-weight:650;
+  color:var(--muted);
+}
+.date-display{
+  display:flex;align-items:center;gap:9px;
+  font-size:12px;color:var(--slate);
+}
+.page{display:none;padding-top:36px}
+.page.active{display:block}
+.eyebrow{
+  font-size:10px;letter-spacing:1.6px;
+  color:var(--muted);font-weight:700;
+}
+h1{font-size:29px;letter-spacing:-.6px;margin:8px 0}
+h2{font-size:18px;margin:0 0 17px}
+h3{font-size:15px;margin:24px 0 12px}
+p{margin:8px 0}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.home-center{
+  min-height:65vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+}
+.home-icon{
+  display:grid;place-items:center;width:90px;height:90px;
+  background:#edf0ec;border-radius:24px;margin-bottom:25px;
+  color:var(--slate);
+}
+.home-icon svg{width:43px;height:43px;stroke-width:1.4}
+.home-center h1{font-size:32px}
+.home-center p{font-size:13px;color:var(--muted)}
+.panel{
+  background:white;border:1px solid var(--border);
+  border-radius:13px;padding:24px;margin-top:22px;
+}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+.field{flex:1;min-width:170px}
+label{
+  display:block;font-size:12px;color:var(--muted);
+  font-weight:650;margin-bottom:7px;
+}
+input,select,textarea{
+  width:100%;min-width:0;border:1px solid #cbd4d2;
+  background:white;color:var(--text);border-radius:7px;padding:10px;
+}
+textarea{resize:vertical;min-height:80px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.btn{
+  border:1px solid #ccd4d2;background:white;border-radius:7px;
+  color:var(--text);padding:10px 14px;
+}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:white}
+.btn:hover{filter:brightness(.96)}
+.btn.danger{color:#b76b6b}
+.hidden{display:none!important}
+.message{font-size:12px;color:var(--muted);margin-top:14px}
+.metrics{display:flex;gap:30px;flex-wrap:wrap;margin:22px 0}
+.metric strong{display:block;font-size:25px}
+.metric span{font-size:11px;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{
+  padding:11px 9px;border-bottom:1px solid var(--border);
+  text-align:left;vertical-align:top;
+}
+th{background:#fafbf9;font-size:11px;color:var(--muted)}
+td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
+.section-label{
+  margin:25px 0 12px;color:var(--muted);font-size:11px;
+  letter-spacing:1px;font-weight:700;text-transform:uppercase;
+}
+.link-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.quick-link{
+  display:block;background:white;padding:20px;
+  border:1px solid var(--border);border-radius:11px;
+  text-decoration:none;color:var(--text);
+}
+.quick-link:hover{border-color:var(--slate)}
+.quick-link svg{color:var(--slate);margin-bottom:12px}
+.quick-link strong{display:block;margin-bottom:5px}
+.quick-link p{font-size:12px;color:var(--muted)}
+.notice{
+  background:#f2f4f1;padding:15px;border-radius:8px;font-size:12px;
+}
+.generator-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr 36px;
+  gap:9px;margin:9px 0;
+}
+.generator-row.todo{grid-template-columns:1fr 36px}
+.generator-row.sku.with-qty{
+  grid-template-columns:1.5fr .6fr 1fr 1fr 36px;
+}
+.generator-row.custom{grid-template-columns:1fr 1fr 36px}
+.remove-row{
+  border:1px solid var(--border);border-radius:7px;
+  background:white;color:#b76b6b;
+}
+.option-check{
+  display:flex;align-items:center;gap:9px;
+  margin-top:18px;font-size:12px;color:var(--text);
+}
+.option-check input{width:16px;height:16px;accent-color:var(--navy)}
+.preview{
+  background:#fafbf9;border:1px dashed #cbd4d2;
+  border-radius:9px;padding:18px;margin-top:18px;
+}
+.ticket-reasons{display:grid;gap:10px;margin-top:12px}
+.reason-choice{
+  display:flex;align-items:center;gap:10px;font-size:12px;
+}
+.reason-choice input{width:16px;height:16px;accent-color:var(--navy)}
+.ticket-preview-area{
+  display:flex;justify-content:center;overflow-x:auto;padding:20px 0;
+}
+
+/* BREAK GLASS */
+.daily-table td:first-child{
+  width:130px;font-weight:700;white-space:nowrap;color:var(--navy);
+}
+.check-progress{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:14px;gap:12px;
+}
+.progress-track{
+  width:100%;height:6px;background:#edf0ed;
+  border-radius:10px;overflow:hidden;margin-bottom:18px;
+}
+.progress-fill{
+  height:100%;width:0;background:#7d9b88;
+  border-radius:10px;transition:width .2s;
+}
+.daily-check{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;color:var(--text);font-size:13px;
+}
+.daily-check:last-child{border-bottom:0}
+.daily-check input{
+  width:18px;height:18px;flex-shrink:0;margin:1px 0;
+  accent-color:#668b74;
+}
+.daily-check.completed span{
+  color:var(--muted);text-decoration:line-through;
+}
+.guide-category{margin:27px 0 13px}
+.guide-category h3{
+  margin:0 0 4px;display:flex;align-items:center;gap:9px;
+}
+.guide-category p{font-size:12px;color:var(--muted)}
+.guide-item{
+  border:1px solid var(--border);border-radius:10px;
+  background:white;margin:10px 0;overflow:hidden;
+}
+.guide-item summary{
+  list-style:none;cursor:pointer;padding:17px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;font-size:13px;font-weight:650;
+}
+.guide-item summary::-webkit-details-marker{display:none}
+.guide-item summary::after{
+  content:"+";font-size:20px;color:var(--slate);font-weight:400;
+}
+.guide-item[open] summary::after{content:"−"}
+.guide-item[open] summary{
+  border-bottom:1px solid var(--border);
+}
+.guide-body{padding:17px}
+.guide-note{
+  padding:12px 14px;background:var(--sage);
+  border-radius:7px;margin-bottom:14px;
+  font-size:12px;line-height:1.6;
+}
+.scribe-frame{
+  width:100%;height:800px;min-height:640px;
+  border:0;background:#f8f9f7;
+}
+.guide-link{
+  display:inline-block;color:var(--navy);
+  font-size:12px;margin-top:12px;
+}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.contact-card{
+  border:1px solid var(--border);border-radius:9px;
+  padding:17px;background:#fcfdfb;
+}
+.contact-card strong{display:block;font-size:14px}
+.contact-card span{
+  display:block;color:var(--muted);font-size:12px;margin-top:5px;
+}
+.contact-card p{font-size:12px;margin-top:10px}
+.reference-table td:first-child{font-weight:650}
+.resource-link{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+  color:var(--navy);text-decoration:none;font-size:13px;
+}
+.resource-link:last-child{border-bottom:0}
+
+/* TICKETS */
+.ticket-paper{
+  width:4in;height:6in;flex-shrink:0;background:white;
+  color:#111;border:1px solid #111;padding:.20in;
+  font-family:Arial,sans-serif;overflow:hidden;
+}
+.ticket-paper.rush{display:flex;flex-direction:column}
+.rush-title{
+  font-size:34px;line-height:1.1;font-weight:800;
+  text-align:center;margin:8px 0 17px;
+}
+.ticket-rule{border-top:1px solid #111}
+.rush-fields{margin-top:35px;display:grid;gap:17px}
+.rush-field{
+  display:flex;align-items:baseline;gap:8px;
+  font-size:15px;font-weight:600;
+}
+.rush-field strong{white-space:nowrap}
+.rush-field .fill{
+  flex:1;min-width:0;min-height:21px;
+  border-bottom:1px solid #111;font-weight:400;
+  overflow-wrap:anywhere;
+}
+.rush-message{
+  text-align:center;margin:auto 0;font-size:22px;
+  font-weight:800;line-height:1.35;
+}
+.rush-message strong{display:block;font-size:31px}
+.rush-notes{
+  border:1px solid #111;min-height:104px;padding:9px;
+  font-size:12px;margin-top:auto;overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.rush-notes strong{display:block;margin-bottom:5px}
+.ticket-paper.investigation{padding:.17in;font-size:11px}
+.invest-title{
+  font-size:21px;font-weight:800;text-align:center;
+  margin:0 0 13px;line-height:1.15;
+}
+.investigation .ticket-rule{margin-bottom:15px}
+.invest-field{
+  display:flex;align-items:baseline;gap:7px;margin-bottom:7px;
+}
+.invest-field strong{min-width:104px;white-space:nowrap}
+.invest-field .fill{
+  flex:1;min-width:0;min-height:15px;
+  border-bottom:1px solid #111;overflow-wrap:anywhere;
+}
+.invest-heading{
+  font-weight:800;font-size:11px;margin:13px 0 6px;
+}
+.invest-reason{
+  display:flex;align-items:flex-start;gap:7px;
+  margin:4px 0;line-height:1.25;
+}
+.print-square{
+  width:10px;height:10px;border:1px solid #111;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:10px;font-weight:800;
+}
+.invest-notes{
+  min-height:68px;white-space:pre-wrap;overflow-wrap:anywhere;
+  border-bottom:1px solid #111;
+  background:repeating-linear-gradient(
+    to bottom,transparent 0,transparent 20px,
+    #777 21px,transparent 22px
+  );
+}
+.invest-by{margin-top:12px;font-size:11px}
+
+/* FLOATING SMART SEARCH */
+#assist-launcher{
+  position:fixed;right:22px;bottom:22px;z-index:9998;
+  width:58px;height:58px;border:0;border-radius:50%;
+  background:var(--navy);color:white;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 5px 22px #34435838;cursor:pointer;
+  transition:transform .2s;
+}
+#assist-launcher:hover{transform:scale(1.06)}
+#assist-launcher svg{width:25px;height:25px}
+#assist-chat{
+  position:fixed;right:22px;bottom:92px;
+  width:370px;height:min(530px,calc(100dvh - 115px));
+  z-index:9999;background:white;
+  border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 12px 45px #26344425;
+  display:none;flex-direction:column;overflow:hidden;
+}
+#assist-chat.open{display:flex}
+.assist-header{
+  padding:17px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.assist-header-title{font-size:14px;font-weight:700}
+.assist-subtitle{font-size:11px;color:var(--muted);margin-top:3px}
+.assist-close{
+  border:0;background:transparent;color:var(--slate);
+  font-size:24px;line-height:1;padding:2px 5px;cursor:pointer;
+}
+.assist-messages{
+  flex:1;overflow-y:auto;padding:18px 15px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.assist-message{
+  max-width:90%;padding:12px 13px;font-size:12px;
+  line-height:1.65;border-radius:12px;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.assist-message.bot{align-self:flex-start;background:#f1f4f1}
+.assist-message.user{
+  align-self:flex-end;background:var(--navy);color:white;
+}
+.assist-source{
+  margin-top:10px;padding-top:9px;
+  border-top:1px solid #dce3df;
+  font-size:10px;color:var(--slate);
+}
+.assist-source button{
+  display:block;margin-top:6px;border:0;padding:0;
+  color:var(--navy);background:transparent;
+  font-size:11px;font-weight:700;cursor:pointer;text-align:left;
+}
+.assist-suggestions{
+  display:flex;gap:7px;flex-wrap:wrap;padding:0 15px 12px;
+}
+.assist-suggestion{
+  background:white;border:1px solid #dce3df;
+  border-radius:20px;padding:7px 10px;
+  color:#526579;font-size:11px;cursor:pointer;
+}
+.assist-suggestion:hover{background:#f1f4f1}
+.assist-form{
+  display:flex;gap:8px;align-items:center;
+  padding:12px;border-top:1px solid var(--border);
+}
+.assist-input{
+  flex:1;min-width:0;padding:11px 12px;
+  border:1px solid #dce3df;border-radius:9px;
+  outline:none;font-size:12px;background:white;color:var(--text);
+}
+.assist-input:focus{border-color:var(--slate)}
+.assist-send{
+  width:39px;height:39px;border:0;border-radius:9px;
+  background:var(--navy);color:white;cursor:pointer;font-size:19px;
+}
+.assist-highlight{
+  animation:assistPulse 2.5s ease-out;
+  scroll-margin-top:25px;
+}
+@keyframes assistPulse{
+  0%,40%{outline:3px solid #8fae9b;outline-offset:5px}
+  100%{outline:3px solid transparent;outline-offset:5px}
+}
+
+@media(max-width:850px){
+  .sidebar{width:205px}
+  .content{padding:0 23px 40px}
+}
+@media(max-width:620px){
+  .app{display:block}
+  .sidebar{
+    width:100%;padding:12px;position:sticky;top:0;
+    height:auto;max-height:100vh;overflow-y:auto;z-index:100;
+  }
+  .logo{padding:5px 8px 12px}
+  .nav-heading,.nav-divider{display:none}
+  .sidebar nav{display:flex;gap:5px;overflow-x:auto}
+  .nav-item{
+    width:auto;white-space:nowrap;flex-shrink:0;padding:10px;
+  }
+  .sidebar-bottom{padding-top:5px}
+  .content{padding:0 15px 30px}
+  .topbar{min-height:55px}
+  .page{padding-top:25px}
+  .link-grid,.contact-grid{grid-template-columns:1fr}
+  .panel{padding:17px}
+  .home-center{min-height:50vh}
+  .generator-row,.generator-row.adjust,
+  .generator-row.sku.with-qty{
+    grid-template-columns:1fr 1fr;
+  }
+  .scribe-frame{height:680px}
+  #assist-chat{
+    right:10px;bottom:80px;width:calc(100vw - 20px);
+    height:min(530px,calc(100dvh - 105px));
+  }
+  #assist-launcher{right:16px;bottom:16px}
+  .assist-highlight{scroll-margin-top:125px}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo">D2C ASSIST</div>
+  <div class="nav-heading">WORKSPACE</div>
+  <nav>
+    <button class="nav-item active" data-page="home"
+      onclick="showPage('home')">
+      <i data-lucide="house"></i>Home
+    </button>
+    <a class="nav-item"
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="clipboard-check"></i>Task Board
+    </a>
+    <button class="nav-item" data-page="shortage"
+      onclick="showPage('shortage')">
+      <i data-lucide="package-search"></i>Shortage Center
+    </button>
+    <button class="nav-item" data-page="hats"
+      onclick="showPage('hats')">
+      <i data-lucide="layers"></i>POD Hats
+    </button>
+    <button class="nav-item" data-page="lists"
+      onclick="showPage('lists')">
+      <i data-lucide="list-checks"></i>List Generator
+    </button>
+    <button class="nav-item" data-page="tickets"
+      onclick="showPage('tickets')">
+      <i data-lucide="ticket"></i>Ticket Generator
+    </button>
+    <button class="nav-item" data-page="links"
+      onclick="showPage('links')">
+      <i data-lucide="link"></i>Quick Links
+    </button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="nav-divider"></div>
+    <button class="nav-item" data-page="emergency"
+      onclick="showPage('emergency')">
+      <i data-lucide="siren"></i>
+      Break Glass in Case of Emergency
+    </button>
+  </div>
+</aside>
+
+<main class="content">
+<div class="topbar">
+  <span class="topbar-label">D2C WORKSPACE</span>
+  <div class="date-display">
+    <i data-lucide="calendar-days"></i>
+    <span id="currentDate"></span>
+  </div>
+</div>
+
+<section id="home" class="page active">
+  <div class="home-center">
+    <div class="home-icon"><i data-lucide="warehouse"></i></div>
+    <h1>D2C Assist</h1>
+    <p>Warehouse tools & resources</p>
+  </div>
+</section>
+
+<section id="shortage" class="page">
+  <div class="eyebrow">OPERATIONS / REPORTS</div>
+  <h1>Shortage Center</h1>
+  <p class="muted small">
+    Identify storage pulls not covered by free shelf
+    inventory or active replenishment tasks.
+  </p>
+
+  <div class="panel">
+    <h2>Upload Logiwa Reports</h2>
+    <div class="row">
+      <div class="field">
+        <label>1. Shortage Report</label>
+        <input id="shortageFile" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="field">
+        <label>2. Inventory by Location</label>
+        <input id="inventoryFile" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="field">
+        <label>3. Replenishment Task List</label>
+        <input id="taskFile" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+    </div>
+
+    <h3>Report Filter</h3>
+    <div class="row">
+      <div class="field">
+        <label>Include Orders</label>
+        <select id="dateMode" onchange="toggleDate()">
+          <option value="all">All Outstanding Shortages</option>
+          <option value="custom">Custom Cutoff</option>
+        </select>
+      </div>
+      <div class="field hidden" id="dateBox">
+        <label>Cutoff Date</label>
+        <input id="customDate" type="date">
+      </div>
+      <div class="field hidden" id="timeBox">
+        <label>Cutoff Time (Eastern)</label>
+        <input id="customTime" type="time" value="14:00">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="generateShortage()">
+        Generate Pull List
+      </button>
+    </div>
+    <p id="shortageMessage" class="message">
+      Upload all three reports to begin.
+    </p>
+  </div>
+
+  <div id="shortageOutput" class="panel hidden">
+    <h2>Additional Storage Pulls</h2>
+    <div class="metrics">
+      <div class="metric">
+        <strong id="shortageTotal">0</strong>
+        <span>Shortage Units</span>
+      </div>
+      <div class="metric">
+        <strong id="shelfTotal">0</strong>
+        <span>Covered by Shelf</span>
+      </div>
+      <div class="metric">
+        <strong id="taskTotal">0</strong>
+        <span>Covered by Replenishment</span>
+      </div>
+      <div class="metric">
+        <strong id="pullTotal">0</strong>
+        <span>Additional Pull Units</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="printPulls()">
+        Print Pull List
+      </button>
+      <button class="btn" onclick="copyShortageBrand('MagnaReady')">
+        Copy MagnaReady for Jira
+      </button>
+      <button class="btn" onclick="copyShortageBrand('Swoveralls')">
+        Copy Swoveralls for Jira
+      </button>
+    </div>
+    <p id="shortageCopyStatus" class="message"></p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Brand</th><th>SKU</th><th>QTY</th>
+            <th>Location</th><th>LPN</th>
+          </tr>
+        </thead>
+        <tbody id="pullTable"></tbody>
+      </table>
+    </div>
+    <h3>Needs Follow-up</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Brand</th><th>SKU</th>
+            <th>QTY</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="followTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="hats" class="page">
+  <div class="eyebrow">THE GAME / POD</div>
+  <h1>The Game POD Hats</h1>
+  <p class="muted small">
+    Find hat quantities and inventory locations in building 88.
+  </p>
+
+  <div class="panel">
+    <h2>Upload Logiwa Reports</h2>
+    <div class="row">
+      <div class="field">
+        <label>1. Shipment Orders</label>
+        <input id="hatOrders" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="field">
+        <label>2. Inventory by Location</label>
+        <input id="hatInventory" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="generateHats()">
+        Find My Hats
+      </button>
+    </div>
+    <p id="hatMessage" class="message">
+      Upload both reports to begin.
+    </p>
+  </div>
+
+  <div id="hatOutput" class="panel hidden">
+    <h2>Hats to Retrieve</h2>
+    <div class="metrics">
+      <div class="metric">
+        <strong id="hatNeeded">0</strong>
+        <span>Units Needed</span>
+      </div>
+      <div class="metric">
+        <strong id="hatLocated">0</strong>
+        <span>Units Located</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" onclick="copyHats()">
+        Copy The Game for Jira
+      </button>
+    </div>
+    <p id="hatCopyStatus" class="message"></p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>SKU</th><th>QTY</th>
+            <th>Location</th><th>LPN</th>
+          </tr>
+        </thead>
+        <tbody id="hatTable"></tbody>
+      </table>
+    </div>
+    <h3>Unable to Locate</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>SKU</th><th>QTY</th><th>Reason</th></tr>
+        </thead>
+        <tbody id="hatMissing"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="lists" class="page">
+  <div class="eyebrow">WORKSPACE / PRINTABLES</div>
+  <h1>List Generator</h1>
+  <p class="muted small">
+    Create printable lists and copy complete lists into Jira.
+  </p>
+
+  <div class="panel">
+    <h2>Customize Your List</h2>
+    <div class="row">
+      <div class="field">
+        <label>List Type</label>
+        <select id="listType" onchange="changeListType()">
+          <option value="todo">To-Do List</option>
+          <option value="sku">SKU / Location / LPN</option>
+          <option value="adjust">Inventory Adjustment List</option>
+          <option value="custom">Custom Two-Column List</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Print Layout</label>
+        <select id="listPaper">
+          <option value="4x6">4 × 6 Vertical</option>
+          <option value="letter">US Letter Portrait</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:18px">
+      <div class="field">
+        <label>List Title</label>
+        <input id="listTitle" value="To-Do List">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="listDate" type="date">
+      </div>
+    </div>
+    <label class="option-check hidden" id="quantityOption">
+      <input id="includeQuantity" type="checkbox" checked
+        onchange="toggleQuantity()">
+      Include Quantity column
+    </label>
+    <h3>List Items</h3>
+    <div id="listRows"></div>
+    <div class="actions">
+      <button class="btn" onclick="addListRow()">+ Add Row</button>
+      <button class="btn primary" onclick="generateList()">
+        Generate Preview
+      </button>
+      <button class="btn" onclick="printList()">Print List</button>
+      <button class="btn" onclick="copyEntireListForJira()">
+        Copy Entire List for Jira
+      </button>
+      <button class="btn danger" onclick="clearList()">Clear</button>
+    </div>
+    <p id="jiraListCopyStatus" class="message" role="status"></p>
+  </div>
+  <div id="listOutput" class="panel hidden">
+    <h2>Print Preview</h2>
+    <div id="listPreview" class="preview"></div>
+  </div>
+</section>
+
+<section id="tickets" class="page">
+  <div class="eyebrow">WORKSPACE / PRINTABLES</div>
+  <h1>Ticket Generator</h1>
+  <p class="muted small">
+    Rush Order and Under Investigation tickets. 4×6 portrait only.
+  </p>
+  <div class="panel">
+    <h2>Create a Ticket</h2>
+    <div class="row">
+      <div class="field">
+        <label>Ticket Type</label>
+        <select id="ticketType" onchange="changeTicketType()">
+          <option value="rush">Rush Order</option>
+          <option value="investigation">Under Investigation</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Print Size</label>
+        <input value="4 × 6 Portrait" disabled>
+      </div>
+    </div>
+
+    <div id="rushFields">
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Job Code</label>
+          <input id="rushJobCode" placeholder="Enter job code">
+        </div>
+        <div class="field">
+          <label>Order Number</label>
+          <input id="rushOrderNumber" placeholder="Enter order number">
+        </div>
+      </div>
+      <div style="margin-top:18px">
+        <label>Notes</label>
+        <textarea id="rushNotes"
+          placeholder="Leave blank for handwriting..."></textarea>
+      </div>
+    </div>
+
+    <div id="investigationFields" class="hidden">
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Job #</label>
+          <input id="investJob" placeholder="Job number">
+        </div>
+        <div class="field">
+          <label>Cart #</label>
+          <input id="investCart" placeholder="Cart number">
+        </div>
+      </div>
+      <div class="row" style="margin-top:18px">
+        <div class="field">
+          <label>Date</label>
+          <input id="investDate" type="date">
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input id="investTime" type="time">
+        </div>
+      </div>
+      <div style="margin-top:18px">
+        <label>Quantity Affected</label>
+        <input id="investQuantity" type="number" min="0"
+          step="1" placeholder="Quantity affected">
+      </div>
+
+      <h3>Reason (Check One)</h3>
+      <div class="ticket-reasons">
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Missing SKU / Item Not Found">
+          Missing SKU / Item Not Found
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Item Not Scanning">
+          Item Not Scanning
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Cart Assigned to Another Job">
+          Cart Assigned to Another Job
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Shortage / Not Enough Inventory">
+          Shortage / Not Enough Inventory
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Item Printed Incorrectly / Damaged">
+          Item Printed Incorrectly / Damaged
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason"
+            value="Unable to Start New Job">
+          Unable to Start New Job
+        </label>
+        <label class="reason-choice">
+          <input type="radio" name="investReason" value="Other">
+          Other
+        </label>
+      </div>
+      <div style="margin-top:16px">
+        <label>Other Reason</label>
+        <input id="investOther" placeholder="Specify other reason">
+      </div>
+      <div style="margin-top:18px">
+        <label>Notes / Details</label>
+        <textarea id="investNotes"
+          placeholder="Leave blank for handwriting..."></textarea>
+      </div>
+      <div style="margin-top:18px">
+        <label>Investigated By</label>
+        <input id="investigator" placeholder="Name">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" onclick="generateTicket()">
+        Generate Ticket
+      </button>
+      <button class="btn" onclick="printTicket()">
+        Print 4×6 Ticket
+      </button>
+      <button class="btn danger" onclick="clearTicket()">
+        Clear Fields
+      </button>
+    </div>
+  </div>
+  <div id="ticketOutput" class="panel hidden">
+    <h2>Ticket Preview</h2>
+    <div class="ticket-preview-area">
+      <div id="ticketPreview"></div>
+    </div>
+  </div>
+</section>
+
 <section id="links" class="page">
   <div class="eyebrow">WORKSPACE / RESOURCES</div>
   <h1>Quick Links</h1>
   <p class="muted small">Frequently used systems.</p>
 
-  <!-- WAREHOUSE MANAGEMENT -->
   <div class="section-label">Warehouse Management</div>
   <div class="link-grid">
     <a class="quick-link"
-       href="https://my.logiwa.com/en/wms/dashboard"
-       target="_blank"
-       rel="noopener noreferrer">
+      href="https://my.logiwa.com/en/wms/dashboard"
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="warehouse"></i>
       <strong>Logiwa WMS</strong>
       <p>Warehouse management, inventory tracking, and order fulfillment.</p>
     </a>
   </div>
 
-  <!-- TASK MANAGEMENT -->
   <div class="section-label">Task Management</div>
   <div class="link-grid">
     <a class="quick-link"
-       href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
-       target="_blank"
-       rel="noopener noreferrer">
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="clipboard-check"></i>
       <strong>D2C Warehouse Dashboard</strong>
       <p>Main task management system.</p>
     </a>
   </div>
 
-  <!-- ORDER MANAGEMENT -->
   <div class="section-label">Order Management</div>
   <div class="link-grid">
     <a class="quick-link"
-       href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
-       target="_blank"
-       rel="noopener noreferrer">
+      href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="printer"></i>
       <strong>POD Orders Dashboard</strong>
       <p>Artwork, cancellations, and replacement orders.</p>
     </a>
-
     <a class="quick-link"
-       href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
-       target="_blank"
-       rel="noopener noreferrer">
+      href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="search"></i>
       <strong>BSN Order Lookup</strong>
       <p>Order lookup and tracking information.</p>
     </a>
-
     <a class="quick-link"
-       href="https://admin.shopify.com/store/"
-       target="_blank"
-       rel="noopener noreferrer">
+      href="https://admin.shopify.com/store/"
+      target="_blank" rel="noopener noreferrer">
       <i data-lucide="shopping-bag"></i>
       <strong>Shopify Admin</strong>
       <p>Brand stores and order management.</p>
     </a>
   </div>
 </section>
+
+<section id="emergency" class="page">
+  <div class="eyebrow">DAILY COVERAGE / REFERENCE GUIDE</div>
+  <h1>Break Glass in Case of Emergency</h1>
+  <p class="muted small">
+    Everything needed to cover D2C operations for the day.
+  </p>
+
+  <div class="panel" id="guide-daily">
+    <h2>Daily Operations</h2>
+    <p class="muted small">
+      Follow this schedule to stay on top of daily responsibilities.
+    </p>
+    <div class="table-wrap">
+      <table class="daily-table">
+        <thead>
+          <tr><th>Time</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>8:30 AM</td><td>The Game stock request</td></tr>
+          <tr><td>2:00 PM</td><td>Amazon orders</td></tr>
+          <tr>
+            <td>~2:40 PM</td>
+            <td>Shortage report — after replenishment</td>
+          </tr>
+          <tr>
+            <td>4:30 PM</td>
+            <td>Check and clear Job Queue</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="guide-checklist">
+    <div class="check-progress">
+      <div>
+        <h2 style="margin-bottom:4px">End-of-Day Checklist</h2>
+        <p class="muted small" style="margin:0">
+          Your progress is saved throughout the day.
+        </p>
+      </div>
+      <strong id="checkCount" style="color:var(--slate)">0 / 5</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="checkProgress"></div>
+    </div>
+
+    <div id="dailyChecklist">
+      <label class="daily-check">
+        <input type="checkbox" data-check="amazon">
+        <span>Amazon orders checked</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="shortage">
+        <span>Shortage report reviewed</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="followup">
+        <span>Outstanding shortage items followed up</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="queue">
+        <span>Job Queue checked and cleared</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="handoff">
+        <span>Unfinished tasks documented for tomorrow</span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="resetDailyChecklist()">
+        Reset Checklist
+      </button>
+    </div>
+    <p class="message" id="checkMessage">
+      Automatically resets at the start of a new Eastern Time day.
+    </p>
+  </div>
+
+  <div class="panel" id="guide-tutorials">
+    <h2>Logiwa Tutorials</h2>
+    <p class="muted small">
+      Select a procedure to view the step-by-step Scribe.
+      Tutorials open directly on this page.
+    </p>
+
+    <div class="guide-category">
+      <h3><i data-lucide="package"></i>Order Management</h3>
+      <p>Shipment orders, address changes, and order status filters.</p>
+    </div>
+
+    <details class="guide-item" id="tutorial-cancel">
+      <summary>Cancel a Shipment Order</summary>
+      <div class="guide-body">
+        <div class="guide-note">
+          <strong>Important:</strong> For orders in Ready to Pick
+          status, cancel the picking task first before proceeding
+          with the shipment order cancellation.
+        </div>
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
+          title="Cancel a Shipment Order in Logiwa"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item" id="tutorial-address">
+      <summary>Update Shipment Order Address Details</summary>
+      <div class="guide-body">
+        <div class="guide-note">
+          This procedure applies to shipment orders in OPEN status.
+        </div>
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
+          title="Update Shipment Order Address Details"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item" id="tutorial-filter">
+      <summary>Filter Shipped and Canceled Orders</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
+          title="Filter Shipped and Canceled Orders"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <div class="guide-category">
+      <h3><i data-lucide="truck"></i>Shipping & Labels</h3>
+      <p>Return labels and shipping label reprints.</p>
+    </div>
+
+    <details class="guide-item" id="tutorial-return">
+      <summary>Create a Return Label in Logiwa</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
+          title="Create a Return Label in Logiwa"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item" id="tutorial-reprint">
+      <summary>Reprint a Shipping Label in Logiwa</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
+          title="Reprint a Shipping Label in Logiwa"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <div class="guide-category">
+      <h3><i data-lucide="boxes"></i>Inventory & Stock Requests</h3>
+      <p>Creating stock request orders.</p>
+    </div>
+
+    <details class="guide-item" id="tutorial-stock">
+      <summary>Create a Stock Request Order</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
+          title="Create a Stock Request Order"
+          class="scribe-frame" allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" id="guide-contacts">
+    <h2>Brand Points of Contact</h2>
+    <p class="muted small">
+      Reference for brand-related communications.
+    </p>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <strong>Gabriela Rangel</strong>
+        <span>Brand Contact</span>
+        <p>Swoveralls<br>Duderobes</p>
+      </div>
+      <div class="contact-card">
+        <strong>Mauran Horton</strong>
+        <span>Brand Contact</span>
+        <p>MagnaReady</p>
+      </div>
+      <div class="contact-card">
+        <strong>Daniela Diaz</strong>
+        <span>Brand Contact</span>
+        <p>The Game<br>Weatherproof Vintage</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="guide-locations">
+    <h2>Warehouse Locations & Definitions</h2>
+    <p class="muted small">
+      Quick reference for inventory locations in Logiwa.
+    </p>
+    <div class="table-wrap">
+      <table class="reference-table">
+        <thead>
+          <tr><th>Term / Location</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100 / 88 Shelf Locations</td>
+            <td>Pickable inventory locations.</td>
+          </tr>
+          <tr>
+            <td>R-100, STN, STS, etc.</td>
+            <td>Storage locations. Inventory may require replenishment.</td>
+          </tr>
+          <tr>
+            <td>Receiving Dock</td>
+            <td>
+              Inventory may be physically present but not yet
+              on a pickable shelf.
+            </td>
+          </tr>
+          <tr>
+            <td>MV-M1 / 0M1 / 0M5</td>
+            <td>Virtual or exception locations. Notify Maren.</td>
+          </tr>
+          <tr>
+            <td>LPN</td>
+            <td>
+              License Plate Number, used to identify inventory containers.
+            </td>
+          </tr>
+          <tr>
+            <td>The Game Hats</td>
+            <td>Retrieve from building 88 only.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="guide-systems">
+    <h2>Essential Systems</h2>
+    <p class="muted small">
+      Quick access to the tools needed throughout the day.
+    </p>
+
+    <a class="resource-link"
+      href="https://my.logiwa.com/en/wms/dashboard"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="warehouse"></i>
+      Logiwa WMS
+    </a>
+
+    <a class="resource-link"
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="clipboard-check"></i>
+      D2C Task Board
+    </a>
+
+    <a class="resource-link"
+      href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="printer"></i>
+      POD Orders Dashboard
+    </a>
+
+    <a class="resource-link"
+      href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="search"></i>
+      BSN Order Lookup
+    </a>
+
+    <a class="resource-link"
+      href="https://admin.shopify.com/store/"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="shopping-bag"></i>
+      Shopify Admin
+    </a>
+  </div>
+</section>
+</main>
+</div>
+
+<button id="assist-launcher"
+  type="button"
+  aria-label="Open D2C Assist help"
+  aria-expanded="false"
+  aria-controls="assist-chat">
+  <svg viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="1.8"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8
+    8.5 8.5 0 0 1-7.6 4.7
+    8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7
+    a8.4 8.4 0 0 1-.9-3.8
+    8.5 8.5 0 0 1 4.7-7.6
+    8.4 8.4 0 0 1 3.8-.9h.5
+    a8.5 8.5 0 0 1 8 8v.5z"/>
+    <path d="M9.5 9a2.5 2.5 0 0 1 5 0
+    c0 1.7-2.5 2-2.5 3.5"/>
+    <path d="M12 16h.01"/>
+  </svg>
+</button>
+
+<div id="assist-chat"
+  role="dialog"
+  aria-label="Ask D2C Assist">
+  <div class="assist-header">
+    <div>
+      <div class="assist-header-title">Ask D2C Assist</div>
+      <div class="assist-subtitle">
+        Your warehouse knowledge assistant
+      </div>
+    </div>
+    <button class="assist-close" id="assist-close"
+      type="button" aria-label="Close chat">×</button>
+  </div>
+
+  <div class="assist-messages" id="assist-messages"
+    aria-live="polite"></div>
+
+  <div class="assist-suggestions"
+    id="assist-suggestions"></div>
+
+  <form class="assist-form" id="assist-form">
+    <input class="assist-input"
+      id="assist-input"
+      placeholder="Ask a question..."
+      autocomplete="off"
+      maxlength="300"
+      aria-label="Ask a question">
+    <button class="assist-send" type="submit"
+      aria-label="Send question">↑</button>
+  </form>
+</div>
+
+<script>
+"use strict";
+
+const $=id=>document.getElementById(id);
+const clean=v=>String(v??"").trim();
+const norm=v=>clean(v).toUpperCase().replace(/\s+/g,"");
+const num=v=>Math.max(0,Number(clean(v).replace(/,/g,""))||0);
+
+function esc(v){
+  return String(v??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  })[c]);
+}
+
+function showPage(id){
+  document.querySelectorAll(".page").forEach(page=>{
+    page.classList.toggle("active",page.id===id);
+  });
+  document.querySelectorAll(".nav-item[data-page]")
+    .forEach(item=>{
+      item.classList.toggle("active",item.dataset.page===id);
+    });
+  if(id==="emergency")loadDailyChecklist();
+  window.scrollTo(0,0);
+}
+
+function easternDate(){
+  const parts=new Intl.DateTimeFormat("en-US",{
+    timeZone:"America/New_York",
+    year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(new Date());
+  const p={};
+  parts.forEach(x=>p[x.type]=x.value);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+function updateDate(){
+  $("currentDate").textContent=
+    new Date().toLocaleDateString("en-US",{
+      timeZone:"America/New_York",
+      weekday:"long",month:"long",day:"numeric",year:"numeric"
+    });
+}
+
+const CHECK_KEY="d2c_daily_closeout_v1";
+
+function checklistBoxes(){
+  return [...document.querySelectorAll(
+    "#dailyChecklist input[type=checkbox]"
+  )];
+}
+
+function loadDailyChecklist(){
+  const today=easternDate();
+  let saved={date:today,checks:[]};
+
+  try{
+    const data=JSON.parse(localStorage.getItem(CHECK_KEY)||"null");
+    if(data&&data.date===today&&Array.isArray(data.checks)){
+      saved=data;
+    }
+  }catch{}
+
+  checklistBoxes().forEach(box=>{
+    box.checked=saved.checks.includes(box.dataset.check);
+  });
+
+  try{
+    localStorage.setItem(CHECK_KEY,JSON.stringify(saved));
+  }catch{}
+
+  updateChecklistDisplay();
+}
+
+function saveDailyChecklist(){
+  const data={
+    date:easternDate(),
+    checks:checklistBoxes()
+      .filter(box=>box.checked)
+      .map(box=>box.dataset.check)
+  };
+
+  try{
+    localStorage.setItem(CHECK_KEY,JSON.stringify(data));
+  }catch{
+    $("checkMessage").textContent=
+      "Progress could not be saved in this browser.";
+  }
+
+  updateChecklistDisplay();
+}
+
+function updateChecklistDisplay(){
+  const boxes=checklistBoxes();
+  const completed=boxes.filter(box=>box.checked).length;
+  const total=boxes.length;
+
+  $("checkCount").textContent=`${completed} / ${total}`;
+  $("checkProgress").style.width=
+    `${total?completed/total*100:0}%`;
+
+  boxes.forEach(box=>{
+    box.closest(".daily-check")
+      .classList.toggle("completed",box.checked);
+  });
+
+  if(completed===total){
+    $("checkMessage").textContent=
+      "Daily closeout complete! ✓";
+  }else{
+    $("checkMessage").textContent=
+      "Progress is saved in this browser and resets tomorrow.";
+  }
+}
+
+function resetDailyChecklist(){
+  checklistBoxes().forEach(box=>box.checked=false);
+  saveDailyChecklist();
+}
+
+function initializeChecklist(){
+  checklistBoxes().forEach(box=>{
+    box.addEventListener("change",saveDailyChecklist);
+  });
+  loadDailyChecklist();
+}
+
+function initializeScribes(){
+  document.querySelectorAll(".guide-item").forEach(item=>{
+    item.addEventListener("toggle",()=>{
+      if(!item.open)return;
+      const frame=item.querySelector("iframe[data-src]");
+      if(frame&&!frame.src){
+        frame.src=frame.dataset.src;
+      }
+    });
+  });
+}
+
+function toggleDate(){
+  const custom=$("dateMode").value==="custom";
+  $("dateBox").classList.toggle("hidden",!custom);
+  $("timeBox").classList.toggle("hidden",!custom);
+}
+
+async function readExcel(file){
+  if(!file)throw new Error("Please select a file.");
+  if(typeof XLSX==="undefined"){
+    throw new Error("Excel library failed to load. Refresh the page.");
+  }
+
+  const data=await file.arrayBuffer();
+  const workbook=XLSX.read(data,{
+    type:"array",
+    cellDates:true
+  });
+
+  const sheet=workbook.Sheets[workbook.SheetNames[0]];
+  if(!sheet)throw new Error("The workbook is empty.");
+
+  return XLSX.utils.sheet_to_json(sheet,{
+    defval:"",
+    raw:false
+  });
+}
+
+function getField(row,names){
+  const keys=Object.keys(row);
+  const normalized=keys.map(k=>({
+    key:k,
+    name:norm(k).replace(/[^A-Z0-9]/g,"")
+  }));
+
+  for(const name of names){
+    const target=norm(name).replace(/[^A-Z0-9]/g,"");
+    const exact=normalized.find(k=>k.name===target);
+    if(exact)return row[exact.key];
+  }
+
+  for(const name of names){
+    const target=norm(name).replace(/[^A-Z0-9]/g,"");
+    const match=normalized.find(k=>k.name.includes(target));
+    if(match)return row[match.key];
+  }
+
+  return "";
+}
+
+function parseDate(value){
+  if(value instanceof Date)return value;
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?null:d;
+}
+
+function detectBrand(order,sku){
+  const o=norm(order);
+  const s=norm(sku);
+
+  if(o.startsWith("MR")||s.startsWith("F24")||
+     s.startsWith("F25")||s.startsWith("15")){
+    return "MagnaReady";
+  }
+  if(o.startsWith("SW")||s.startsWith("SW")){
+    return "Swoveralls";
+  }
+  if(o.startsWith("TG")||s.startsWith("G")){
+    return "The Game";
+  }
+  return "Other";
+}
+
+let shortagePulls=[];
+let shortageFollow=[];
+let shortageStats={total:0,shelf:0,tasks:0};
+
+function locationType(location){
+  const loc=norm(location).replace(/\s+/g,"");
+
+  if(!loc)return "Excluded";
+
+  if(/^(MV-M1|0M1|OM1|0M5|OM5)$/.test(loc)){
+    return "Virtual";
+  }
+
+  if(/STAGING|PACKING|SHIPPING|SHIPDOCK/.test(loc)){
+    return "Excluded";
+  }
+
+  if(/^(100|88)\./.test(loc)){
+    return "Shelf";
+  }
+
+  if(/^[A-Z]\.\d/.test(loc)){
+    return "Virtual";
+  }
+
+  return "Storage";
+}
+
+function sortLocations(a,b){
+  return clean(a).localeCompare(clean(b),undefined,{
+    numeric:true,
+    sensitivity:"base"
+  });
+}
+
+function inventoryData(rows){
+  const result=[];
+
+  for(const row of rows){
+    const sku=clean(getField(row,[
+      "SKU","Product Code","Item Code"
+    ]));
+
+    const loc=clean(getField(row,[
+      "Location","Location Code","Warehouse Location"
+    ]));
+
+    const lpn=clean(getField(row,[
+      "LPN","License Plate Number","LP"
+    ]));
+
+    const free=num(getField(row,[
+      "Free UOM QTY","Free UOM Qty",
+      "Free Quantity","Available Quantity",
+      "Free Qty"
+    ]));
+
+    const brand=clean(getField(row,[
+      "Client","Client Name","Brand","Store"
+    ]));
+
+    if(!sku||!loc||!free)continue;
+
+    result.push({
+      sku,loc,lpn,free,used:0,
+      brand,
+      type:locationType(loc)
+    });
+  }
+
+  return result;
+}
+
+function activeTasks(rows){
+  const result=[];
+
+  for(const row of rows){
+    const sku=clean(getField(row,[
+      "SKU","Product Code","Item Code"
+    ]));
+
+    const status=norm(getField(row,[
+      "Task Status","Status"
+    ]));
+
+    const qty=num(getField(row,[
+      "Task UOM Qty","Task Quantity",
+      "Quantity","UOM Qty"
+    ]));
+
+    const loc=clean(getField(row,[
+      "Source Location","From Location",
+      "Location"
+    ]));
+
+    const lpn=clean(getField(row,[
+      "Source LPN","LPN","License Plate Number"
+    ]));
+
+    const brand=clean(getField(row,[
+      "Client","Client Name","Brand"
+    ]));
+
+    if(!sku||!qty)continue;
+
+    if(/CANCEL|COMPLETE|COMPLETED|CLOSED|DONE/.test(status)){
+      continue;
+    }
+
+    result.push({sku,qty,loc,lpn,brand,status});
+  }
+
+  return result;
+}
+
+function matchesInventory(item,group){
+  if(norm(item.sku)!==norm(group.sku))return false;
+
+  if(!item.brand||!group.brand||
+     item.brand==="Other"||group.brand==="Other"){
+    return true;
+  }
+
+  return norm(item.brand)===norm(group.brand);
+}
+
+function calculateShortages(shortages,inventory,tasks){
+  const groups=new Map();
+  let cutoff=Infinity;
+
+  if($("dateMode").value==="custom"){
+    const date=$("customDate").value;
+    const time=$("customTime").value;
+
+    if(!date||!time){
+      throw new Error("Choose a custom cutoff date and time.");
+    }
+
+    cutoff=new Date(`${date}T${time}`).getTime();
+  }
+
+  for(const row of shortages){
+    const sku=clean(getField(row,[
+      "SKU","Product Code","Item Code"
+    ]));
+
+    const order=clean(getField(row,[
+      "Order Code","Store Order Number",
+      "Shipment Order Code"
+    ]));
+
+    const brandField=clean(getField(row,[
+      "Client","Client Name","Brand"
+    ]));
+
+    const brand=brandField||detectBrand(order,sku);
+
+    const qty=num(getField(row,[
+      "Shortage UOM Qty","Shortage Quantity",
+      "Shortage Qty"
+    ]));
+
+    const date=parseDate(getField(row,[
+      "Order Creation Date","Creation Date",
+      "Created Date"
+    ]));
+
+    if(!sku||!qty)continue;
+
+    if($("dateMode").value==="custom"){
+      if(!date||date.getTime()>=cutoff)continue;
+    }
+
+    const key=norm(brand)+"|"+norm(sku);
+
+    if(!groups.has(key)){
+      groups.set(key,{
+        sku,brand,need:0,
+        oldest:date?date.getTime():Infinity
+      });
+    }
+
+    const group=groups.get(key);
+    group.need+=qty;
+
+    if(date){
+      group.oldest=Math.min(group.oldest,date.getTime());
+    }
+  }
+
+  const ordered=[...groups.values()].sort(
+    (a,b)=>a.oldest-b.oldest
+  );
+
+  const stock=inventoryData(inventory);
+  const assigned=activeTasks(tasks);
+
+  shortagePulls=[];
+  shortageFollow=[];
+  shortageStats={
+    total:ordered.reduce((sum,g)=>sum+g.need,0),
+    shelf:0,
+    tasks:0
+  };
+
+  const taskCoverage=new Map();
+
+  for(const task of assigned){
+    const key=norm(task.sku);
+
+    taskCoverage.set(
+      key,(taskCoverage.get(key)||0)+task.qty
+    );
+
+    let remaining=task.qty;
+
+    const sources=stock.filter(item=>
+      norm(item.sku)===key&&
+      item.type==="Storage"&&
+      (!task.loc||norm(item.loc)===norm(task.loc))&&
+      (!task.lpn||norm(item.lpn)===norm(task.lpn))
+    );
+
+    for(const item of sources){
+      const available=Math.max(0,item.free-item.used);
+      const take=Math.min(remaining,available);
+
+      item.used+=take;
+      remaining-=take;
+
+      if(!remaining)break;
+    }
+  }
+
+  for(const group of ordered){
+    const matching=stock.filter(item=>
+      matchesInventory(item,group)
+    );
+
+    const shelf=matching.filter(item=>
+      item.type==="Shelf"
+    );
+
+    let freeShelf=shelf.reduce(
+      (sum,item)=>sum+Math.max(0,item.free-item.used),
+      0
+    );
+
+    const coveredByShelf=Math.min(group.need,freeShelf);
+
+    shortageStats.shelf+=coveredByShelf;
+
+    let remaining=group.need-coveredByShelf;
+    let shelfToReserve=coveredByShelf;
+
+    for(const item of shelf){
+      const available=Math.max(0,item.free-item.used);
+      const take=Math.min(shelfToReserve,available);
+
+      item.used+=take;
+      shelfToReserve-=take;
+
+      if(!shelfToReserve)break;
+    }
+
+    const taskKey=norm(group.sku);
+    const availableTasks=taskCoverage.get(taskKey)||0;
+    const coveredByTasks=Math.min(remaining,availableTasks);
+
+    shortageStats.tasks+=coveredByTasks;
+    remaining-=coveredByTasks;
+
+    taskCoverage.set(
+      taskKey,availableTasks-coveredByTasks
+    );
+
+    const sources=matching.filter(item=>
+      item.type==="Storage"
+    ).sort((a,b)=>sortLocations(a.loc,b.loc));
+
+    for(const item of sources){
+      const available=Math.max(0,item.free-item.used);
+      const take=Math.min(remaining,available);
+
+      if(take>0){
+        shortagePulls.push({
+          brand:group.brand,
+          sku:group.sku,
+          qty:take,
+          loc:item.loc,
+          lpn:item.lpn||"—",
+          oldest:group.oldest
+        });
+
+        item.used+=take;
+        remaining-=take;
+      }
+
+      if(!remaining)break;
+    }
+
+    if(remaining>0){
+      const virtual=matching.filter(item=>
+        item.type==="Virtual"
+      );
+
+      const reason=virtual.length
+        ? "Virtual / exception location: "+
+          virtual.map(item=>
+            `${item.loc} (${item.lpn||"No LPN"})`
+          ).join("; ")
+        : "No additional free physical inventory";
+
+      shortageFollow.push({
+        brand:group.brand,
+        sku:group.sku,
+        qty:remaining,
+        reason
+      });
+    }
+  }
+
+  shortagePulls.sort((a,b)=>
+    sortLocations(a.loc,b.loc)||
+    a.oldest-b.oldest
+  );
+}
+
+async function generateShortage(){
+  $("shortageMessage").textContent="Reading reports...";
+  $("shortageOutput").classList.add("hidden");
+
+  try{
+    const [shortages,inventory,tasks]=await Promise.all([
+      readExcel($("shortageFile").files[0]),
+      readExcel($("inventoryFile").files[0]),
+      readExcel($("taskFile").files[0])
+    ]);
+
+    if(!shortages.length){
+      throw new Error("Shortage Report is empty.");
+    }
+
+    if(!inventory.length){
+      throw new Error("Inventory Report is empty.");
+    }
+
+    calculateShortages(shortages,inventory,tasks);
+
+    $("shortageTotal").textContent=shortageStats.total;
+    $("shelfTotal").textContent=shortageStats.shelf;
+    $("taskTotal").textContent=shortageStats.tasks;
+
+    $("pullTotal").textContent=shortagePulls.reduce(
+      (sum,item)=>sum+item.qty,0
+    );
+
+    $("pullTable").innerHTML=shortagePulls.map(item=>`
+      <tr>
+        <td>${esc(item.brand)}</td>
+        <td class="sku">${esc(item.sku)}</td>
+        <td><strong>${item.qty}</strong></td>
+        <td>${esc(item.loc)}</td>
+        <td>${esc(item.lpn)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="5">No additional pulls.</td></tr>';
+
+    $("followTable").innerHTML=shortageFollow.map(item=>`
+      <tr>
+        <td>${esc(item.brand)}</td>
+        <td class="sku">${esc(item.sku)}</td>
+        <td>${item.qty}</td>
+        <td>${esc(item.reason)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="4">No follow-ups.</td></tr>';
+
+    $("shortageOutput").classList.remove("hidden");
+
+    $("shortageMessage").textContent=
+      `Loaded ${shortages.length} shortage rows, `+
+      `${inventory.length} inventory rows, and `+
+      `${tasks.length} replenishment rows.`;
+
+  }catch(error){
+    $("shortageMessage").textContent=
+      "Error: "+error.message;
+  }
+}
+
+async function copyText(text,statusId){
+  if(!text){
+    if(statusId)$(statusId).textContent="Nothing to copy.";
+    return;
+  }
+
+  try{
+    await navigator.clipboard.writeText(text);
+    if(statusId)$(statusId).textContent="Copied!";
+  }catch{
+    if(statusId){
+      $(statusId).textContent=
+        "Clipboard unavailable. Try using a secure HTTPS page.";
+    }
+  }
+}
+
+function copyShortageBrand(brand){
+  const text=shortagePulls
+    .filter(item=>norm(item.brand)===norm(brand))
+    .map(item=>
+      `(${item.qty}) ${item.sku} — ${item.loc} — ${item.lpn}`
+    )
+    .join("\n");
+
+  copyText(text,"shortageCopyStatus");
+}
+
+function printHTML(title,body,paper="letter"){
+  const win=window.open("","_blank");
+
+  if(!win){
+    alert("Please allow pop-ups to print.");
+    return;
+  }
+
+  const size=paper==="4x6"?"4in 6in":"letter portrait";
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${esc(title)}</title>
+      <style>
+        @page{size:${size};margin:0.25in}
+        body{font-family:Arial,sans-serif;color:#111;font-size:11px}
+        h1{font-size:16px;margin:0 0 15px}
+        table{width:100%;border-collapse:collapse}
+        th,td{
+          padding:7px 5px;border-bottom:1px solid #bbb;
+          text-align:left;vertical-align:top;
+          overflow-wrap:anywhere;
+        }
+        th{font-size:10px}
+      </style>
+    </head>
+    <body>${body}</body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function printPulls(){
+  if(!shortagePulls.length){
+    alert("No additional storage pulls to print.");
+    return;
+  }
+
+  const rows=shortagePulls.map(item=>`
+    <tr>
+      <td>□</td>
+      <td>${item.qty}</td>
+      <td>${esc(item.sku)}</td>
+      <td>${esc(item.loc)}</td>
+      <td>${esc(item.lpn)}</td>
+    </tr>
+  `).join("");
+
+  printHTML(
+    "Additional Storage Pulls",
+    `<h1>ADDITIONAL STORAGE PULLS</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>✓</th><th>QTY</th><th>SKU</th>
+          <th>LOCATION</th><th>LPN</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`,
+    "letter"
+  );
+}
+
+let hatPulls=[];
+let hatMissing=[];
+
+function isHatSKU(sku){
+  const s=norm(sku);
+
+  if(!s)return false;
+
+  if(/^(G\d|21459)/.test(s))return true;
+
+  if(/^(F24|F25|F26|SW|15MS|15AWS|20-)/.test(s)){
+    return false;
+  }
+
+  return /HAT|CAP|BEANIE/.test(s);
+}
+
+function isBuilding88(location){
+  const loc=norm(location);
+
+  return loc.startsWith("88")||
+    loc.includes("88SAMPLES")||
+    loc.includes("MEZZ88");
+}
+
+function hatOrderData(rows){
+  const groups=new Map();
+
+  for(const row of rows){
+    const sku=clean(getField(row,[
+      "SKU","Product Code","Item Code"
+    ]));
+
+    if(!isHatSKU(sku))continue;
+
+    const order=clean(getField(row,[
+      "Order Code","Shipment Order Code",
+      "Store Order Number"
+    ]));
+
+    const qty=num(getField(row,[
+      "Quantity","Order Quantity",
+      "Requested Quantity","UOM Qty"
+    ]));
+
+    const shortage=num(getField(row,[
+      "Shortage UOM Qty","Shortage Quantity"
+    ]));
+
+    const needed=shortage||qty;
+
+    if(!needed)continue;
+
+    const key=norm(sku);
+
+    if(!groups.has(key)){
+      groups.set(key,{
+        sku,
+        qty:0,
+        orders:new Set()
+      });
+    }
+
+    const group=groups.get(key);
+    group.qty+=needed;
+
+    if(order)group.orders.add(order);
+  }
+
+  return [...groups.values()];
+}
+
+function calculateHats(orders,inventory){
+  const needed=hatOrderData(orders);
+  const stock=inventoryData(inventory);
+
+  hatPulls=[];
+  hatMissing=[];
+
+  for(const group of needed){
+    let remaining=group.qty;
+
+    const matching=stock.filter(item=>
+      norm(item.sku)===norm(group.sku)&&
+      isBuilding88(item.loc)&&
+      item.type!=="Excluded"&&
+      item.type!=="Virtual"
+    ).sort((a,b)=>{
+      const aShelf=a.type==="Shelf"?0:1;
+      const bShelf=b.type==="Shelf"?0:1;
+
+      return aShelf-bShelf||
+        sortLocations(a.loc,b.loc);
+    });
+
+    for(const item of matching){
+      const available=Math.max(0,item.free-item.used);
+      const take=Math.min(remaining,available);
+
+      if(take>0){
+        hatPulls.push({
+          sku:group.sku,
+          qty:take,
+          loc:item.loc,
+          lpn:item.lpn||"—"
+        });
+
+        item.used+=take;
+        remaining-=take;
+      }
+
+      if(!remaining)break;
+    }
+
+    if(remaining>0){
+      hatMissing.push({
+        sku:group.sku,
+        qty:remaining,
+        reason:"Not enough available inventory in building 88"
+      });
+    }
+  }
+
+  hatPulls.sort((a,b)=>
+    sortLocations(a.loc,b.loc)||
+    a.sku.localeCompare(b.sku)
+  );
+
+  return {
+    needed:needed.reduce((sum,item)=>sum+item.qty,0),
+    located:hatPulls.reduce((sum,item)=>sum+item.qty,0)
+  };
+}
+
+async function generateHats(){
+  $("hatMessage").textContent="Reading reports...";
+  $("hatOutput").classList.add("hidden");
+
+  try{
+    const [orders,inventory]=await Promise.all([
+      readExcel($("hatOrders").files[0]),
+      readExcel($("hatInventory").files[0])
+    ]);
+
+    if(!orders.length){
+      throw new Error("Shipment Orders report is empty.");
+    }
+
+    if(!inventory.length){
+      throw new Error("Inventory report is empty.");
+    }
+
+    const totals=calculateHats(orders,inventory);
+
+    $("hatNeeded").textContent=totals.needed;
+    $("hatLocated").textContent=totals.located;
+
+    $("hatTable").innerHTML=hatPulls.map(item=>`
+      <tr>
+        <td class="sku">${esc(item.sku)}</td>
+        <td><strong>${item.qty}</strong></td>
+        <td>${esc(item.loc)}</td>
+        <td>${esc(item.lpn)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="4">No hats located.</td></tr>';
+
+    $("hatMissing").innerHTML=hatMissing.map(item=>`
+      <tr>
+        <td class="sku">${esc(item.sku)}</td>
+        <td>${item.qty}</td>
+        <td>${esc(item.reason)}</td>
+      </tr>
+    `).join("")||
+    '<tr><td colspan="3">All requested hats located.</td></tr>';
+
+    $("hatOutput").classList.remove("hidden");
+
+    $("hatMessage").textContent=
+      `Processed ${orders.length} order rows and `+
+      `${inventory.length} inventory rows.`;
+
+  }catch(error){
+    $("hatMessage").textContent="Error: "+error.message;
+  }
+}
+
+function copyHats(){
+  const combined=new Map();
+
+  for(const item of hatPulls){
+    const key=norm(item.sku);
+
+    if(!combined.has(key)){
+      combined.set(key,{
+        sku:item.sku,
+        qty:0
+      });
+    }
+
+    combined.get(key).qty+=item.qty;
+  }
+
+  const text=[...combined.values()]
+    .map(item=>`(${item.qty}) ${item.sku}`)
+    .join("\n");
+
+  copyText(text,"hatCopyStatus");
+}
+
+let listRowCounter=0;
+
+function changeListType(){
+  const type=$("listType").value;
+
+  const titles={
+    todo:"To-Do List",
+    sku:"SKU Pull List",
+    adjust:"Inventory Adjustment List",
+    custom:"Custom List"
+  };
+
+  $("listTitle").value=titles[type]||"List";
+  $("quantityOption").classList.toggle(
+    "hidden",type!=="sku"
+  );
+
+  $("listRows").innerHTML="";
+  $("listOutput").classList.add("hidden");
+
+  for(let i=0;i<5;i++)addListRow();
+}
+
+function toggleQuantity(){
+  const show=$("includeQuantity").checked;
+
+  document.querySelectorAll(".generator-row.sku")
+    .forEach(row=>{
+      row.classList.toggle("with-qty",show);
+      const qty=row.querySelector(".list-qty");
+      if(qty)qty.classList.toggle("hidden",!show);
+    });
+}
+
+function addListRow(values={}){
+  const type=$("listType").value;
+  const id=++listRowCounter;
+  const row=document.createElement("div");
+
+  row.dataset.rowId=id;
+  row.className="generator-row "+type;
+
+  if(type==="todo"){
+    row.innerHTML=`
+      <input class="list-task"
+        placeholder="Task or item"
+        value="${esc(values.task||"")}">
+      <button type="button" class="remove-row"
+        aria-label="Remove row"
+        onclick="removeListRow(${id})">×</button>
+    `;
+  }
+
+  if(type==="sku"){
+    const showQty=$("includeQuantity").checked;
+
+    row.classList.toggle("with-qty",showQty);
+
+    row.innerHTML=`
+      <input class="list-sku"
+        placeholder="SKU"
+        value="${esc(values.sku||"")}">
+      <input class="list-qty ${showQty?"":"hidden"}"
+        type="number" min="0" step="1"
+        placeholder="QTY"
+        value="${esc(values.qty||"")}">
+      <input class="list-location"
+        placeholder="Location"
+        value="${esc(values.location||"")}">
+      <input class="list-lpn"
+        placeholder="LPN"
+        value="${esc(values.lpn||"")}">
+      <button type="button" class="remove-row"
+        aria-label="Remove row"
+        onclick="removeListRow(${id})">×</button>
+    `;
+  }
+
+  if(type==="adjust"){
+    row.innerHTML=`
+      <input class="list-sku"
+        placeholder="SKU / Location"
+        value="${esc(values.sku||"")}">
+      <input class="list-adjustment"
+        placeholder="Adjustment / Notes"
+        value="${esc(values.adjustment||"")}">
+      <button type="button" class="remove-row"
+        aria-label="Remove row"
+        onclick="removeListRow(${id})">×</button>
+    `;
+  }
+
+  if(type==="custom"){
+    row.innerHTML=`
+      <input class="list-first"
+        placeholder="Column 1"
+        value="${esc(values.first||"")}">
+      <input class="list-second"
+        placeholder="Column 2"
+        value="${esc(values.second||"")}">
+      <button type="button" class="remove-row"
+        aria-label="Remove row"
+        onclick="removeListRow(${id})">×</button>
+    `;
+  }
+
+  $("listRows").appendChild(row);
+}
+
+function removeListRow(id){
+  const row=document.querySelector(
+    `[data-row-id="${id}"]`
+  );
+
+  if(row)row.remove();
+}
+
+function collectListRows(){
+  const type=$("listType").value;
+
+  return [...document.querySelectorAll(
+    "#listRows .generator-row"
+  )].map(row=>{
+    const get=selector=>
+      clean(row.querySelector(selector)?.value);
+
+    if(type==="todo"){
+      return {task:get(".list-task")};
+    }
+
+    if(type==="sku"){
+      return {
+        sku:get(".list-sku"),
+        qty:get(".list-qty"),
+        location:get(".list-location"),
+        lpn:get(".list-lpn")
+      };
+    }
+
+    if(type==="adjust"){
+      return {
+        sku:get(".list-sku"),
+        adjustment:get(".list-adjustment")
+      };
+    }
+
+    return {
+      first:get(".list-first"),
+      second:get(".list-second")
+    };
+  }).filter(row=>
+    Object.values(row).some(Boolean)
+  );
+}
+
+function listColumns(){
+  const type=$("listType").value;
+
+  if(type==="todo"){
+    return ["✓","Task"];
+  }
+
+  if(type==="sku"){
+    return $("includeQuantity").checked
+      ?["✓","SKU","QTY","Location","LPN"]
+      :["✓","SKU","Location","LPN"];
+  }
+
+  if(type==="adjust"){
+    return ["✓","SKU / Location","Adjustment / Notes"];
+  }
+
+  return ["✓","Column 1","Column 2"];
+}
+
+function listValues(item){
+  const type=$("listType").value;
+
+  if(type==="todo"){
+    return [item.task];
+  }
+
+  if(type==="sku"){
+    const values=[item.sku];
+
+    if($("includeQuantity").checked){
+      values.push(item.qty);
+    }
+
+    values.push(item.location,item.lpn);
+    return values;
+  }
+
+  if(type==="adjust"){
+    return [item.sku,item.adjustment];
+  }
+
+  return [item.first,item.second];
+}
+
+function buildListTable(rows){
+  const columns=listColumns();
+
+  const headings=columns.map(column=>
+    `<th>${esc(column)}</th>`
+  ).join("");
+
+  const body=rows.map(item=>{
+    const cells=listValues(item).map(value=>
+      `<td>${esc(value)}</td>`
+    ).join("");
+
+    return `<tr><td>□</td>${cells}</tr>`;
+  }).join("");
+
+  return `
+    <table>
+      <thead><tr>${headings}</tr></thead>
+      <tbody>${body}</tbody>
+    </table>
+  `;
+}
+
+function generateList(){
+  const rows=collectListRows();
+
+  if(!rows.length){
+    alert("Add at least one list item.");
+    return;
+  }
+
+  const title=clean($("listTitle").value)||"List";
+  const date=$("listDate").value;
+
+  $("listPreview").innerHTML=`
+    <h2 style="margin:0 0 5px">${esc(title)}</h2>
+    ${date?`<p class="muted small">${esc(date)}</p>`:""}
+    <div class="table-wrap">
+      ${buildListTable(rows)}
+    </div>
+  `;
+
+  $("listOutput").classList.remove("hidden");
+}
+
+function printList(){
+  const rows=collectListRows();
+
+  if(!rows.length){
+    alert("Add at least one list item.");
+    return;
+  }
+
+  const title=clean($("listTitle").value)||"List";
+  const date=$("listDate").value;
+
+  const body=`
+    <h1>${esc(title)}</h1>
+    ${date?`<p>${esc(date)}</p>`:""}
+    ${buildListTable(rows)}
+  `;
+
+  printHTML(title,body,$("listPaper").value);
+}
+
+function copyEntireListForJira(){
+  const rows=collectListRows();
+  const type=$("listType").value;
+
+  if(!rows.length){
+    $("jiraListCopyStatus").textContent=
+      "Add at least one item to copy.";
+    return;
+  }
+
+  const title=clean($("listTitle").value)||"List";
+
+  const lines=rows.map(item=>{
+    if(type==="todo"){
+      return `☐ ${item.task}`;
+    }
+
+    if(type==="sku"){
+      const parts=[];
+
+      if($("includeQuantity").checked&&item.qty){
+        parts.push(`(${item.qty})`);
+      }
+
+      parts.push(item.sku);
+
+      if(item.location)parts.push(item.location);
+      if(item.lpn)parts.push(item.lpn);
+
+      return parts.join(" — ");
+    }
+
+    if(type==="adjust"){
+      return [
+        item.sku,
+        item.adjustment
+      ].filter(Boolean).join(" — ");
+    }
+
+    return [
+      item.first,
+      item.second
+    ].filter(Boolean).join(" — ");
+  });
+
+  copyText(
+    `${title}\n\n${lines.join("\n")}`,
+    "jiraListCopyStatus"
+  );
+}
+
+function clearList(){
+  $("listRows").innerHTML="";
+  $("listOutput").classList.add("hidden");
+  $("jiraListCopyStatus").textContent="";
+
+  for(let i=0;i<5;i++){
+    addListRow();
+  }
+}
+
+function initializeListGenerator(){
+  $("listDate").value=easternDate();
+  changeListType();
+}
+
+function changeTicketType(){
+  const type=$("ticketType").value;
+
+  $("rushFields").classList.toggle(
+    "hidden",type!=="rush"
+  );
+
+  $("investigationFields").classList.toggle(
+    "hidden",type!=="investigation"
+  );
+
+  $("ticketOutput").classList.add("hidden");
+}
+
+function ticketValue(id){
+  return clean($(id)?.value);
+}
+
+function ticketFill(value){
+  return `<span class="fill">${esc(value)||"&nbsp;"}</span>`;
+}
+
+function generateRushTicket(){
+  const job=ticketValue("rushJobCode");
+  const order=ticketValue("rushOrderNumber");
+  const notes=ticketValue("rushNotes");
+
+  return `
+    <div class="ticket-paper rush">
+      <div class="rush-title">RUSH ORDER</div>
+      <div class="ticket-rule"></div>
+
+      <div class="rush-fields">
+        <div class="rush-field">
+          <strong>JOB CODE:</strong>
+          ${ticketFill(job)}
+        </div>
+
+        <div class="rush-field">
+          <strong>ORDER #:</strong>
+          ${ticketFill(order)}
+        </div>
+      </div>
+
+      <div class="rush-message">
+        <strong>PLEASE</strong>
+        PRIORITIZE
+        <br>THIS ORDER
+      </div>
+
+      <div class="rush-notes">
+        <strong>NOTES:</strong>
+        ${esc(notes)}
+      </div>
+    </div>
+  `;
+}
+
+function selectedInvestigationReason(){
+  return document.querySelector(
+    'input[name="investReason"]:checked'
+  )?.value||"";
+}
+
+function generateInvestigationTicket(){
+  const job=ticketValue("investJob");
+  const cart=ticketValue("investCart");
+  const date=ticketValue("investDate");
+  const time=ticketValue("investTime");
+  const quantity=ticketValue("investQuantity");
+  const reason=selectedInvestigationReason();
+  const other=ticketValue("investOther");
+  const notes=ticketValue("investNotes");
+  const investigator=ticketValue("investigator");
+
+  const reasons=[
+    "Missing SKU / Item Not Found",
+    "Item Not Scanning",
+    "Cart Assigned to Another Job",
+    "Shortage / Not Enough Inventory",
+    "Item Printed Incorrectly / Damaged",
+    "Unable to Start New Job",
+    "Other"
+  ];
+
+  const reasonRows=reasons.map(item=>{
+    const checked=item===reason;
+    const label=item==="Other"&&other
+      ?`Other: ${other}`
+      :item;
+
+    return `
+      <div class="invest-reason">
+        <span class="print-square">
+          ${checked?"✓":""}
+        </span>
+        <span>${esc(label)}</span>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="ticket-paper investigation">
+      <div class="invest-title">
+        UNDER INVESTIGATION
+      </div>
+      <div class="ticket-rule"></div>
+
+      <div class="invest-field">
+        <strong>Job #:</strong>
+        ${ticketFill(job)}
+      </div>
+
+      <div class="invest-field">
+        <strong>Cart #:</strong>
+        ${ticketFill(cart)}
+      </div>
+
+      <div class="invest-field">
+        <strong>Date:</strong>
+        ${ticketFill(date)}
+      </div>
+
+      <div class="invest-field">
+        <strong>Time:</strong>
+        ${ticketFill(time)}
+      </div>
+
+      <div class="invest-field">
+        <strong>Quantity Affected:</strong>
+        ${ticketFill(quantity)}
+      </div>
+
+      <div class="invest-heading">
+        REASON FOR INVESTIGATION
+      </div>
+
+      ${reasonRows}
+
+      <div class="invest-heading">
+        NOTES / DETAILS
+      </div>
+
+      <div class="invest-notes">
+        ${esc(notes)}
+      </div>
+
+      <div class="invest-by">
+        <strong>Investigated By:</strong>
+        ${esc(investigator)||"________________"}
+      </div>
+    </div>
+  `;
+}
+
+function generateTicket(){
+  const type=$("ticketType").value;
+
+  $("ticketPreview").innerHTML=
+    type==="rush"
+      ?generateRushTicket()
+      :generateInvestigationTicket();
+
+  $("ticketOutput").classList.remove("hidden");
+}
+
+function printTicket(){
+  const type=$("ticketType").value;
+  const ticket=type==="rush"
+    ?generateRushTicket()
+    :generateInvestigationTicket();
+
+  const win=window.open("","_blank");
+
+  if(!win){
+    alert("Please allow pop-ups to print tickets.");
+    return;
+  }
+
+  const styles=`
+    @page{
+      size:4in 6in;
+      margin:0;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html,body{
+      margin:0;
+      padding:0;
+      width:4in;
+      height:6in;
+      font-family:Arial,sans-serif;
+      color:#111;
+      background:white;
+    }
+
+    .ticket-paper{
+      width:4in;
+      height:6in;
+      padding:.20in;
+      overflow:hidden;
+      background:white;
+    }
+
+    .ticket-paper.rush{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .rush-title{
+      font-size:34px;
+      font-weight:800;
+      text-align:center;
+      margin:8px 0 17px;
+      line-height:1.1;
+    }
+
+    .ticket-rule{
+      border-top:1px solid #111;
+    }
+
+    .rush-fields{
+      margin-top:35px;
+      display:grid;
+      gap:17px;
+    }
+
+    .rush-field{
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      font-size:15px;
+      font-weight:600;
+    }
+
+    .rush-field strong{
+      white-space:nowrap;
+    }
+
+    .fill{
+      flex:1;
+      min-width:0;
+      min-height:21px;
+      border-bottom:1px solid #111;
+      font-weight:400;
+      overflow-wrap:anywhere;
+    }
+
+    .rush-message{
+      text-align:center;
+      margin:auto 0;
+      font-size:22px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .rush-message strong{
+      display:block;
+      font-size:31px;
+    }
+
+    .rush-notes{
+      border:1px solid #111;
+      min-height:104px;
+      padding:9px;
+      font-size:12px;
+      margin-top:auto;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+    }
+
+    .rush-notes strong{
+      display:block;
+      margin-bottom:5px;
+    }
+
+    .ticket-paper.investigation{
+      padding:.17in;
+      font-size:11px;
+    }
+
+    .invest-title{
+      font-size:21px;
+      font-weight:800;
+      text-align:center;
+      margin:0 0 13px;
+      line-height:1.15;
+    }
+
+    .investigation .ticket-rule{
+      margin-bottom:15px;
+    }
+
+    .invest-field{
+      display:flex;
+      align-items:baseline;
+      gap:7px;
+      margin-bottom:7px;
+    }
+
+    .invest-field strong{
+      min-width:104px;
+      white-space:nowrap;
+    }
+
+    .invest-field .fill{
+      min-height:15px;
+    }
+
+    .invest-heading{
+      font-weight:800;
+      font-size:11px;
+      margin:13px 0 6px;
+    }
+
+    .invest-reason{
+      display:flex;
+      align-items:flex-start;
+      gap:7px;
+      margin:4px 0;
+      line-height:1.25;
+    }
+
+    .print-square{
+      width:10px;
+      height:10px;
+      border:1px solid #111;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      font-size:10px;
+      font-weight:800;
+    }
+
+    .invest-notes{
+      min-height:68px;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+      border-bottom:1px solid #111;
+      background:repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 20px,
+        #777 21px,
+        transparent 22px
+      );
+    }
+
+    .invest-by{
+      margin-top:12px;
+      font-size:11px;
+    }
+  `;
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${type==="rush"?"Rush Order":"Under Investigation"}</title>
+      <style>${styles}</style>
+    </head>
+    <body>
+      ${ticket}
+    </body>
+    </html>
+  `);
+
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function clearTicket(){
+  document.querySelectorAll(
+    "#rushFields input, #rushFields textarea, "+
+    "#investigationFields input, "+
+    "#investigationFields textarea"
+  ).forEach(field=>{
+    if(field.type==="radio"){
+      field.checked=false;
+    }else{
+      field.value="";
+    }
+  });
+
+  $("ticketOutput").classList.add("hidden");
+}
+
+function initializeTicketGenerator(){
+  $("investDate").value=easternDate();
+  changeTicketType();
+}
+
+const assistKnowledge=[
+  {
+    keywords:["return label","return shipping","create return"],
+    answer:"To create a return label in Logiwa, open the Return Label tutorial under Break Glass in Case of Emergency. It walks you through the process step by step.",
+    page:"emergency",
+    target:"tutorial-return",
+    label:"Open Return Label Tutorial"
+  },
+  {
+    keywords:["cancel shipment","cancel order","cancellation","cancel picking"],
+    answer:"To cancel a shipment order, check its current status first. For orders in Ready to Pick status, cancel the picking task before canceling the shipment order. The Logiwa tutorial covers the steps.",
+    page:"emergency",
+    target:"tutorial-cancel",
+    label:"Open Cancellation Tutorial"
+  },
+  {
+    keywords:["change address","update address","wrong address","shipping address"],
+    answer:"Address changes can be made through Logiwa for shipment orders in OPEN status. Use the Update Shipment Order Address Details tutorial.",
+    page:"emergency",
+    target:"tutorial-address",
+    label:"Open Address Tutorial"
+  },
+  {
+    keywords:["reprint label","shipping label","lost label","print label"],
+    answer:"Use the Reprint Shipping Label tutorial to locate and reprint a shipping label in Logiwa.",
+    page:"emergency",
+    target:"tutorial-reprint",
+    label:"Open Label Tutorial"
+  },
+  {
+    keywords:["stock request","the game stock","request stock"],
+    answer:"The Game stock requests should be handled at the beginning of the day, around 8:30 AM. Follow the Create a Stock Request Order tutorial for the Logiwa steps.",
+    page:"emergency",
+    target:"tutorial-stock",
+    label:"Open Stock Request Tutorial"
+  },
+  {
+    keywords:["filter shipped","filter canceled","shipped orders","canceled orders"],
+    answer:"You can filter shipment orders by status in Logiwa. The Filter Shipped and Canceled Orders tutorial shows how.",
+    page:"emergency",
+    target:"tutorial-filter",
+    label:"Open Order Filtering Tutorial"
+  },
+  {
+    keywords:["daily schedule","schedule","daily responsibilities","what time","routine"],
+    answer:"Your daily schedule is: 8:30 AM — The Game stock request; 2:00 PM — Amazon orders; approximately 2:40 PM — shortage report after replenishment; 4:30 PM — check and clear the Job Queue.",
+    page:"emergency",
+    target:"guide-daily",
+    label:"View Daily Schedule"
+  },
+  {
+    keywords:["checklist","end of day","closeout","closing tasks"],
+    answer:"The End-of-Day Checklist covers Amazon orders, the shortage report, outstanding shortage follow-ups, Job Queue clearance, and documenting unfinished tasks. Progress is saved in this browser.",
+    page:"emergency",
+    target:"guide-checklist",
+    label:"Open Daily Checklist"
+  },
+  {
+    keywords:["shortage report","shortage center","storage pulls","replenishment","pull list"],
+    answer:"Open Shortage Center and upload your Shortage Report, Inventory by Location report, and Replenishment Task List. It identifies additional storage pulls after accounting for free shelf inventory and active replenishment tasks.",
+    page:"shortage",
+    target:"shortage",
+    label:"Open Shortage Center"
+  },
+  {
+    keywords:["hats","pod hats","the game hats","building 88"],
+    answer:"The Game POD Hats tool uses shipment orders and inventory exports to locate hats in building 88. It provides quantities, locations, LPNs, and a Jira copy option.",
+    page:"hats",
+    target:"hats",
+    label:"Open POD Hats"
+  },
+  {
+    keywords:["jira list","list generator","print list","inventory adjustment","4x6 list"],
+    answer:"Use the List Generator to create To-Do Lists, SKU/Location/LPN lists, Inventory Adjustment Lists, or custom lists. You can print in 4×6 or Letter format and copy the entire list into Jira.",
+    page:"lists",
+    target:"lists",
+    label:"Open List Generator"
+  },
+  {
+    keywords:["rush ticket","rush order","priority ticket"],
+    answer:"The Ticket Generator can create a 4×6 Rush Order ticket with the job code, order number, and notes.",
+    page:"tickets",
+    target:"tickets",
+    label:"Create Rush Ticket"
+  },
+  {
+    keywords:["investigation ticket","under investigation","investigation area"],
+    answer:"Use the Under Investigation ticket for jobs or carts that need review. It includes the job number, cart number, date, time, quantity affected, reason, notes, and investigator.",
+    page:"tickets",
+    target:"tickets",
+    label:"Create Investigation Ticket"
+  },
+  {
+    keywords:["virtual location","mv-m1","0m1","om1","0m5","om5"],
+    answer:"Virtual and exception locations, including MV-M1, 0M1, and 0M5, require special handling. Notify Maren rather than treating them as normal pickable inventory.",
+    page:"emergency",
+    target:"guide-locations",
+    label:"View Location Definitions"
+  },
+  {
+    keywords:["shelf location","storage location","receiving dock","lpn","license plate"],
+    answer:"Shelf locations in buildings 100 and 88 are pickable. Storage locations require replenishment before normal picking. Receiving Dock may contain inventory not yet on a pickable shelf. An LPN is a License Plate Number used to identify an inventory container.",
+    page:"emergency",
+    target:"guide-locations",
+    label:"View Warehouse Definitions"
+  },
+  {
+    keywords:["brand contact","contacts","gabriela","maura","daniela","who do i contact"],
+    answer:"The Brand Points of Contact section lists the contacts for Swoveralls, Duderobes, MagnaReady, The Game, and Weatherproof Vintage.",
+    page:"emergency",
+    target:"guide-contacts",
+    label:"View Brand Contacts"
+  },
+  {
+    keywords:["logiwa","warehouse management system","wms"],
+    answer:"Logiwa WMS is used for warehouse management, inventory tracking, shipment orders, and fulfillment. You can access it through Quick Links or Essential Systems.",
+    page:"links",
+    target:"links",
+    label:"Open Quick Links"
+  },
+  {
+    keywords:["shopify","pod dashboard","bsn lookup","quick links","systems"],
+    answer:"Quick Links provides access to Logiwa WMS, the D2C Task Board, POD Orders Dashboard, BSN Order Lookup, and Shopify Admin.",
+    page:"links",
+    target:"links",
+    label:"Open Quick Links"
+  }
+];
+
+const assistDefaultSuggestions=[
+  "How do I cancel an order?",
+  "Where is the shortage report?",
+  "What is my daily schedule?"
+];
+
+function normalizeQuestion(value){
+  return clean(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function findAssistAnswer(question){
+  const query=normalizeQuestion(question);
+
+  if(!query)return null;
+
+  let best=null;
+  let bestScore=0;
+
+  for(const item of assistKnowledge){
+    let score=0;
+
+    for(const keyword of item.keywords){
+      const phrase=normalizeQuestion(keyword);
+
+      if(query.includes(phrase)){
+        score+=phrase.split(" ").length*5;
+        continue;
+      }
+
+      const words=phrase.split(" ");
+      const matches=words.filter(word=>
+        word.length>2&&query.split(" ").includes(word)
+      ).length;
+
+      if(matches){
+        score+=matches;
+      }
+    }
+
+    if(score>bestScore){
+      bestScore=score;
+      best=item;
+    }
+  }
+
+  return bestScore>=2?best:null;
+}
+
+function addAssistMessage(message,type="bot",source=null){
+  const container=$("assist-messages");
+  const bubble=document.createElement("div");
+
+  bubble.className="assist-message "+type;
+  bubble.textContent=message;
+
+  if(source&&source.page){
+    const footer=document.createElement("div");
+    footer.className="assist-source";
+
+    const label=document.createElement("span");
+    label.textContent="RELATED RESOURCE";
+
+    const button=document.createElement("button");
+    button.type="button";
+    button.textContent=source.label||"Open Resource";
+
+    button.addEventListener("click",()=>{
+      navigateAssistResource(source.page,source.target);
+    });
+
+    footer.appendChild(label);
+    footer.appendChild(button);
+    bubble.appendChild(footer);
+  }
+
+  container.appendChild(bubble);
+  container.scrollTop=container.scrollHeight;
+}
+
+function navigateAssistResource(page,target){
+  showPage(page);
+  closeAssistChat();
+
+  requestAnimationFrame(()=>{
+    const element=$(target)||$(page);
+
+    if(!element)return;
+
+    if(element.tagName==="DETAILS"){
+      element.open=true;
+    }
+
+    element.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+
+    element.classList.remove("assist-highlight");
+    void element.offsetWidth;
+    element.classList.add("assist-highlight");
+  });
+}
+
+function renderAssistSuggestions(items=assistDefaultSuggestions){
+  const container=$("assist-suggestions");
+  container.innerHTML="";
+
+  for(const question of items){
+    const button=document.createElement("button");
+
+    button.type="button";
+    button.className="assist-suggestion";
+    button.textContent=question;
+
+    button.addEventListener("click",()=>{
+      askAssist(question);
+    });
+
+    container.appendChild(button);
+  }
+}
+
+function askAssist(question){
+  const query=clean(question);
+
+  if(!query)return;
+
+  addAssistMessage(query,"user");
+  $("assist-input").value="";
+
+  const result=findAssistAnswer(query);
+
+  if(result){
+    addAssistMessage(result.answer,"bot",result);
+  }else{
+    addAssistMessage(
+      "I couldn't find an exact answer in the D2C Assist reference guide. Try asking about Logiwa tutorials, shortage reports, inventory locations, daily tasks, tickets, or quick links.",
+      "bot",
+      {
+        page:"emergency",
+        target:"guide-tutorials",
+        label:"Browse Reference Guide"
+      }
+    );
+  }
+
+  renderAssistSuggestions([]);
+}
+
+function openAssistChat(){
+  $("assist-chat").classList.add("open");
+  $("assist-launcher").setAttribute("aria-expanded","true");
+  $("assist-input").focus();
+}
+
+function closeAssistChat(){
+  $("assist-chat").classList.remove("open");
+  $("assist-launcher").setAttribute("aria-expanded","false");
+}
+
+function toggleAssistChat(){
+  if($("assist-chat").classList.contains("open")){
+    closeAssistChat();
+  }else{
+    openAssistChat();
+  }
+}
+
+function initializeAssistChat(){
+  $("assist-launcher").addEventListener(
+    "click",toggleAssistChat
+  );
+
+  $("assist-close").addEventListener(
+    "click",closeAssistChat
+  );
+
+  $("assist-form").addEventListener("submit",event=>{
+    event.preventDefault();
+    askAssist($("assist-input").value);
+  });
+
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape"){
+      closeAssistChat();
+    }
+  });
+
+  addAssistMessage(
+    "Hi! I'm D2C Assist. Ask me about daily operations, Logiwa procedures, warehouse locations, shortage reports, or where to find a tool."
+  );
+
+  renderAssistSuggestions();
+}
+
+function initializeApp(){
+  updateDate();
+
+  initializeChecklist();
+  initializeScribes();
+  initializeListGenerator();
+  initializeTicketGenerator();
+  initializeAssistChat();
+
+  const today=easternDate();
+
+  if(!$("customDate").value){
+    $("customDate").value=today;
+  }
+
+  if(!$("investDate").value){
+    $("investDate").value=today;
+  }
+
+  if(!$("listDate").value){
+    $("listDate").value=today;
+  }
+
+  document.querySelectorAll(".nav-item[data-page]")
+    .forEach(item=>{
+      item.addEventListener("keydown",event=>{
+        if(event.key==="Enter"||event.key===" "){
+          event.preventDefault();
+          showPage(item.dataset.page);
+        }
+      });
+    });
+
+  if(typeof lucide!=="undefined"){
+    lucide.createIcons();
+  }
+}
+
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",initializeApp);
+}else{
+  initializeApp();
+}
+</script>
+</body>
+</html>

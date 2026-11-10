@@ -9,13 +9,9 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg:#f8f9f7;
-  --sidebar:#f0f2ef;
-  --navy:#344358;
-  --slate:#71839a;
-  --text:#303c4b;
-  --muted:#7b8793;
-  --border:#e2e6e3;
+  --bg:#f8f9f7;--sidebar:#f0f2ef;--navy:#344358;
+  --slate:#71839a;--text:#303c4b;--muted:#7b8793;
+  --border:#e2e6e3;--sage:#eaf0eb;
 }
 *{box-sizing:border-box}
 body{
@@ -23,7 +19,7 @@ body{
   font:14px/1.5 -apple-system,BlinkMacSystemFont,
   "Segoe UI",Arial,sans-serif;
 }
-button,input,textarea,select{font:inherit}
+button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .lucide{width:19px;height:19px;stroke-width:1.8}
 .app{display:flex;min-height:100vh}
@@ -111,9 +107,7 @@ textarea{resize:vertical;min-height:80px}
   border:1px solid #ccd4d2;background:white;border-radius:7px;
   color:var(--text);padding:10px 14px;
 }
-.btn.primary{
-  background:var(--navy);border-color:var(--navy);color:white;
-}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:white}
 .btn:hover{filter:brightness(.96)}
 .btn.danger{color:#b76b6b}
 .hidden{display:none!important}
@@ -133,9 +127,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   margin:25px 0 12px;color:var(--muted);font-size:11px;
   letter-spacing:1px;font-weight:700;text-transform:uppercase;
 }
-.link-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
-}
+.link-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .quick-link{
   display:block;background:white;padding:20px;
   border:1px solid var(--border);border-radius:11px;
@@ -148,11 +140,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 .notice{
   background:#f2f4f1;padding:15px;border-radius:8px;font-size:12px;
 }
-.document-row{
-  display:flex;justify-content:space-between;align-items:center;
-  gap:10px;padding:12px 0;border-bottom:1px solid var(--border);
-}
-.document-row a{color:var(--navy);overflow-wrap:anywhere}
 .generator-row{
   display:grid;grid-template-columns:1fr 1fr 1fr 36px;
   gap:9px;margin:9px 0;
@@ -161,7 +148,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 .generator-row.sku.with-qty{
   grid-template-columns:1.5fr .6fr 1fr 1fr 36px;
 }
-.generator-row.adjust{grid-template-columns:1fr 1fr 1fr 36px}
 .generator-row.custom{grid-template-columns:1fr 1fr 36px}
 .remove-row{
   border:1px solid var(--border);border-radius:7px;
@@ -185,7 +171,92 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   display:flex;justify-content:center;overflow-x:auto;padding:20px 0;
 }
 
-/* 4x6 TICKETS */
+/* BREAK GLASS */
+.daily-table td:first-child{
+  width:130px;font-weight:700;white-space:nowrap;color:var(--navy);
+}
+.check-progress{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:14px;gap:12px;
+}
+.progress-track{
+  width:100%;height:6px;background:#edf0ed;
+  border-radius:10px;overflow:hidden;margin-bottom:18px;
+}
+.progress-fill{
+  height:100%;width:0;background:#7d9b88;
+  border-radius:10px;transition:width .2s;
+}
+.daily-check{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+  cursor:pointer;color:var(--text);font-size:13px;
+}
+.daily-check:last-child{border-bottom:0}
+.daily-check input{
+  width:18px;height:18px;flex-shrink:0;margin:1px 0;
+  accent-color:#668b74;
+}
+.daily-check.completed span{
+  color:var(--muted);text-decoration:line-through;
+}
+.guide-category{margin:27px 0 13px}
+.guide-category h3{
+  margin:0 0 4px;display:flex;align-items:center;gap:9px;
+}
+.guide-category p{font-size:12px;color:var(--muted)}
+.guide-item{
+  border:1px solid var(--border);border-radius:10px;
+  background:white;margin:10px 0;overflow:hidden;
+}
+.guide-item summary{
+  list-style:none;cursor:pointer;padding:17px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:14px;font-size:13px;font-weight:650;
+}
+.guide-item summary::-webkit-details-marker{display:none}
+.guide-item summary::after{
+  content:"+";font-size:20px;color:var(--slate);font-weight:400;
+}
+.guide-item[open] summary::after{content:"−"}
+.guide-item[open] summary{
+  border-bottom:1px solid var(--border);
+}
+.guide-body{padding:17px}
+.guide-note{
+  padding:12px 14px;background:var(--sage);
+  border-radius:7px;margin-bottom:14px;
+  font-size:12px;line-height:1.6;
+}
+.scribe-frame{
+  width:100%;height:800px;min-height:640px;
+  border:0;background:#f8f9f7;
+}
+.guide-link{
+  display:inline-block;color:var(--navy);
+  font-size:12px;margin-top:12px;
+}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.contact-card{
+  border:1px solid var(--border);border-radius:9px;
+  padding:17px;background:#fcfdfb;
+}
+.contact-card strong{display:block;font-size:14px}
+.contact-card span{
+  display:block;color:var(--muted);font-size:12px;margin-top:5px;
+}
+.contact-card p{font-size:12px;margin-top:10px}
+.reference-table td:first-child{font-weight:650}
+.resource-link{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+  color:var(--navy);text-decoration:none;font-size:13px;
+}
+.resource-link:last-child{border-bottom:0}
+
+/* TICKETS */
 .ticket-paper{
   width:4in;height:6in;flex-shrink:0;background:white;
   color:#111;border:1px solid #111;padding:.20in;
@@ -272,16 +343,18 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   .content{padding:0 15px 30px}
   .topbar{min-height:55px}
   .page{padding-top:25px}
-  .link-grid{grid-template-columns:1fr}
+  .link-grid,.contact-grid{grid-template-columns:1fr}
   .panel{padding:17px}
   .home-center{min-height:50vh}
   .generator-row,.generator-row.adjust,
   .generator-row.sku.with-qty{
     grid-template-columns:1fr 1fr;
   }
+  .scribe-frame{height:680px}
 }
 </style>
 </head>
+
 <body>
 <div class="app">
 
@@ -427,12 +500,10 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       <button class="btn primary" onclick="printPulls()">
         Print Pull List
       </button>
-      <button class="btn"
-        onclick="copyShortageBrand('MagnaReady')">
+      <button class="btn" onclick="copyShortageBrand('MagnaReady')">
         Copy MagnaReady for Jira
       </button>
-      <button class="btn"
-        onclick="copyShortageBrand('Swoveralls')">
+      <button class="btn" onclick="copyShortageBrand('Swoveralls')">
         Copy Swoveralls for Jira
       </button>
     </div>
@@ -526,9 +597,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
     <div class="table-wrap">
       <table>
         <thead>
-          <tr>
-            <th>SKU</th><th>QTY</th><th>Reason</th>
-          </tr>
+          <tr><th>SKU</th><th>QTY</th><th>Reason</th></tr>
         </thead>
         <tbody id="hatMissing"></tbody>
       </table>
@@ -564,7 +633,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
         </select>
       </div>
     </div>
-
     <div class="row" style="margin-top:18px">
       <div class="field">
         <label>List Title</label>
@@ -575,39 +643,26 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
         <input id="listDate" type="date">
       </div>
     </div>
-
     <label class="option-check hidden" id="quantityOption">
       <input id="includeQuantity" type="checkbox" checked
         onchange="toggleQuantity()">
       Include Quantity column
     </label>
-
     <h3>List Items</h3>
     <div id="listRows"></div>
-
     <div class="actions">
-      <button class="btn" onclick="addListRow()">
-        + Add Row
-      </button>
+      <button class="btn" onclick="addListRow()">+ Add Row</button>
       <button class="btn primary" onclick="generateList()">
         Generate Preview
       </button>
-      <button class="btn" onclick="printList()">
-        Print List
-      </button>
-
-      <!-- COPIES THE ENTIRE GENERATED LIST -->
+      <button class="btn" onclick="printList()">Print List</button>
       <button class="btn" onclick="copyEntireListForJira()">
         Copy Entire List for Jira
       </button>
-
-      <button class="btn danger" onclick="clearList()">
-        Clear
-      </button>
+      <button class="btn danger" onclick="clearList()">Clear</button>
     </div>
     <p id="jiraListCopyStatus" class="message" role="status"></p>
   </div>
-
   <div id="listOutput" class="panel hidden">
     <h2>Print Preview</h2>
     <div id="listPreview" class="preview"></div>
@@ -619,10 +674,8 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   <div class="eyebrow">WORKSPACE / PRINTABLES</div>
   <h1>Ticket Generator</h1>
   <p class="muted small">
-    Rush Order and Under Investigation tickets.
-    4×6 portrait only.
+    Rush Order and Under Investigation tickets. 4×6 portrait only.
   </p>
-
   <div class="panel">
     <h2>Create a Ticket</h2>
     <div class="row">
@@ -639,7 +692,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </div>
     </div>
 
-    <!-- RUSH ORDER: ONLY JOB CODE, ORDER NUMBER, NOTES -->
     <div id="rushFields">
       <div class="row" style="margin-top:18px">
         <div class="field">
@@ -648,8 +700,7 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
         </div>
         <div class="field">
           <label>Order Number</label>
-          <input id="rushOrderNumber"
-            placeholder="Enter order number">
+          <input id="rushOrderNumber" placeholder="Enter order number">
         </div>
       </div>
       <div style="margin-top:18px">
@@ -659,7 +710,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </div>
     </div>
 
-    <!-- UNDER INVESTIGATION -->
     <div id="investigationFields" class="hidden">
       <div class="row" style="margin-top:18px">
         <div class="field">
@@ -671,7 +721,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           <input id="investCart" placeholder="Cart number">
         </div>
       </div>
-
       <div class="row" style="margin-top:18px">
         <div class="field">
           <label>Date</label>
@@ -682,15 +731,14 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           <input id="investTime" type="time">
         </div>
       </div>
-
       <div style="margin-top:18px">
         <label>Quantity Affected</label>
-        <input id="investQuantity" type="number"
-          min="0" step="1" placeholder="Quantity affected">
+        <input id="investQuantity" type="number" min="0"
+          step="1" placeholder="Quantity affected">
       </div>
 
       <h3>Reason (Check One)</h3>
-      <div class="ticket-reasons" id="investReasonOptions">
+      <div class="ticket-reasons">
         <label class="reason-choice">
           <input type="radio" name="investReason"
             value="Missing SKU / Item Not Found">
@@ -726,7 +774,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
           Other
         </label>
       </div>
-
       <div style="margin-top:16px">
         <label>Other Reason</label>
         <input id="investOther" placeholder="Specify other reason">
@@ -754,7 +801,6 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
       </button>
     </div>
   </div>
-
   <div id="ticketOutput" class="panel hidden">
     <h2>Ticket Preview</h2>
     <div class="ticket-preview-area">
@@ -768,6 +814,15 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   <div class="eyebrow">WORKSPACE / RESOURCES</div>
   <h1>Quick Links</h1>
   <p class="muted small">Frequently used systems.</p>
+
+  <div class="section-label">Warehouse Management</div>
+  <div class="link-grid">
+    <div class="quick-link">
+      <i data-lucide="warehouse"></i>
+      <strong>Logiwa WMS</strong>
+      <p>Direct link will be added when the URL is provided.</p>
+    </div>
+  </div>
 
   <div class="section-label">Task Management</div>
   <div class="link-grid">
@@ -806,78 +861,331 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
   </div>
 </section>
 
-<!-- EMERGENCY HANDBOOK -->
+<!-- BREAK GLASS -->
 <section id="emergency" class="page">
-  <div class="eyebrow">BACKUP PLAN / PROCEDURES</div>
+  <div class="eyebrow">DAILY COVERAGE / REFERENCE GUIDE</div>
   <h1>Break Glass in Case of Emergency</h1>
   <p class="muted small">
-    Daily responsibilities, procedures and resources.
+    Everything needed to cover D2C operations for the day.
   </p>
 
+  <!-- DAILY OPERATIONS STAYS FIRST -->
   <div class="panel">
-    <h2>Daily Must-Dos</h2>
-    <table>
-      <thead>
-        <tr><th>Time</th><th>Responsibility</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Morning</td><td>The Game POD stock requests</td></tr>
-        <tr><td>2:00 PM</td><td>Check MagnaReady Amazon orders</td></tr>
-        <tr><td>After replenishment</td><td>Review shortage report</td></tr>
-        <tr><td>4:00 PM</td><td>Recheck MagnaReady Amazon orders</td></tr>
-        <tr><td>4:30 PM</td><td>Check and clear Job Queue</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="panel">
-    <h2>Procedure & PDF Libraries</h2>
-    <div class="section-label">Daily Procedures</div>
-    <div id="dailyDocs"></div>
-    <div class="section-label">Logiwa How-Tos</div>
-    <div id="logiwaDocs"></div>
-    <div class="section-label">Customer Service</div>
-    <div id="csDocs"></div>
-    <div class="section-label">Inventory & Troubleshooting</div>
-    <div id="inventoryDocs"></div>
-    <div class="section-label">Important Contacts</div>
-    <div id="contactDocs"></div>
-  </div>
-
-  <div class="panel">
-    <h2>Add a Resource Link</h2>
-    <div class="row">
-      <div class="field">
-        <label>Category</label>
-        <select id="docCategory">
-          <option value="daily">Daily Procedures</option>
-          <option value="logiwa">Logiwa How-Tos</option>
-          <option value="cs">Customer Service</option>
-          <option value="inventory">
-            Inventory & Troubleshooting
-          </option>
-          <option value="contact">Important Contacts</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Resource Name</label>
-        <input id="docName" placeholder="Resource name">
-      </div>
-      <div class="field">
-        <label>Shared URL</label>
-        <input id="docUrl" type="url" placeholder="https://...">
-      </div>
+    <h2>Daily Operations</h2>
+    <p class="muted small">
+      Follow this schedule to stay on top of daily responsibilities.
+    </p>
+    <div class="table-wrap">
+      <table class="daily-table">
+        <thead>
+          <tr><th>Time</th><th>Responsibility</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>8:30 AM</td>
+            <td>The Game stock request</td>
+          </tr>
+          <tr>
+            <td>2:00 PM</td>
+            <td>Amazon orders</td>
+          </tr>
+          <tr>
+            <td>~2:40 PM</td>
+            <td>Shortage report — after replenishment</td>
+          </tr>
+          <tr>
+            <td>4:30 PM</td>
+            <td>Check and clear Job Queue</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
+
+  <!-- INTERACTIVE END-OF-DAY CHECKLIST -->
+  <div class="panel">
+    <div class="check-progress">
+      <div>
+        <h2 style="margin-bottom:4px">End-of-Day Checklist</h2>
+        <p class="muted small" style="margin:0">
+          Your progress is saved throughout the day.
+        </p>
+      </div>
+      <strong id="checkCount" style="color:var(--slate)">0 / 5</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="checkProgress"></div>
+    </div>
+
+    <div id="dailyChecklist">
+      <label class="daily-check">
+        <input type="checkbox" data-check="amazon">
+        <span>Amazon orders checked</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="shortage">
+        <span>Shortage report reviewed</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="followup">
+        <span>Outstanding shortage items followed up</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="queue">
+        <span>Job Queue checked and cleared</span>
+      </label>
+      <label class="daily-check">
+        <input type="checkbox" data-check="handoff">
+        <span>Unfinished tasks documented for tomorrow</span>
+      </label>
+    </div>
+
     <div class="actions">
-      <button class="btn primary" onclick="addDocument()">
-        Add Resource
+      <button class="btn" onclick="resetDailyChecklist()">
+        Reset Checklist
       </button>
     </div>
-    <p id="documentMessage" class="message"></p>
-    <div class="notice">
-      Resource links are saved in this browser only,
-      not shared across employees or devices.
+    <p class="message" id="checkMessage">
+      Automatically resets at the start of a new Eastern Time day.
+    </p>
+  </div>
+
+  <!-- SCRIBE TUTORIALS -->
+  <div class="panel">
+    <h2>Logiwa Tutorials</h2>
+    <p class="muted small">
+      Select a procedure to view the step-by-step Scribe.
+      Tutorials open directly on this page.
+    </p>
+
+    <div class="guide-category">
+      <h3><i data-lucide="package"></i>Order Management</h3>
+      <p>Shipment orders, address changes, and order status filters.</p>
     </div>
+
+    <details class="guide-item">
+      <summary>Cancel a Shipment Order</summary>
+      <div class="guide-body">
+        <div class="guide-note">
+          <strong>Important:</strong> For orders in Ready to Pick
+          status, cancel the picking task first before proceeding
+          with the shipment order cancellation.
+        </div>
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
+          title="Cancel a Shipment Order in Logiwa"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Cancel_A_Shipment_Order_In_Logiwa_OPEN_READY_TO_PICK_OR_READY_TO_PACK_STATUSES__8xwHTg2mQ-G4YRtGlUIC3Q?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Update Shipment Order Address Details</summary>
+      <div class="guide-body">
+        <div class="guide-note">
+          This procedure applies to shipment orders in OPEN status.
+        </div>
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
+          title="Update Shipment Order Address Details"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Update_Shipment_Order_Address_Details_on_OPEN_Orders__6fQtKyfPSm-tr19bS59HQQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Filter Shipped and Canceled Orders</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
+          title="Filter Shipped and Canceled Orders"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Filter_Shipped_and_Canceled_Orders_in_Logiwa__4bS3Ahn1RCmFXk2JAfnRkQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <div class="guide-category">
+      <h3><i data-lucide="truck"></i>Shipping & Labels</h3>
+      <p>Return labels and shipping label reprints.</p>
+    </div>
+
+    <details class="guide-item">
+      <summary>Create a Return Label in Logiwa</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
+          title="Create a Return Label in Logiwa"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_To_Create_A_Return_Label_In_Logiwa__4jjU-xphRIWX2hco8s4pzw?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Reprint a Shipping Label in Logiwa</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
+          title="Reprint a Shipping Label in Logiwa"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Reprint_a_Shipping_Label_in_Logiwa__lOaPsuYMSdWv1vbmPtHvug?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+
+    <div class="guide-category">
+      <h3><i data-lucide="boxes"></i>Inventory & Stock Requests</h3>
+      <p>Creating stock request orders.</p>
+    </div>
+
+    <details class="guide-item">
+      <summary>Create a Stock Request Order</summary>
+      <div class="guide-body">
+        <iframe
+          data-src="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
+          title="Create a Stock Request Order"
+          class="scribe-frame"
+          allow="fullscreen"
+          loading="lazy"></iframe>
+        <a class="guide-link"
+          href="https://scribehow.com/embed/How_to_Create_a_Stock_Request_Order__r3Xtx1D-QHmoWRkmKilavQ?as=scrollable"
+          target="_blank" rel="noopener noreferrer">
+          Open Full Tutorial
+        </a>
+      </div>
+    </details>
+  </div>
+
+  <!-- BRAND CONTACTS -->
+  <div class="panel">
+    <h2>Brand Points of Contact</h2>
+    <p class="muted small">
+      Reference for brand-related communications.
+    </p>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <strong>Gabriela Rangel</strong>
+        <span>Brand Contact</span>
+        <p>Swoveralls<br>Duderobes</p>
+      </div>
+      <div class="contact-card">
+        <strong>Mauran Horton</strong>
+        <span>Brand Contact</span>
+        <p>MagnaReady</p>
+      </div>
+      <div class="contact-card">
+        <strong>Daniela Diaz</strong>
+        <span>Brand Contact</span>
+        <p>The Game<br>Weatherproof Vintage</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCATIONS -->
+  <div class="panel">
+    <h2>Warehouse Locations & Definitions</h2>
+    <p class="muted small">
+      Quick reference for inventory locations in Logiwa.
+    </p>
+    <div class="table-wrap">
+      <table class="reference-table">
+        <thead>
+          <tr><th>Term / Location</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100 / 88 Shelf Locations</td>
+            <td>Pickable inventory locations.</td>
+          </tr>
+          <tr>
+            <td>R-100, STN, STS, etc.</td>
+            <td>Storage locations. Inventory may require replenishment.</td>
+          </tr>
+          <tr>
+            <td>Receiving Dock</td>
+            <td>Inventory may be physically present but not yet on a pickable shelf.</td>
+          </tr>
+          <tr>
+            <td>MV-M1 / 0M1 / 0M5</td>
+            <td>Virtual or exception locations. Notify Maren.</td>
+          </tr>
+          <tr>
+            <td>LPN</td>
+            <td>License Plate Number, used to identify inventory containers.</td>
+          </tr>
+          <tr>
+            <td>The Game Hats</td>
+            <td>Retrieve from building 88 only.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ESSENTIAL SYSTEMS -->
+  <div class="panel">
+    <h2>Essential Systems</h2>
+    <p class="muted small">
+      Quick access to the tools needed throughout the day.
+    </p>
+
+    <div class="notice">
+      <strong>Logiwa WMS:</strong>
+      Direct URL to be added.
+    </div>
+
+    <a class="resource-link"
+      href="https://d2c-warehouse-dashboard.vercel.app/dashboard/tasks"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="clipboard-check"></i>
+      D2C Task Board
+    </a>
+    <a class="resource-link"
+      href="https://printing-logistics.pod.dpeyserapps.com/orders-dashboard"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="printer"></i>
+      POD Orders Dashboard
+    </a>
+    <a class="resource-link"
+      href="https://bespokeapp.mylocker.net/api/tools/orderlookup/"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="search"></i>
+      BSN Order Lookup
+    </a>
+    <a class="resource-link"
+      href="https://admin.shopify.com/store/"
+      target="_blank" rel="noopener noreferrer">
+      <i data-lucide="shopping-bag"></i>
+      Shopify Admin
+    </a>
   </div>
 </section>
 
@@ -894,11 +1202,8 @@ const num=v=>Math.max(0,Number(clean(v).replace(/,/g,""))||0);
 
 function esc(v){
   return String(v??"").replace(/[&<>"']/g,c=>({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
   })[c]);
 }
 
@@ -910,10 +1215,9 @@ function showPage(id){
   });
   document.querySelectorAll(".nav-item[data-page]")
     .forEach(item=>{
-      item.classList.toggle(
-        "active",item.dataset.page===id
-      );
+      item.classList.toggle("active",item.dataset.page===id);
     });
+  if(id==="emergency")loadDailyChecklist();
   window.scrollTo(0,0);
 }
 
@@ -922,7 +1226,6 @@ function easternDate(){
     timeZone:"America/New_York",
     year:"numeric",month:"2-digit",day:"2-digit"
   }).formatToParts(new Date());
-
   const p={};
   parts.forEach(x=>p[x.type]=x.value);
   return `${p.year}-${p.month}-${p.day}`;
@@ -935,6 +1238,113 @@ function updateDate(){
       weekday:"long",month:"long",day:"numeric",year:"numeric"
     });
 }
+
+/* END-OF-DAY CHECKLIST */
+
+const CHECK_KEY="d2c_daily_closeout_v1";
+
+function checklistBoxes(){
+  return [...document.querySelectorAll(
+    "#dailyChecklist input[type=checkbox]"
+  )];
+}
+
+function loadDailyChecklist(){
+  const today=easternDate();
+  let saved={date:today,checks:[]};
+
+  try{
+    const data=JSON.parse(localStorage.getItem(CHECK_KEY)||"null");
+    if(data&&data.date===today&&Array.isArray(data.checks)){
+      saved=data;
+    }
+  }catch{}
+
+  checklistBoxes().forEach(box=>{
+    box.checked=saved.checks.includes(box.dataset.check);
+  });
+
+  // A new Eastern Time date always starts with an empty list.
+  if(saved.date!==today)saved={date:today,checks:[]};
+
+  try{
+    localStorage.setItem(CHECK_KEY,JSON.stringify(saved));
+  }catch{}
+
+  updateChecklistDisplay();
+}
+
+function saveDailyChecklist(){
+  const data={
+    date:easternDate(),
+    checks:checklistBoxes()
+      .filter(box=>box.checked)
+      .map(box=>box.dataset.check)
+  };
+
+  try{
+    localStorage.setItem(CHECK_KEY,JSON.stringify(data));
+  }catch{
+    $("checkMessage").textContent=
+      "Progress could not be saved in this browser.";
+  }
+
+  updateChecklistDisplay();
+}
+
+function updateChecklistDisplay(){
+  const boxes=checklistBoxes();
+  const completed=boxes.filter(box=>box.checked).length;
+  const total=boxes.length;
+
+  $("checkCount").textContent=`${completed} / ${total}`;
+  $("checkProgress").style.width=
+    `${total?completed/total*100:0}%`;
+
+  boxes.forEach(box=>{
+    box.closest(".daily-check")
+      .classList.toggle("completed",box.checked);
+  });
+
+  if(completed===total){
+    $("checkMessage").textContent=
+      "Daily closeout complete! ✓";
+  }else{
+    $("checkMessage").textContent=
+      "Progress is saved in this browser and resets tomorrow.";
+  }
+}
+
+function resetDailyChecklist(){
+  checklistBoxes().forEach(box=>box.checked=false);
+  saveDailyChecklist();
+}
+
+checklistBoxes().forEach(box=>{
+  box.addEventListener("change",saveDailyChecklist);
+});
+
+// Check for a new Eastern Time date whenever the tab
+// becomes active again.
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden)loadDailyChecklist();
+});
+window.addEventListener("focus",loadDailyChecklist);
+
+/* SCRIBE EMBEDS */
+
+// Only load a Scribe when its tutorial is opened.
+// This prevents all six embeds from slowing down the page.
+document.querySelectorAll(".guide-item").forEach(item=>{
+  item.addEventListener("toggle",()=>{
+    if(!item.open)return;
+
+    const iframe=item.querySelector("iframe[data-src]");
+    if(iframe&&!iframe.src){
+      iframe.src=iframe.dataset.src;
+    }
+  });
+});
 
 /* FILE AND INVENTORY HELPERS */
 
@@ -1799,7 +2209,7 @@ function clearList(){
   changeListType();
 }
 
-/* COPY ENTIRE GENERATED LIST FOR JIRA */
+/* COPY ENTIRE LIST FOR JIRA */
 
 function buildEntireJiraList(){
   const type=$("listType").value;
@@ -1812,7 +2222,6 @@ function buildEntireJiraList(){
   const lines=[title];
 
   if(date)lines.push("Date: "+date);
-
   lines.push("");
 
   if(type==="todo"){
@@ -1834,12 +2243,9 @@ function buildEntireJiraList(){
 
     rows.forEach(row=>{
       const values=[row.SKU||"—"];
-
       if(withQty)values.push(row.QTY||"—");
-
       values.push(row.Location||"—");
       values.push(row.LPN||"—");
-
       lines.push(values.join(" | "));
     });
   }
@@ -1937,7 +2343,6 @@ function generateTicket(){
       <div class="ticket-paper rush">
         <h2 class="rush-title">RUSH ORDER</h2>
         <div class="ticket-rule"></div>
-
         <div class="rush-fields">
           <div class="rush-field">
             <strong>JOB CODE:</strong>
@@ -1948,12 +2353,10 @@ function generateTicket(){
             <span class="fill">${order}</span>
           </div>
         </div>
-
         <div class="rush-message">
           PLEASE BRING TO
           <strong>D2C OFFICE</strong>
         </div>
-
         <div class="rush-notes">
           <strong>NOTES:</strong>
           ${notes}
@@ -2037,26 +2440,20 @@ function printTicket(){
 
   const ticketCSS=`
     @page{size:4in 6in;margin:0}
-    html,body{
-      width:4in;height:6in;margin:0;padding:0;
-    }
+    html,body{width:4in;height:6in;margin:0;padding:0}
     .ticket-paper{
       width:4in;height:6in;border:1px solid #111;
       padding:.20in;box-shadow:none;color:#111;
       background:white;font-family:Arial,sans-serif;
       overflow:hidden;
     }
-    .ticket-paper.rush{
-      display:flex;flex-direction:column;
-    }
+    .ticket-paper.rush{display:flex;flex-direction:column}
     .rush-title{
       font-size:34px;line-height:1.1;font-weight:800;
       text-align:center;margin:8px 0 17px;
     }
     .ticket-rule{border-top:1px solid #111}
-    .rush-fields{
-      margin-top:35px;display:grid;gap:17px;
-    }
+    .rush-fields{margin-top:35px;display:grid;gap:17px}
     .rush-field{
       display:flex;align-items:baseline;gap:8px;
       font-size:15px;font-weight:600;
@@ -2071,17 +2468,13 @@ function printTicket(){
       text-align:center;margin:auto 0;
       font-size:22px;font-weight:800;line-height:1.35;
     }
-    .rush-message strong{
-      display:block;font-size:31px;
-    }
+    .rush-message strong{display:block;font-size:31px}
     .rush-notes{
       border:1px solid #111;min-height:104px;
       padding:9px;font-size:12px;margin-top:auto;
       overflow-wrap:anywhere;white-space:pre-wrap;
     }
-    .rush-notes strong{
-      display:block;margin-bottom:5px;
-    }
+    .rush-notes strong{display:block;margin-bottom:5px}
     .ticket-paper.investigation{
       padding:.17in;font-size:11px;
     }
@@ -2089,9 +2482,7 @@ function printTicket(){
       font-size:21px;font-weight:800;text-align:center;
       margin:0 0 13px;line-height:1.15;
     }
-    .investigation .ticket-rule{
-      margin-bottom:15px;
-    }
+    .investigation .ticket-rule{margin-bottom:15px}
     .invest-field{
       display:flex;align-items:baseline;
       gap:7px;margin-bottom:7px;
@@ -2105,8 +2496,7 @@ function printTicket(){
       overflow-wrap:anywhere;
     }
     .invest-heading{
-      font-weight:800;font-size:11px;
-      margin:13px 0 6px;
+      font-weight:800;font-size:11px;margin:13px 0 6px;
     }
     .invest-reason{
       display:flex;align-items:flex-start;
@@ -2154,126 +2544,6 @@ function clearTicket(){
   $("ticketOutput").classList.add("hidden");
 }
 
-/* EMERGENCY DOCUMENT LIBRARY */
-
-const DOC_KEY="d2c_handbook_links_v2";
-
-const docCategories={
-  daily:"dailyDocs",
-  logiwa:"logiwaDocs",
-  cs:"csDocs",
-  inventory:"inventoryDocs",
-  contact:"contactDocs"
-};
-
-function documents(){
-  try{
-    const data=JSON.parse(
-      localStorage.getItem(DOC_KEY)||"[]"
-    );
-    return Array.isArray(data)?data:[];
-  }catch{
-    return [];
-  }
-}
-
-function renderDocuments(){
-  const docs=documents();
-
-  for(const [category,id] of
-      Object.entries(docCategories)){
-    const container=$(id);
-    container.replaceChildren();
-
-    const items=docs.map(
-      (d,index)=>({...d,index})
-    ).filter(d=>d.category===category);
-
-    if(!items.length){
-      const p=document.createElement("p");
-      p.className="muted small";
-      p.textContent="No library linked yet.";
-      container.append(p);
-    }
-
-    for(const doc of items){
-      const row=document.createElement("div");
-      row.className="document-row";
-
-      const a=document.createElement("a");
-      a.href=doc.url;
-      a.target="_blank";
-      a.rel="noopener noreferrer";
-      a.textContent=doc.name;
-
-      const remove=document.createElement("button");
-      remove.className="btn";
-      remove.textContent="Remove";
-      remove.onclick=()=>removeDocument(doc.index);
-
-      row.append(a,remove);
-      container.append(row);
-    }
-  }
-}
-
-function addDocument(){
-  const category=$("docCategory").value;
-  const name=clean($("docName").value);
-  const url=clean($("docUrl").value);
-
-  if(!name||!url){
-    $("documentMessage").textContent=
-      "Enter a name and link.";
-    return;
-  }
-
-  let parsed;
-
-  try{
-    parsed=new URL(url);
-    if(!["http:","https:"].includes(parsed.protocol)){
-      throw Error("Invalid URL");
-    }
-  }catch{
-    $("documentMessage").textContent=
-      "Enter a valid URL.";
-    return;
-  }
-
-  const docs=documents();
-  docs.push({category,name,url:parsed.href});
-
-  try{
-    localStorage.setItem(
-      DOC_KEY,JSON.stringify(docs)
-    );
-
-    $("docName").value="";
-    $("docUrl").value="";
-    $("documentMessage").textContent=
-      "Saved in this browser.";
-    renderDocuments();
-  }catch{
-    $("documentMessage").textContent=
-      "Unable to save.";
-  }
-}
-
-function removeDocument(index){
-  const docs=documents();
-  docs.splice(index,1);
-
-  try{
-    localStorage.setItem(
-      DOC_KEY,JSON.stringify(docs)
-    );
-    renderDocuments();
-  }catch{
-    alert("Unable to save changes.");
-  }
-}
-
 /* START THE APP */
 
 const initialDate=easternDate();
@@ -2285,7 +2555,7 @@ $("investDate").value=initialDate;
 updateDate();
 changeListType();
 changeTicketType();
-renderDocuments();
+loadDailyChecklist();
 
 if(window.lucide){
   lucide.createIcons();

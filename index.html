@@ -24,9 +24,18 @@ button{cursor:pointer}
 .lucide{width:19px;height:19px;stroke-width:1.8}
 .app{display:flex;min-height:100vh}
 .sidebar{
-  width:246px;flex-shrink:0;background:var(--sidebar);
-  border-right:1px solid var(--border);padding:28px 16px;
-  display:flex;flex-direction:column;
+  width:246px;
+  flex-shrink:0;
+  background:var(--sidebar);
+  border-right:1px solid var(--border);
+  padding:28px 16px;
+  display:flex;
+  flex-direction:column;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  z-index:100;
 }
 .logo{
   padding:0 12px 30px;font-size:12px;letter-spacing:1.4px;
@@ -332,7 +341,16 @@ td.sku{font-family:monospace;font-size:12px;overflow-wrap:anywhere}
 }
 @media(max-width:620px){
   .app{display:block}
-  .sidebar{width:100%;padding:12px}
+  .sidebar{
+    width:100%;
+    padding:12px;
+    position:sticky;
+    top:0;
+    height:auto;
+    max-height:100vh;
+    overflow-y:auto;
+    z-index:100;
+  }
   .logo{padding:5px 8px 12px}
   .nav-heading,.nav-divider{display:none}
   .sidebar nav{display:flex;gap:5px;overflow-x:auto}
@@ -1264,9 +1282,6 @@ function loadDailyChecklist(){
     box.checked=saved.checks.includes(box.dataset.check);
   });
 
-  // A new Eastern Time date always starts with an empty list.
-  if(saved.date!==today)saved={date:today,checks:[]};
-
   try{
     localStorage.setItem(CHECK_KEY,JSON.stringify(saved));
   }catch{}
@@ -1324,8 +1339,6 @@ checklistBoxes().forEach(box=>{
   box.addEventListener("change",saveDailyChecklist);
 });
 
-// Check for a new Eastern Time date whenever the tab
-// becomes active again.
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden)loadDailyChecklist();
 });
@@ -1333,8 +1346,6 @@ window.addEventListener("focus",loadDailyChecklist);
 
 /* SCRIBE EMBEDS */
 
-// Only load a Scribe when its tutorial is opened.
-// This prevents all six embeds from slowing down the page.
 document.querySelectorAll(".guide-item").forEach(item=>{
   item.addEventListener("toggle",()=>{
     if(!item.open)return;

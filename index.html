@@ -5577,6 +5577,7 @@ function clearPoRowValues(sheet, rowNumber) {
    EXPORT PURCHASE ORDER
 ============================================ */
 
+
 function finishPoExport() {
   try {
     if (!poTemplateWorkbook) {
@@ -5676,77 +5677,86 @@ function finishPoExport() {
 
       clearPoRowValues(sheet, rowNumber);
 
+      // Warehouse
       setPoCell(
         sheet,
         "A" + rowNumber,
         "NY - Spence St"
       );
 
+      // Client
       setPoCell(
         sheet,
         "B" + rowNumber,
         "NC State"
       );
 
+      // Purchase Order Code
       setPoCell(
         sheet,
         "C" + rowNumber,
         poCode
       );
 
+      // Order Type
       setPoCell(
         sheet,
         "D" + rowNumber,
         "Purchase Order"
       );
 
+      // Purchase Order Date
       setPoCell(
         sheet,
         "E" + rowNumber,
         poDateString(orderDate)
       );
 
+      // Planned Arrival Date
       setPoCell(
         sheet,
         "F" + rowNumber,
         poDateString(arrivalDate)
       );
 
-      // Actual Logiwa SKU for selected size.
+      // Logiwa SKU for selected size
       setPoCell(
         sheet,
         "J" + rowNumber,
         item.sku
       );
 
-      // Quantity represents number of packs.
+      // Number of packs ordered
       setPoCell(
         sheet,
         "L" + rowNumber,
         item.qty
       );
 
+      // Pack Type
       setPoCell(
         sheet,
         "M" + rowNumber,
         "Pack"
       );
-    }
 
-    
-      // Vendor information required by NC State.
+      // Vendor Company Name
       setPoCell(
         sheet,
         "U" + rowNumber,
         "MV Sport"
       );
 
+      // Vendor Company Display Name
       setPoCell(
         sheet,
         "V" + rowNumber,
         "MV Sport"
       );
 
+    } // End of PO item loop
+
+    // Preserve all 46 import columns.
     sheet["!ref"] =
       "A1:AT" + (firstDataRow + poItems.length - 1);
 
@@ -5786,6 +5796,7 @@ function finishPoExport() {
     );
   }
 }
+
 
 /* ============================================
    START NEW PURCHASE ORDER

@@ -5733,6 +5733,20 @@ function finishPoExport() {
       );
     }
 
+    
+      // Vendor information required by NC State.
+      setPoCell(
+        sheet,
+        "U" + rowNumber,
+        "MV Sport"
+      );
+
+      setPoCell(
+        sheet,
+        "V" + rowNumber,
+        "MV Sport"
+      );
+
     sheet["!ref"] =
       "A1:AT" + (firstDataRow + poItems.length - 1);
 

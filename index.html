@@ -4851,15 +4851,19 @@ function printSavedReport() {
 
 /* SECTION 7 CONTINUES INSIDE THIS SCRIPT */
 
+
 /* ============================================
    SECTION 7: NC STATE PO BUILDER
+   PRODUCTS EXPORT VERSION
 ============================================ */
 
 let poInventory = [];
 let poTemplateWorkbook = null;
 let poItems = [];
 
-/* READ INVENTORY AND TEMPLATE */
+/* ============================================
+   READ PRODUCTS EXPORT
+============================================ */
 
 async function loadPoInventory() {
   const file = $("poInventoryFile").files[0];
@@ -4872,41 +4876,59 @@ async function loadPoInventory() {
   const rows = await readExcel(file);
 
   poInventory = rows.map(row => ({
+    client: clean(getField(row, [
+      "Client", "Client Name", "Brand"
+    ])),
     sku: clean(getField(row, [
-      "SKU",
-      "Product SKU",
-      "Item SKU",
-      "Logiwa SKU"
+      "SKU", "Product SKU", "Logiwa SKU"
     ])),
     fnSku: clean(getField(row, [
-      "FN SKU",
-      "FNSKU",
-      "FN-SKU",
-      "Vendor SKU",
-      "Supplier SKU"
-    ])),
-    barcode: clean(getField(row, [
-      "Barcode",
-      "UPC",
-      "EAN",
-      "Product Barcode"
+      "FNSKU", "FN SKU", "FN-SKU"
     ])),
     name: clean(getField(row, [
-      "Product Name",
-      "Product Description",
-      "Description",
-      "Item Name"
+      "Name", "Product Name", "Description"
+    ])),
+    barcode: clean(getField(row, [
+      "Barcode", "UPC", "EAN"
+    ])),
+    packType: clean(getField(row, [
+      "Pack Type", "UOM Pack Type"
+    ])),
+    uomQty: positiveNumber(getField(row, [
+      "UOM Qty", "UOM Quantity"
+    ])),
+    childQty: positiveNumber(getField(row, [
+      "Child Qty", "Child Quantity"
+    ])),
+    active: clean(getField(row, [
+      "Active?", "Active", "Is Active"
     ]))
-  })).filter(item => item.sku);
+  })).filter(item =>
+    normalize(item.client) === "ncstate" &&
+    item.sku &&
+    item.fnSku
+  );
 
-  // Remove duplicate product records.
+  // Use Pack records for NC State purchase orders.
+  // A single FNSKU may have several different
+  // Logiwa SKUs representing different sizes.
+  const packRecords = poInventory.filter(item =>
+    normalize(item.packType) === "pack"
+  );
+
+  if (!packRecords.length) {
+    throw new Error(
+      "No NC State Pack records found in the Products export."
+    );
+  }
+
   const unique = new Map();
 
-  for (const item of poInventory) {
+  for (const item of packRecords) {
     const key = [
-      normalize(item.sku),
       normalize(item.fnSku),
-      normalize(item.barcode)
+      normalize(item.sku),
+      normalize(item.packType)
     ].join("|");
 
     if (!unique.has(key)) {
@@ -4915,7 +4937,20 @@ async function loadPoInventory() {
   }
 
   poInventory = Array.from(unique.values());
+
+  poInventory.sort((a, b) =>
+    a.fnSku.localeCompare(b.fnSku, undefined, {
+      numeric: true
+    }) ||
+    a.name.localeCompare(b.name, undefined, {
+      numeric: true
+    })
+  );
 }
+
+/* ============================================
+   READ ORIGINAL PO TEMPLATE
+============================================ */
 
 async function loadPoTemplate() {
   const file = $("poTemplateFile").files[0];
@@ -4940,11 +4975,15 @@ async function loadPoTemplate() {
   }
 }
 
+/* ============================================
+   INITIALIZE UPLOADED FILES
+============================================ */
+
 async function initializePoFiles() {
   try {
     setMessage(
       "poUploadStatus",
-      "Reading purchase order files..."
+      "Reading NC State Products export..."
     );
 
     await loadPoInventory();
@@ -4953,22 +4992,22 @@ async function initializePoFiles() {
     if (poInventory.length && poTemplateWorkbook) {
       setMessage(
         "poUploadStatus",
-        `${poInventory.length} products loaded. PO template ready.`
+        `${poInventory.length} NC State Pack SKUs loaded. PO template ready.`
       );
     } else if (poInventory.length) {
       setMessage(
         "poUploadStatus",
-        `${poInventory.length} products loaded. Upload the PO template.`
+        `${poInventory.length} NC State Pack SKUs loaded. Upload the PO template.`
       );
     } else if (poTemplateWorkbook) {
       setMessage(
         "poUploadStatus",
-        "Template loaded. Upload inventory to search products."
+        "Template loaded. Upload the Products export."
       );
     } else {
       setMessage(
         "poUploadStatus",
-        "Upload both files to begin."
+        "Upload the Products export and PO template."
       );
     }
 
@@ -4976,6 +5015,7 @@ async function initializePoFiles() {
 
   } catch (error) {
     console.error(error);
+
     setMessage(
       "poUploadStatus",
       "Unable to load files: " + error.message
@@ -4983,16 +5023,80 @@ async function initializePoFiles() {
   }
 }
 
-/* PRODUCT SEARCH */
+/* ============================================
+   SIZE IDENTIFICATION
+============================================ */
+
+function getPoSize(product) {
+  const name = clean(product.name);
+  const sku = clean(product.sku);
+
+  const sizePattern =
+    /(?:^|[\s\-_/])(XXXL|3XL|XXL|2XL|XL|XS|SMALL|MEDIUM|LARGE|XXS|XXXXL|4XL|5XL|S|M|L)(?:$|[\s\-_/])/i;
+
+  const nameMatch = name.match(sizePattern);
+
+  if (nameMatch) {
+    return nameMatch[1].toUpperCase();
+  }
+
+  const skuMatch = sku.match(sizePattern);
+
+  if (skuMatch) {
+    return skuMatch[1].toUpperCase();
+  }
+
+  // Numeric sizes may be included in the name.
+  const numericMatch = name.match(
+    /(?:^|[\s\-_/])(\d{2}(?:X\d{2})?)(?:$|[\s\-_/])/i
+  );
+
+  if (numericMatch) {
+    return numericMatch[1];
+  }
+
+  return "See Product";
+}
+
+function poSizeRank(size) {
+  const sizes = {
+    "XXS": 1,
+    "XS": 2,
+    "S": 3,
+    "SMALL": 3,
+    "M": 4,
+    "MEDIUM": 4,
+    "L": 5,
+    "LARGE": 5,
+    "XL": 6,
+    "XXL": 7,
+    "2XL": 7,
+    "XXXL": 8,
+    "3XL": 8,
+    "4XL": 9,
+    "5XL": 10
+  };
+
+  return sizes[size] || 99;
+}
+
+/* ============================================
+   SEARCH FNSKU AND SHOW ALL MATCHING SIZES
+============================================ */
 
 function searchPoProducts() {
   const container = $("poSearchResults");
-  const query = normalize($("poSkuSearch").value);
+  if (!container) return;
+
+  const query = normalize(
+    $("poSkuSearch").value
+  );
 
   if (!poInventory.length) {
     container.innerHTML = `
       <p class="message">
-        Upload your inventory file to search products.
+        Upload the Logiwa Products export to search
+        NC State products.
       </p>
     `;
     return;
@@ -5001,71 +5105,210 @@ function searchPoProducts() {
   if (!query) {
     container.innerHTML = `
       <p class="message">
-        Enter an FN SKU, barcode, or Logiwa SKU.
+        Search an FNSKU to display all matching
+        Logiwa SKUs and sizes.
       </p>
     `;
     return;
   }
 
-  const matches = poInventory.filter(item =>
-    normalize(item.fnSku).includes(query) ||
-    normalize(item.barcode).includes(query) ||
-    normalize(item.sku).includes(query) ||
-    normalize(item.name).includes(query)
-  ).slice(0, 30);
+  // Prioritize matching FNSKUs.
+  let matches = poInventory.filter(item =>
+    normalize(item.fnSku).includes(query)
+  );
+
+  // Also support searching an individual SKU or barcode.
+  if (!matches.length) {
+    matches = poInventory.filter(item =>
+      normalize(item.sku).includes(query) ||
+      normalize(item.barcode).includes(query) ||
+      normalize(item.name).includes(query)
+    );
+  }
 
   if (!matches.length) {
     container.innerHTML = `
       <p class="message">
-        No matching products found.
-        Try the full SKU or barcode.
+        No matching NC State products found.
+        Check the FNSKU and try again.
       </p>
     `;
     return;
   }
 
-  container.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>FN SKU</th>
-          <th>Logiwa SKU</th>
-          <th>Product</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${matches.map(item => {
-          const index = poInventory.indexOf(item);
+  matches.sort((a, b) =>
+    poSizeRank(getPoSize(a)) -
+      poSizeRank(getPoSize(b)) ||
+    a.name.localeCompare(b.name, undefined, {
+      numeric: true
+    })
+  );
 
-          return `
-            <tr>
-              <td>${escapeHTML(item.fnSku || item.barcode)}</td>
-              <td class="sku">${escapeHTML(item.sku)}</td>
-              <td>${escapeHTML(item.name)}</td>
-              <td>
-                <button class="btn"
-                  onclick="addPoProduct(${index})">
-                  Add
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join("")}
-      </tbody>
-    </table>
+  const fnSkus = [
+    ...new Set(matches.map(item => item.fnSku))
+  ];
+
+  container.innerHTML = `
+    <div style="margin-bottom:12px">
+      <strong>
+        ${matches.length} matching size / SKU records
+      </strong>
+
+      <p class="small muted">
+        FNSKU: ${escapeHTML(fnSkus.join(", "))}
+      </p>
+
+      <p class="small muted">
+        Enter a quantity for each size you want.
+        Leave unwanted sizes at zero.
+      </p>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Size</th>
+            <th>Logiwa SKU</th>
+            <th>Product</th>
+            <th>Pack Size</th>
+            <th>Order QTY</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${matches.map(item => {
+            const index = poInventory.indexOf(item);
+
+            return `
+              <tr>
+                <td>
+                  <strong>
+                    ${escapeHTML(getPoSize(item))}
+                  </strong>
+                </td>
+
+                <td class="sku">
+                  ${escapeHTML(item.sku)}
+                </td>
+
+                <td>
+                  ${escapeHTML(item.name)}
+                </td>
+
+                <td>
+                  ${escapeHTML(item.uomQty)}
+                  per pack
+                </td>
+
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="0"
+                    data-po-product-index="${index}"
+                    class="po-search-quantity"
+                    style="width:85px"
+                    aria-label="Quantity for ${escapeHTML(item.sku)}">
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:15px">
+      <button class="btn primary"
+        onclick="addSelectedPoProducts()">
+        Add Selected Sizes to PO
+      </button>
+    </div>
   `;
 }
 
-/* ADD AND EDIT PURCHASE ORDER ITEMS */
+/* ============================================
+   ADD SELECTED SIZES TO PURCHASE ORDER
+============================================ */
+
+function addSelectedPoProducts() {
+  const inputs = document.querySelectorAll(
+    "#poSearchResults .po-search-quantity"
+  );
+
+  let added = 0;
+  let addedQty = 0;
+
+  for (const input of inputs) {
+    const index = Number(
+      input.dataset.poProductIndex
+    );
+
+    const qty = Number(input.value);
+
+    if (!Number.isFinite(qty) ||
+        !Number.isInteger(qty) ||
+        qty < 0) {
+      setMessage(
+        "poExportStatus",
+        "Enter whole-number quantities of zero or greater."
+      );
+      return;
+    }
+
+    if (qty === 0) continue;
+
+    const product = poInventory[index];
+    if (!product) continue;
+
+    const existing = poItems.find(item =>
+      normalize(item.sku) === normalize(product.sku)
+    );
+
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      poItems.push({
+        sku: product.sku,
+        fnSku: product.fnSku,
+        name: product.name,
+        size: getPoSize(product),
+        packType: product.packType,
+        packSize: product.uomQty,
+        qty
+      });
+    }
+
+    added++;
+    addedQty += qty;
+    input.value = 0;
+  }
+
+  if (!added) {
+    setMessage(
+      "poExportStatus",
+      "Enter a quantity for at least one size."
+    );
+    return;
+  }
+
+  renderPoItems();
+
+  setMessage(
+    "poExportStatus",
+    `${added} size(s) added — ${addedQty} total packs.`
+  );
+}
+
+/* SUPPORT ADDING A SINGLE PRODUCT */
 
 function addPoProduct(index) {
   const product = poInventory[index];
   if (!product) return;
 
-  const existing = poItems.find(
-    item => normalize(item.sku) ===
-      normalize(product.sku)
+  const existing = poItems.find(item =>
+    normalize(item.sku) === normalize(product.sku)
   );
 
   if (existing) {
@@ -5073,29 +5316,37 @@ function addPoProduct(index) {
   } else {
     poItems.push({
       sku: product.sku,
-      name: product.name,
       fnSku: product.fnSku,
+      name: product.name,
+      size: getPoSize(product),
+      packType: product.packType,
+      packSize: product.uomQty,
       qty: 1
     });
   }
 
   renderPoItems();
-
-  setMessage(
-    "poExportStatus",
-    `${product.sku} added to the purchase order.`
-  );
 }
+
+/* ============================================
+   EDIT PURCHASE ORDER ITEMS
+============================================ */
 
 function updatePoQuantity(index, value) {
   const item = poItems[index];
   if (!item) return;
 
-  item.qty = Math.max(
-    1,
-    Math.floor(numberValue(value))
-  );
+  const qty = Number(value);
 
+  if (!Number.isInteger(qty) || qty < 1) {
+    setMessage(
+      "poExportStatus",
+      "PO quantities must be positive whole numbers."
+    );
+    return;
+  }
+
+  item.qty = qty;
   updatePoTotals();
 }
 
@@ -5105,7 +5356,8 @@ function removePoProduct(index) {
 }
 
 function updatePoTotals() {
-  $("poLineCount").textContent = poItems.length;
+  $("poLineCount").textContent =
+    poItems.length;
 
   $("poQuantityTotal").textContent =
     poItems.reduce(
@@ -5114,18 +5366,33 @@ function updatePoTotals() {
     );
 }
 
+/* ============================================
+   RENDER PURCHASE ORDER
+============================================ */
+
 function renderPoItems() {
   $("poItemsTable").innerHTML = poItems.length
     ? poItems.map((item, index) => `
       <tr>
         <td class="sku">
           ${escapeHTML(item.sku)}
+
+          <div class="small muted">
+            Size: ${escapeHTML(item.size)}
+          </div>
+
+          <div class="small muted">
+            ${escapeHTML(item.packSize)} per pack
+          </div>
         </td>
+
         <td>
           ${escapeHTML(item.name)}
         </td>
+
         <td>
-          <input type="number"
+          <input
+            type="number"
             min="1"
             step="1"
             value="${item.qty}"
@@ -5134,6 +5401,7 @@ function renderPoItems() {
               ${index}, this.value
             )">
         </td>
+
         <td>
           <button class="btn danger"
             onclick="removePoProduct(${index})">
@@ -5142,20 +5410,23 @@ function renderPoItems() {
         </td>
       </tr>
     `).join("")
-    : `<tr>
-         <td colspan="4" class="muted">
-           No products added yet.
-         </td>
-       </tr>`;
+    : `
+      <tr>
+        <td colspan="4" class="muted">
+          No products added yet.
+        </td>
+      </tr>
+    `;
 
   updatePoTotals();
 }
 
-/* DATE FORMATTING */
+/* ============================================
+   DATE FORMATTING
+============================================ */
 
 function poDateString(value) {
   if (!value) return "";
-
   return value.replace(/-/g, "");
 }
 
@@ -5167,7 +5438,9 @@ function poTodayFilenameDate() {
     String(parts.day).padStart(2, "0");
 }
 
-/* EXCEL TEMPLATE UTILITIES */
+/* ============================================
+   EXCEL TEMPLATE UTILITIES
+============================================ */
 
 function setPoCell(sheet, address, value) {
   const existing = sheet[address] || {};
@@ -5177,22 +5450,19 @@ function setPoCell(sheet, address, value) {
     t: typeof value === "number" ? "n" : "s",
     v: value
   };
+
+  delete sheet[address].w;
+  delete sheet[address].f;
 }
 
 function copyPoRowStyle(sheet, sourceRow, targetRow) {
   for (let col = 0; col < 46; col++) {
     const letter = XLSX.utils.encode_col(col);
-
-    const source = sheet[
-      letter + sourceRow
-    ];
-
-    const targetAddress = letter + targetRow;
+    const source = sheet[letter + sourceRow];
 
     if (source) {
-      sheet[targetAddress] = {
-        ...source,
-        s: source.s
+      sheet[letter + targetRow] = {
+        ...source
       };
     }
   }
@@ -5212,19 +5482,21 @@ function clearPoRowValues(sheet, rowNumber) {
   }
 }
 
-/* EXPORT PURCHASE ORDER */
+/* ============================================
+   EXPORT PURCHASE ORDER
+============================================ */
 
 function finishPoExport() {
   try {
     if (!poTemplateWorkbook) {
       throw new Error(
-        "Please upload the original NC State PO template."
+        "Upload the original NC State PO template."
       );
     }
 
     if (!poItems.length) {
       throw new Error(
-        "Add at least one product before exporting."
+        "Add at least one size before exporting."
       );
     }
 
@@ -5249,46 +5521,94 @@ function finishPoExport() {
     }
 
     if (poItems.some(item =>
-      !Number.isInteger(item.qty) || item.qty < 1
+      !Number.isInteger(item.qty) ||
+      item.qty < 1
     )) {
       throw new Error(
-        "Every PO line must have a valid whole-number quantity."
+        "All quantities must be positive whole numbers."
       );
     }
 
     const originalSheet =
       poTemplateWorkbook.Sheets.PurchaseOrderCreate;
 
-    // Clone the original sheet to preserve its
-    // header cells and existing worksheet metadata.
     const sheet = structuredClone(originalSheet);
 
-    // The template must contain 46 columns (A:AT).
-    // Row 1 contains headers; data begins on row 2.
     const firstDataRow = 2;
 
-    for (let index = 0; index < poItems.length; index++) {
-      const rowNumber = firstDataRow + index;
+    // Remove any previous template data rows.
+    const oldRange = XLSX.utils.decode_range(
+      sheet["!ref"] || "A1:AT2"
+    );
 
-      if (index > 0) {
-        copyPoRowStyle(
-          sheet,
-          firstDataRow,
-          rowNumber
-        );
+    const styleSource = {};
+
+    for (let col = 0; col < 46; col++) {
+      const letter = XLSX.utils.encode_col(col);
+      const source = sheet[letter + firstDataRow];
+
+      if (source) {
+        styleSource[letter] = { ...source };
+      }
+    }
+
+    for (
+      let row = firstDataRow;
+      row <= oldRange.e.r + 1;
+      row++
+    ) {
+      for (let col = 0; col < 46; col++) {
+        delete sheet[
+          XLSX.utils.encode_col(col) + row
+        ];
+      }
+    }
+
+    for (
+      let index = 0;
+      index < poItems.length;
+      index++
+    ) {
+      const rowNumber = firstDataRow + index;
+      const item = poItems[index];
+
+      // Restore template formatting for each row.
+      for (let col = 0; col < 46; col++) {
+        const letter = XLSX.utils.encode_col(col);
+
+        if (styleSource[letter]) {
+          sheet[letter + rowNumber] = {
+            ...styleSource[letter]
+          };
+        }
       }
 
       clearPoRowValues(sheet, rowNumber);
 
-      const item = poItems[index];
+      setPoCell(
+        sheet,
+        "A" + rowNumber,
+        "NY - Spence St"
+      );
 
-      // Fixed import fields.
-      setPoCell(sheet, "A" + rowNumber, "NY - Spence St");
-      setPoCell(sheet, "B" + rowNumber, "NC State");
-      setPoCell(sheet, "C" + rowNumber, poCode);
-      setPoCell(sheet, "D" + rowNumber, "Purchase Order");
+      setPoCell(
+        sheet,
+        "B" + rowNumber,
+        "NC State"
+      );
 
-      // Required dates in yyyyMMdd format.
+      setPoCell(
+        sheet,
+        "C" + rowNumber,
+        poCode
+      );
+
+      setPoCell(
+        sheet,
+        "D" + rowNumber,
+        "Purchase Order"
+      );
+
       setPoCell(
         sheet,
         "E" + rowNumber,
@@ -5301,15 +5621,29 @@ function finishPoExport() {
         poDateString(arrivalDate)
       );
 
-      // Product SKU and pack quantity.
-      setPoCell(sheet, "J" + rowNumber, item.sku);
-      setPoCell(sheet, "L" + rowNumber, item.qty);
-      setPoCell(sheet, "M" + rowNumber, "Pack");
+      // Actual Logiwa SKU for selected size.
+      setPoCell(
+        sheet,
+        "J" + rowNumber,
+        item.sku
+      );
+
+      // Quantity represents number of packs.
+      setPoCell(
+        sheet,
+        "L" + rowNumber,
+        item.qty
+      );
+
+      setPoCell(
+        sheet,
+        "M" + rowNumber,
+        "Pack"
+      );
     }
 
-    // Preserve all 46 header columns.
-    sheet["!ref"] = "A1:AT" +
-      (firstDataRow + poItems.length - 1);
+    sheet["!ref"] =
+      "A1:AT" + (firstDataRow + poItems.length - 1);
 
     const exportWorkbook = XLSX.utils.book_new();
 
@@ -5335,7 +5669,7 @@ function finishPoExport() {
 
     setMessage(
       "poExportStatus",
-      `Exported ${poItems.length} PO lines to ${filename}.`
+      `Exported ${poItems.length} size/SKU lines to ${filename}.`
     );
 
   } catch (error) {
@@ -5348,13 +5682,17 @@ function finishPoExport() {
   }
 }
 
-/* START A NEW PURCHASE ORDER */
+/* ============================================
+   START NEW PURCHASE ORDER
+============================================ */
 
 function startNewPo() {
-  if (poItems.length &&
-      !confirm(
-        "Start a new PO? Your current PO lines and details will be cleared."
-      )) {
+  if (
+    poItems.length &&
+    !confirm(
+      "Start a new PO? Current PO lines will be cleared."
+    )
+  ) {
     return;
   }
 
@@ -5374,7 +5712,9 @@ function startNewPo() {
   );
 }
 
-/* PO FILE EVENT LISTENERS */
+/* ============================================
+   PO FILE EVENT LISTENERS
+============================================ */
 
 $("poInventoryFile").addEventListener(
   "change",
@@ -5386,7 +5726,6 @@ $("poTemplateFile").addEventListener(
   initializePoFiles
 );
 
-/* SECTION 8 CONTINUES INSIDE THIS SCRIPT */
 
 /* ============================================
    SECTION 8: LIST GENERATOR
@@ -5401,9 +5740,14 @@ function getListType() {
 function changeListType() {
   const type = getListType();
 
-  $("listQtyOption").classList.toggle(
-    "hidden", type !== "sku"
-  );
+  const qtyOption = $("listQtyOption");
+
+  if (qtyOption) {
+    qtyOption.classList.toggle(
+      "hidden",
+      type !== "sku"
+    );
+  }
 
   listRowsData = [];
   addListRow();
@@ -5413,7 +5757,9 @@ function addListRow() {
   const type = getListType();
 
   if (type === "todo") {
-    listRowsData.push({ task: "" });
+    listRowsData.push({
+      task: ""
+    });
   } else if (type === "sku") {
     listRowsData.push({
       sku: "",
@@ -5458,7 +5804,6 @@ function clearListRows() {
 function renderListRows() {
   const type = getListType();
   const includeQty = $("listIncludeQty").checked;
-
   const container = $("listRows");
 
   container.innerHTML = listRowsData.map(
@@ -5487,7 +5832,8 @@ function renderListRows() {
 
           ${
             includeQty
-              ? `<input type="number"
+              ? `<input
+                   type="number"
                    min="0"
                    placeholder="QTY"
                    value="${escapeHTML(row.qty)}"
@@ -5532,14 +5878,17 @@ function renderListRows() {
       }
 
       const className = type === "sku"
-        ? `generator-row sku ${includeQty ? "with-qty" : ""}`
+        ? `generator-row sku ${
+            includeQty ? "with-qty" : ""
+          }`
         : `generator-row ${type}`;
 
       return `
         <div class="${className}">
           ${fields}
 
-          <button class="remove-row"
+          <button
+            class="remove-row"
             title="Remove row"
             onclick="removeListRow(${index})">
             ×
@@ -5562,10 +5911,12 @@ function listPrintableHTML() {
   const type = getListType();
   const includeQty = $("listIncludeQty").checked;
 
-  const rows = listRowsData.filter(listHasContent);
+  const rows = listRowsData.filter(
+    listHasContent
+  );
 
   if (!rows.length) {
-    return `<p>No items added.</p>`;
+    return "<p>No items added.</p>";
   }
 
   if (type === "todo") {
@@ -5577,6 +5928,7 @@ function listPrintableHTML() {
             <th>Task</th>
           </tr>
         </thead>
+
         <tbody>
           ${rows.map(row => `
             <tr>
@@ -5596,21 +5948,28 @@ function listPrintableHTML() {
           <tr>
             <th>Done</th>
             <th>SKU</th>
-            ${includeQty ? "<th>QTY</th>" : ""}
+            ${
+              includeQty
+                ? "<th>QTY</th>"
+                : ""
+            }
             <th>Location</th>
             <th>LPN</th>
           </tr>
         </thead>
+
         <tbody>
           ${rows.map(row => `
             <tr>
               <td>☐</td>
               <td>${escapeHTML(row.sku)}</td>
+
               ${
                 includeQty
                   ? `<td>${escapeHTML(row.qty)}</td>`
                   : ""
               }
+
               <td>${escapeHTML(row.location)}</td>
               <td>${escapeHTML(row.lpn)}</td>
             </tr>
@@ -5629,6 +5988,7 @@ function listPrintableHTML() {
           <th>Details</th>
         </tr>
       </thead>
+
       <tbody>
         ${rows.map(row => `
           <tr>
@@ -5648,16 +6008,19 @@ function updateListPreview() {
   if (!preview) return;
 
   preview.innerHTML = `
-    <h3>${escapeHTML(
-      $("listTitle").value || "Untitled List"
-    )}</h3>
+    <h3>
+      ${escapeHTML(
+        $("listTitle").value || "Untitled List"
+      )}
+    </h3>
+
     ${listPrintableHTML()}
   `;
 }
 
 function printGeneratedList() {
-  const title = $("listTitle").value ||
-    "Warehouse List";
+  const title =
+    $("listTitle").value || "Warehouse List";
 
   openPrintWindow(
     title,
@@ -5669,7 +6032,9 @@ function printGeneratedList() {
 function generatedListText(jira = false) {
   const type = getListType();
 
-  const rows = listRowsData.filter(listHasContent);
+  const rows = listRowsData.filter(
+    listHasContent
+  );
 
   if (type === "todo") {
     return rows.map(row =>

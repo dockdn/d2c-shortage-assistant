@@ -1865,58 +1865,95 @@ td.sku {
 
 <!-- SECTION 3 CONTINUES HERE -->
   
+
 <!-- SECTION 3: PURCHASE ORDERS AND GENERATORS -->
 
 <!-- NC STATE PURCHASE ORDER BUILDER -->
 <section id="purchaseorders" class="page">
-  <div class="eyebrow">OPERATIONS / PURCHASE ORDERS</div>
+
+  <div class="eyebrow">
+    OPERATIONS / PURCHASE ORDERS
+  </div>
+
   <h1>NC State PO Builder</h1>
 
   <p class="muted small">
-    Find products using an FN SKU, confirm the Logiwa SKU,
-    and create a purchase order using the original
-    NC State import template.
+    Search an FNSKU to find all matching Logiwa SKUs
+    and sizes. Select the sizes and quantities you
+    need, then export your purchase order using
+    the original NC State import template.
   </p>
 
+  <!-- STEP 1: UPLOAD FILES -->
   <div class="panel">
+
     <h2>1. Upload Your Files</h2>
 
     <div class="row">
+
       <div class="field">
         <label for="poInventoryFile">
-          NC State Inventory by Location
+          Logiwa Products Export
         </label>
-        <input id="poInventoryFile" type="file"
+
+        <input
+          id="poInventoryFile"
+          type="file"
           accept=".xlsx,.xls,.csv">
+
+        <p class="muted small">
+          Export from the Products page in Logiwa.
+          Do not use Inventory by Location.
+        </p>
       </div>
 
       <div class="field">
         <label for="poTemplateFile">
           Original NC State PO Template
         </label>
-        <input id="poTemplateFile" type="file"
+
+        <input
+          id="poTemplateFile"
+          type="file"
           accept=".xlsx">
+
+        <p class="muted small">
+          Upload the original PurchaseOrderCreate
+          Excel import template.
+        </p>
       </div>
+
     </div>
 
     <p class="muted small">
-      Both files are processed in your browser.
-      The original PurchaseOrderCreate worksheet
-      is used for the Excel export.
+      Files are processed directly in your browser.
+      Only NC State products with Pack records
+      are used for purchase order selection.
     </p>
 
     <p id="poUploadStatus" class="message">
-      Upload both files to begin.
+      Upload the Products export and PO template
+      to begin.
     </p>
+
   </div>
 
+
+  <!-- STEP 2: PURCHASE ORDER DETAILS -->
   <div class="panel">
+
     <h2>2. Purchase Order Details</h2>
 
     <div class="row">
+
       <div class="field">
-        <label for="poCode">PO Code</label>
-        <input id="poCode" type="text"
+        <label for="poCode">
+          PO Code
+        </label>
+
+        <input
+          id="poCode"
+          type="text"
           placeholder="Enter purchase order code">
       </div>
 
@@ -1924,58 +1961,95 @@ td.sku {
         <label for="poOrderDate">
           Purchase Order Date
         </label>
-        <input id="poOrderDate" type="date">
+
+        <input
+          id="poOrderDate"
+          type="date">
       </div>
 
       <div class="field">
         <label for="poArrivalDate">
           Planned Arrival Date
         </label>
-        <input id="poArrivalDate" type="date">
+
+        <input
+          id="poArrivalDate"
+          type="date">
       </div>
+
     </div>
+
   </div>
 
-  <div class="panel">
-    <h2>3. Find and Add Products</h2>
 
-    <div class="row">
-      <div class="field">
-        <label for="poSkuSearch">
-          Search FN SKU / Barcode / Logiwa SKU
-        </label>
-        <input id="poSkuSearch" type="search"
-          placeholder="Enter FN SKU or product identifier"
-          oninput="searchPoProducts()">
-      </div>
+  <!-- STEP 3: FIND PRODUCTS AND SELECT SIZES -->
+  <div class="panel">
+
+    <h2>3. Find Products &amp; Select Sizes</h2>
+
+    <div class="field">
+      <label for="poSkuSearch">
+        Search by FNSKU
+      </label>
+
+      <input
+        id="poSkuSearch"
+        type="search"
+        placeholder="Enter an FNSKU"
+        autocomplete="off"
+        oninput="searchPoProducts()">
     </div>
 
     <p class="muted small">
-      Search the uploaded NC State inventory.
-      Review the matching Logiwa SKU before adding
-      a product to the purchase order.
+      Enter an FNSKU to display all matching
+      NC State Logiwa SKUs and available sizes.
+      You can also search by barcode or Logiwa SKU.
     </p>
 
-    <div id="poSearchResults" class="table-wrap">
+    <div
+      id="poSearchResults"
+      class="table-wrap">
+
       <p class="message">
-        Upload inventory and enter a SKU to search.
+        Upload the Products export and enter
+        an FNSKU to see matching sizes.
       </p>
+
     </div>
+
+    <p class="muted small">
+      Enter the number of packs you want for each
+      size. Leave sizes you do not need at zero,
+      then select Add Selected Sizes to PO.
+    </p>
+
   </div>
 
+
+  <!-- STEP 4: REVIEW PURCHASE ORDER -->
   <div class="panel">
-    <h2>4. Purchase Order Items</h2>
+
+    <h2>4. Review Purchase Order</h2>
+
+    <p class="muted small">
+      Review the selected Logiwa SKUs and pack
+      quantities. You can adjust quantities or
+      remove individual sizes before exporting.
+    </p>
 
     <div class="table-wrap">
+
       <table>
+
         <thead>
           <tr>
-            <th>Logiwa SKU</th>
+            <th>Logiwa SKU / Size</th>
             <th>Product Name</th>
             <th>Pack Quantity</th>
             <th>Remove</th>
           </tr>
         </thead>
+
         <tbody id="poItemsTable">
           <tr>
             <td colspan="4" class="muted">
@@ -1983,42 +2057,59 @@ td.sku {
             </td>
           </tr>
         </tbody>
+
       </table>
+
     </div>
 
+    <!-- PO TOTALS -->
     <div class="metrics">
+
       <div class="metric">
         <strong id="poLineCount">0</strong>
-        <span>PO Lines</span>
+        <span>Selected SKUs</span>
       </div>
 
       <div class="metric">
         <strong id="poQuantityTotal">0</strong>
-        <span>Total Pack Quantity</span>
+        <span>Total Packs Ordered</span>
       </div>
+
     </div>
 
+    <!-- ACTION BUTTONS -->
     <div class="actions">
-      <button class="btn primary"
+
+      <button
+        class="btn primary"
         onclick="finishPoExport()">
         Finish &amp; Export Excel
       </button>
 
-      <button class="btn"
+      <button
+        class="btn"
         onclick="startNewPo()">
         Start New PO
       </button>
+
     </div>
 
     <p id="poExportStatus" class="message"></p>
 
     <p class="muted small">
-      Export file: Import PO NCState yyyymmdd.xlsx.
-      Only the PurchaseOrderCreate worksheet will
-      be included. Exporting will not clear your
-      current purchase order.
+      Export filename:
+      Import PO NCState yyyymmdd.xlsx
     </p>
+
+    <p class="muted small">
+      Each selected Logiwa SKU will appear on
+      its own row in the PurchaseOrderCreate
+      worksheet. Exporting will not clear
+      your current purchase order.
+    </p>
+
   </div>
+
 </section>
 
 

@@ -1390,6 +1390,13 @@ td.sku {
       </div>
     </div>
 
+    <div class="field" style="max-width:310px; margin:12px 0">
+      <label for="shortageBrandFilter">Filter results by client</label>
+      <select id="shortageBrandFilter" onchange="renderShortageReport()">
+        <option value="">All clients</option>
+      </select>
+    </div>
+
     <div class="actions">
       <button class="btn primary"
         onclick="printPulls()">
@@ -1405,12 +1412,7 @@ td.sku {
 
     <details class="panel" style="margin-top:14px; padding:14px 18px">
       <summary style="cursor:pointer; font-weight:650">Copy for Jira <span class="muted small">(expand)</span></summary>
-      <div class="actions" style="margin-top:12px">
-        <button class="btn" onclick="copyShortageBrand('MagnaReady')">MagnaReady</button>
-        <button class="btn" onclick="copyShortageBrand('Swoveralls')">Swoveralls</button>
-        <button class="btn" onclick="copyShortageBrand('Duderobe')">Duderobe</button>
-        <button class="btn" onclick="copyAllShortageForJira()">All brands</button>
-      </div>
+      <div id="shortageJiraBrandButtons" class="actions" style="margin-top:12px"></div>
     </details>
 
     <div class="actions hidden">
@@ -3657,6 +3659,7 @@ async function generateShortage() {
       }
     };
 
+    populateShortageBrands();
     renderShortageReport();
 
     $("shortageOutput").classList.remove("hidden");
@@ -3680,6 +3683,41 @@ async function generateShortage() {
   }
 }
 
+function selectedShortageBrand() {
+  return $("shortageBrandFilter")?.value || "";
+}
+
+function visibleShortageRows(rows) {
+  const brand = selectedShortageBrand();
+  return brand ? (rows || []).filter(row => normalize(row.brand) === normalize(brand)) : (rows || []);
+}
+
+function populateShortageBrands() {
+  const select = $("shortageBrandFilter");
+  if (!select || !currentShortageReport) return;
+  const brands = [...new Set(["pulls","master","followups","virtual"]
+    .flatMap(key => (currentShortageReport[key] || []).map(row => clean(row.brand)))
+    .filter(Boolean))].sort((a,b) => a.localeCompare(b));
+  select.innerHTML = '<option value="">All clients</option>' +
+    brands.map(brand => '<option value="' + escapeHTML(brand) + '">' + escapeHTML(brand) + '</option>').join("");
+  const buttons = $("shortageJiraBrandButtons");
+  if (buttons) {
+    buttons.replaceChildren();
+    const all = document.createElement("button");
+    all.className = "btn";
+    all.textContent = "All clients";
+    all.onclick = copyAllShortageForJira;
+    buttons.appendChild(all);
+    brands.forEach(brand => {
+      const button = document.createElement("button");
+      button.className = "btn";
+      button.textContent = brand;
+      button.onclick = () => copyShortageBrand(brand);
+      buttons.appendChild(button);
+    });
+  }
+}
+
 function renderShortageReport() {
   const report = currentShortageReport;
 
@@ -3697,8 +3735,8 @@ function renderShortageReport() {
   $("pullTotal").textContent =
     report.totals.pulls;
 
-  $("pullTable").innerHTML = report.pulls.length
-    ? report.pulls.map((row, index) => `
+  $("pullTable").innerHTML = visibleShortageRows(report.pulls).length
+    ? report.pulls.map((row, index) => ({row,index})).filter(({row}) => visibleShortageRows([row]).length).map(({row,index}) => `
       <tr>
         <td>
           <input class="report-check"
@@ -3717,8 +3755,8 @@ function renderShortageReport() {
          No additional storage pulls required.
        </td></tr>`;
 
-  $("masterTable").innerHTML = report.master.length
-    ? report.master.map(row => `
+  $("masterTable").innerHTML = visibleShortageRows(report.master).length
+    ? visibleShortageRows(report.master).map(row => `
       <tr>
         <td>${escapeHTML(row.brand)}</td>
         <td class="sku">${escapeHTML(row.sku)}</td>
@@ -3732,8 +3770,8 @@ function renderShortageReport() {
          No inventory rows found.
        </td></tr>`;
 
-  $("followTable").innerHTML = report.followups.length
-    ? report.followups.map(row => `
+  $("followTable").innerHTML = visibleShortageRows(report.followups).length
+    ? visibleShortageRows(report.followups).map(row => `
       <tr>
         <td>${escapeHTML(row.brand)}</td>
         <td class="sku">${escapeHTML(row.sku)}</td>
@@ -3745,8 +3783,8 @@ function renderShortageReport() {
          No additional follow-up quantities.
        </td></tr>`;
 
-  $("virtualTable").innerHTML = report.virtual.length
-    ? report.virtual.map(row => `
+  $("virtualTable").innerHTML = visibleShortageRows(report.virtual).length
+    ? visibleShortageRows(report.virtual).map(row => `
       <tr>
         <td>${escapeHTML(row.brand)}</td>
         <td class="sku">${escapeHTML(row.sku)}</td>
@@ -3967,7 +4005,7 @@ function printPulls() {
   if (!currentShortageReport) return;
 
   const content = shortagePrintableRows(
-    currentShortageReport.pulls,
+    visibleShortageRows(currentShortageReport.pulls),
     [
       { label: "Done", value: () => "☐" },
       { label: "SKU", value: "sku" },
@@ -3988,7 +4026,7 @@ function printMasterList() {
   if (!currentShortageReport) return;
 
   const content = shortagePrintableRows(
-    currentShortageReport.master,
+    visibleShortageRows(currentShortageReport.master),
     [
       { label: "Brand", value: "brand" },
       { label: "SKU", value: "sku" },

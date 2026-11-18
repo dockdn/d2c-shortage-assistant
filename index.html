@@ -5118,57 +5118,40 @@ async function initializePoFiles() {
    SIZE IDENTIFICATION
 ============================================ */
 
+// Keep size labels consistent across the PO search and review tables.
 function getPoSize(product) {
   const name = clean(product.name);
   const sku = clean(product.sku);
 
+  // Match the most specific sizes first; Logiwa may use MED, MD, SM, or LG.
   const sizePattern =
-    /(?:^|[\s\-_/])(XXXL|3XL|XXL|2XL|XL|XS|SMALL|MEDIUM|LARGE|XXS|XXXXL|4XL|5XL|S|M|L)(?:$|[\s\-_/])/i;
+    /(?:^|[\s\-_/])(XXXXL|4XL|XXXL|3XL|XXL|2XL|XXS|XS|SMALL|MEDIUM|LARGE|MED|MD|SM|LG|XL|S|M|L)(?=$|[\s\-_/])/i;
 
-  const nameMatch = name.match(sizePattern);
-
-  if (nameMatch) {
-    return nameMatch[1].toUpperCase();
+  const match = name.match(sizePattern) || sku.match(sizePattern);
+  if (match) {
+    const size = match[1].toUpperCase();
+    const aliases = {
+      SMALL: "S", SM: "S",
+      MEDIUM: "M", MED: "M", MD: "M",
+      LARGE: "L", LG: "L",
+      XXL: "2XL", XXXL: "3XL", XXXXL: "4XL"
+    };
+    return aliases[size] || size;
   }
 
-  const skuMatch = sku.match(sizePattern);
-
-  if (skuMatch) {
-    return skuMatch[1].toUpperCase();
-  }
-
-  // Numeric sizes may be included in the name.
+  // Numeric apparel sizes can also appear in product names.
   const numericMatch = name.match(
-    /(?:^|[\s\-_/])(\d{2}(?:X\d{2})?)(?:$|[\s\-_/])/i
+    /(?:^|[\s\-_/])(\d{2}(?:X\d{2})?)(?=$|[\s\-_/])/i
   );
-
-  if (numericMatch) {
-    return numericMatch[1];
-  }
-
-  return "See Product";
+  return numericMatch ? numericMatch[1] : "See Product";
 }
 
 function poSizeRank(size) {
   const sizes = {
-    "XXS": 1,
-    "XS": 2,
-    "S": 3,
-    "SMALL": 3,
-    "M": 4,
-    "MEDIUM": 4,
-    "L": 5,
-    "LARGE": 5,
-    "XL": 6,
-    "XXL": 7,
-    "2XL": 7,
-    "XXXL": 8,
-    "3XL": 8,
-    "4XL": 9,
-    "5XL": 10
+    "XXS": 1, "XS": 2, "S": 3, "M": 4, "L": 5,
+    "XL": 6, "2XL": 7, "3XL": 8, "4XL": 9, "5XL": 10
   };
-
-  return sizes[size] || 99;
+  return sizes[String(size || "").toUpperCase()] || 99;
 }
 
 /* ============================================

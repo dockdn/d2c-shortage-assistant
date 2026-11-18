@@ -1313,10 +1313,19 @@ td.sku {
       </div>
 
       <div class="field">
-        <label for="taskFile">3. Replenishment Task List</label>
+        <label for="taskFile">3. Replenishment Task List (Optional)</label>
         <input id="taskFile" type="file"
           accept=".xlsx,.xls,.csv" multiple>
       </div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label for="useTaskCoverage">Replenishment task handling</label>
+      <select id="useTaskCoverage">
+        <option value="all" selected>All outstanding shortages (default)</option>
+        <option value="account">Account for existing replenishment tasks</option>
+      </select>
+      <p class="muted small">The task list is optional. In default mode, existing tasks do not reduce quantities needed.</p>
     </div>
 
     <h3>Report Filter</h3>
@@ -3454,6 +3463,7 @@ async function generateShortage() {
   const shortageFile = $("shortageFile").files[0];
   const inventoryFile = $("inventoryFile").files[0];
   const taskFiles = $("taskFile").files;
+  const useTaskCoverage = $("useTaskCoverage").value === "account";
 
   if (!shortageFile || !inventoryFile) {
     setMessage(
@@ -3473,7 +3483,7 @@ async function generateShortage() {
       await Promise.all([
         readExcel(shortageFile),
         readExcel(inventoryFile),
-        readMultipleExcel(taskFiles)
+        useTaskCoverage ? readMultipleExcel(taskFiles) : Promise.resolve([])
       ]);
 
     const mode = $("dateMode").value;
@@ -3485,7 +3495,7 @@ async function generateShortage() {
       ));
 
     const inventory = getInventoryRows(inventoryRaw);
-    const taskCoverage = activeTaskCoverage(taskRaw);
+    const taskCoverage = useTaskCoverage ? activeTaskCoverage(taskRaw) : new Map();
 
     const groups = new Map();
 

@@ -1826,6 +1826,11 @@ td.sku {
         onclick="copyHats()">
         Copy The Game for Jira
       </button>
+
+      <button class="btn"
+        onclick="copyHatMessageForMarc()">
+        Copy Message to Marc
+      </button>
     </div>
 
     <p id="hatCopyStatus"
@@ -4579,6 +4584,31 @@ function copyHats() {
     Array.from(skus).map(sku => `(#) ${sku}`).join("\n"),
     "hatCopyStatus"
   );
+}
+
+// Copy only the located building 88 pulls, with one readable line per location.
+function copyHatMessageForMarc() {
+  if (!currentHatReport || !currentHatReport.pulls.length) {
+    setMessage(
+      "hatCopyStatus",
+      "Generate a hat report with available building 88 locations first."
+    );
+    return;
+  }
+
+  const lines = currentHatReport.pulls.map(row =>
+    `${row.qty} × ${row.sku} — ${row.location}`
+  );
+
+  const message = [
+    "Hi Marc! Do you have time to transfer these hats for me?",
+    "",
+    ...lines,
+    "",
+    "Thank you!"
+  ].join("\n");
+
+  copyText(message, "hatCopyStatus");
 }
 
 function printHats() {

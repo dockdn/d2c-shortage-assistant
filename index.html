@@ -7155,8 +7155,8 @@ async function trackerRefresh() {
   }
 }
 async function trackerMergeUpload(orders,isComplete) {
-  if(!trackerUser||!trackerClient)throw Error("Sign in to Supabase before generating a persistent tracker. No changes were saved.");
-  if(!trackerLoaded){await trackerRefresh();if(!trackerLoaded)throw Error("Could not load saved tracker. Upload was not synchronized.");}
+  if(!trackerUser||!trackerClient){trackerMessage("Spreadsheet generated locally. Sign in to save statuses and notes permanently.");return;}
+  if(!trackerLoaded){await trackerRefresh();if(!trackerLoaded){trackerMessage("Spreadsheet generated, but cloud sync is unavailable. Sign in or retry syncing before editing.");return;}}
   const prior=new Map(trackerSaved.map(r=>[r.line_key,r]));
   const seen=new Set(),now=new Date().toISOString();
   const changes=[];

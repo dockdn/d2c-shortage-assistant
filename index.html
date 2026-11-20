@@ -1366,7 +1366,7 @@ td.sku {
 
   <!-- SHORTAGE RESULTS -->
   <div id="shortageOutput" class="panel hidden">
-    <h2>Shortage Report Results</h2>
+    <h2>Shortage Report Results</h2><div class="actions"><button class="btn primary" onclick="exportShortageWorkbook()">Download Excel Workbook</button></div><p class="muted small">Excel downloads are snapshots, not yet a shared SharePoint workbook.</p>
 
     <div class="metrics">
       <div class="metric">
@@ -4048,6 +4048,34 @@ function openPrintWindow(title, content, paper = "letter") {
   };
   if (win.document.readyState === "complete") triggerPrint();
   else win.addEventListener("load", triggerPrint, {once:true});
+}
+
+
+function exportShortageWorkbook() {
+  const report = currentShortageReport;
+  if (!report) { alert("Generate a shortage report first."); return; }
+  if (typeof XLSX === "undefined") { alert("Excel library is unavailable."); return; }
+  const wb = XLSX.utils.book_new();
+  const add = (name, headings, rows) => {
+    const ws = XLSX.utils.aoa_to_sheet([headings, ...rows]);
+    ws["!cols"] = headings.map((h,i) => ({wch:Math.min(48,Math.max(14,h.length+3,...rows.slice(0,80).map(r=>String(r[i]??"").length+2)))}));
+    ws["!autofilter"] = {ref:ws["!ref"]};
+    XLSX.utils.book_append_sheet(wb,ws,name);
+  };
+  const rows = key => visibleShortageRows(report[key] || []);
+  add("All Orders",["Created","Client","Order","SKU","Short Qty","Status","Notes"],
+    rows("orders").map(r=>[String(r.created??""),r.brand,r.order,r.sku,r.qty,"To Pull",""]));
+  add("SKU Pull Sheet",["Check","SKU","Pull Qty","Location","LPN","Client"],
+    rows("pulls").map(r=>["",r.sku,r.qty,r.location,r.lpn,r.brand]));
+  add("MV-M1 Exceptions",["Client","SKU","Qty","Location","LPN"],
+    rows("virtual").map(r=>[r.brand,r.sku,r.qty,r.location,r.lpn]));
+  add("Investigating",["Client","SKU","Uncovered Qty","Reason"],
+    rows("followups").map(r=>[r.brand,r.sku,r.qty,r.reason]));
+  add("Completed",["Created","Client","Order","SKU","Status","Notes"],[]);
+  add("Archive",["Created","Client","Order","SKU","Archived At","Notes"],[]);
+  add("All Locations",["Client","SKU","Needed","Location","LPN","Free Qty"],
+    rows("master").map(r=>[r.brand,r.sku,r.needed,r.location,r.lpn,r.available]));
+  XLSX.writeFile(wb,"D2C_Shortage_Tracker.xlsx");
 }
 
 function printPulls() {

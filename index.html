@@ -1400,7 +1400,7 @@ td.sku {
     <div class="actions">
       <button class="btn primary"
         onclick="printPulls()">
-        Print Replenisher Report
+        Print SKU Pull Sheet (Letter)
       </button>
 
       <button class="btn"
@@ -1421,7 +1421,16 @@ td.sku {
     <p id="shortageCopyStatus"
       class="message" role="status"></p>
 
-    <h3>Replenisher Report</h3>
+    <h3>All Orders — oldest first</h3>
+    <p class="muted small">One row per order and SKU from the uploaded shortage report. Order-level statuses will be added with the shared tracker.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Created</th><th>Client</th><th>Order</th><th>SKU</th><th>Short Qty</th></tr></thead>
+        <tbody id="shortageOrdersTable"></tbody>
+      </table>
+    </div>
+
+    <h3>SKU Pull Sheet — oldest first</h3>
 
     <p class="muted small">
       Storage locations only, with quantities needed after
@@ -3498,18 +3507,31 @@ async function generateShortage() {
           brand: row.brand,
           sku: row.sku,
           qty: 0,
-          orders: []
+          orders: [],
+          oldestOrderDate: Infinity
         });
       }
 
       const group = groups.get(key);
 
       group.qty += row.qty;
+      const orderDate = parseLogiwaDate(row.created);
+      if (Number.isFinite(orderDate)) group.oldestOrderDate = Math.min(group.oldestOrderDate, orderDate);
 
       if (row.order) {
         group.orders.push(row.order);
       }
     }
+
+    const orders = shortages.map(row => ({
+      brand: row.brand,
+      order: row.order,
+      sku: row.sku,
+      qty: row.qty,
+      created: row.created,
+      sortDate: parseLogiwaDate(row.created)
+    })).sort((a,b) => (Number.isFinite(a.sortDate) ? a.sortDate : Infinity) -
+                       (Number.isFinite(b.sortDate) ? b.sortDate : Infinity));
 
     const pulls = [];
     const master = [];
@@ -3573,25 +3595,22 @@ async function generateShortage() {
           locationSort(a.location, b.location)
         );
 
-      for (const item of storageRows) {
-        if (remaining <= 0) break;
-
-        const moveQty = Math.min(
-          remaining,
-          item.free
-        );
-
-        if (moveQty <= 0) continue;
-
+      // A single source per SKU. Do not imply other locations were picked.
+      const source = [...storageRows].sort((a,b) =>
+        (b.free >= remaining ? 1 : 0) - (a.free >= remaining ? 1 : 0) ||
+        b.free - a.free || locationSort(a.location,b.location)
+      )[0];
+      if (source && remaining > 0) {
+        const moveQty = Math.min(remaining, source.free);
         pulls.push({
           brand: group.brand,
           sku: group.sku,
           qty: moveQty,
-          location: item.location,
-          lpn: item.lpn,
+          location: source.location,
+          lpn: source.lpn,
+          oldestOrderDate: group.oldestOrderDate,
           done: false
         });
-
         totalPull += moveQty;
         remaining -= moveQty;
       }
@@ -3601,6 +3620,7 @@ async function generateShortage() {
           brand: group.brand,
           sku: group.sku,
           needed: group.qty,
+          oldestOrderDate: group.oldestOrderDate,
           location: item.location,
           lpn: item.lpn,
           available: item.free
@@ -3618,6 +3638,7 @@ async function generateShortage() {
           brand: group.brand,
           sku: group.sku,
           qty: item.free,
+          oldestOrderDate: group.oldestOrderDate,
           location: item.location,
           lpn: item.lpn
         });
@@ -3628,6 +3649,7 @@ async function generateShortage() {
           brand: group.brand,
           sku: group.sku,
           qty: remaining,
+          oldestOrderDate: group.oldestOrderDate,
           reason: exceptions.length
             ? "Review exception / virtual inventory"
             : "Insufficient available storage inventory"
@@ -3635,18 +3657,19 @@ async function generateShortage() {
       }
     }
 
-    pulls.sort((a, b) =>
-      locationSort(a.location, b.location)
-    );
-
-    master.sort((a, b) =>
-      locationSort(a.location, b.location)
-    );
+    const oldestFirst = (a,b) =>
+      (a.oldestOrderDate ?? Infinity) - (b.oldestOrderDate ?? Infinity) ||
+      String(a.sku).localeCompare(String(b.sku));
+    pulls.sort(oldestFirst);
+    master.sort(oldestFirst);
+    followups.sort(oldestFirst);
+    virtual.sort(oldestFirst);
 
     currentShortageReport = {
       type: "shortage",
       title: "Shortage Report",
       createdAt: new Date().toISOString(),
+      orders,
       pulls,
       master,
       followups,
@@ -3722,6 +3745,18 @@ function renderShortageReport() {
   const report = currentShortageReport;
 
   if (!report) return;
+
+  const ordersBody = $("shortageOrdersTable");
+  if (ordersBody) {
+    const rows = visibleShortageRows(report.orders || []);
+    ordersBody.innerHTML = rows.length ? rows.map(row => `
+      <tr><td>${escapeHTML(String(row.created ?? ""))}</td>
+      <td>${escapeHTML(row.brand)}</td>
+      <td>${escapeHTML(row.order)}</td>
+      <td class="sku">${escapeHTML(row.sku)}</td>
+      <td>${row.qty}</td></tr>`).join("") :
+      '<tr><td colspan="5">No orders for this client.</td></tr>';
+  }
 
   $("shortageTotal").textContent =
     report.totals.shortage;
@@ -4016,9 +4051,9 @@ function printPulls() {
   );
 
   openPrintWindow(
-    "Replenisher Storage Pulls",
+    "SKU Pull Sheet",
     content,
-    "4x6"
+    "letter"
   );
 }
 

@@ -3319,12 +3319,9 @@ function locationType(location) {
     return "virtual";
   }
 
-  // Pickable shelf inventory includes numbered 100/88 shelves and R-100/R-88 rack locations.
-  // Storage (ST, STS, STN, etc.) must NEVER count as shelf coverage.
-  if (
-    /^(?:100|88)(?:$|[.\\s-])/i.test(raw) ||
-    /^R[-\\s]?(?:100|88)(?:$|[.\\s-])/i.test(raw)
-  ) {
+  // Only location codes beginning with "100." or "88." are pickable shelves.
+  // R-100 and R-88 are storage, never shelf.
+  if (/^(?:100|88)\./i.test(raw)) {
     return "shelf";
   }
 

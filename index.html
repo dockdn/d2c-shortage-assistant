@@ -3319,9 +3319,11 @@ function locationType(location) {
     return "virtual";
   }
 
+  // Pickable shelf inventory includes numbered 100/88 shelves and R-100/R-88 rack locations.
+  // Storage (ST, STS, STN, etc.) must NEVER count as shelf coverage.
   if (
-    /^(100|88)[.A-Z0-9-]/i.test(raw) ||
-    /^(100|88)$/i.test(raw)
+    /^(?:100|88)(?:$|[.\\s-])/i.test(raw) ||
+    /^R[-\\s]?(?:100|88)(?:$|[.\\s-])/i.test(raw)
   ) {
     return "shelf";
   }
@@ -3623,13 +3625,18 @@ async function generateShortage() {
           locationSort(a.location, b.location)
         );
 
-      // A single source per SKU. Do not imply other locations were picked.
-      const source = [...storageRows].sort((a,b) =>
+      // Only storage can be a replenishment source. Allocate the remaining
+      // quantity across as many physical storage LPNs as needed.
+      // Prefer a single LPN that can cover the full balance.
+      const rankedStorage = [...storageRows].sort((a,b) =>
         (b.free >= remaining ? 1 : 0) - (a.free >= remaining ? 1 : 0) ||
         b.free - a.free || locationSort(a.location,b.location)
-      )[0];
-      if (source && remaining > 0) {
+      );
+      for (const source of rankedStorage) {
+        if (remaining <= 0) break;
+        if (locationType(source.location) !== "storage") continue;
         const moveQty = Math.min(remaining, source.free);
+        if (moveQty <= 0) continue;
         pulls.push({
           brand: group.brand,
           sku: group.sku,

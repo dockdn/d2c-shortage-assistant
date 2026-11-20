@@ -3560,7 +3560,7 @@ async function generateShortage() {
     })).sort((a,b) => (Number.isFinite(a.sortDate) ? a.sortDate : Infinity) -
                        (Number.isFinite(b.sortDate) ? b.sortDate : Infinity));
 
-    await trackerMergeUpload(orders, mode === "all");
+    await trackerMergeUpload(orders, false); // Archiving requires an explicitly verified complete snapshot; never infer completeness from the cutoff setting.
     const pulls = [];
     const master = [];
     const followups = [];
@@ -7131,6 +7131,20 @@ async function trackerRefresh() {
   trackerSaved=data||[];trackerLoaded=true;
   trackerMessage("Saved tracker connected · "+trackerSaved.length+" order/SKU records.");
   renderWorkbookHistory();
+  // Rehydrate the order grid from Supabase on every login/reload, even before new files are uploaded.
+  if(!currentShortageReport && trackerSaved.length){
+    const active=trackerSaved.filter(r=>!r.archived_at).map(r=>({
+      brand:r.brand,order:r.order_code,sku:r.sku,qty:Number(r.shortage_qty),
+      created:r.created_text,sortDate:parseLogiwaDate(r.created_text),
+      status:r.status,notes:r.notes
+    })).sort((a,b)=>(Number.isFinite(a.sortDate)?a.sortDate:Infinity)-(Number.isFinite(b.sortDate)?b.sortDate:Infinity));
+    currentShortageReport={type:"shortage",title:"Saved Shortage Tracker",createdAt:new Date().toISOString(),
+      orders:active,pulls:[],master:[],followups:[],virtual:[],
+      totals:{shortage:active.reduce((n,r)=>n+r.qty,0),shelf:0,tasks:0,pulls:0}};
+    populateShortageBrands();
+    document.getElementById("shortageOutput")?.classList.remove("hidden");
+    trackerMessage("Loaded "+active.length+" saved order/SKU lines. Upload current reports to recalculate physical pulls.");
+  }
   if(currentShortageReport) {
     const lookup=new Map(trackerSaved.map(r=>[r.line_key,r]));
     currentShortageReport.orders.forEach(row=>{
@@ -7141,7 +7155,7 @@ async function trackerRefresh() {
   }
 }
 async function trackerMergeUpload(orders,isComplete) {
-  if(!trackerUser||!trackerClient){trackerMessage("Report generated locally. Sign in to save tracking.");return;}
+  if(!trackerUser||!trackerClient)throw Error("Sign in to Supabase before generating a persistent tracker. No changes were saved.");
   if(!trackerLoaded){await trackerRefresh();if(!trackerLoaded)throw Error("Could not load saved tracker. Upload was not synchronized.");}
   const prior=new Map(trackerSaved.map(r=>[r.line_key,r]));
   const seen=new Set(),now=new Date().toISOString();
@@ -7178,6 +7192,8 @@ async function trackerEdit(key,field,value) {
   Object.assign(old,payload);
   const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);
   if(row)row[field]=value;
+  renderWorkbookHistory();
+  if(field==="status")renderShortageReport();
   trackerMessage("Saved "+(field==="status"?"status":"notes")+" to Supabase.");
 }
 window.addEventListener("DOMContentLoaded",()=>{trackerInit();trackerClient?.auth.onAuthStateChange(()=>{setTimeout(trackerInit,0);});});

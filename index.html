@@ -3301,10 +3301,12 @@ function locationType(location) {
     return "shelf";
   }
 
-  if (
-    /^[A-Z]\s*\.\s*\d+/i.test(raw)
-  ) {
-    return "storage";
+  if (/^[A-Z]\s*\.\s*\d+/i.test(raw)) {
+    return "exception";
+  }
+
+  if (/RECEIVING|REC[- ]|PACK|PICK|CART|RETURN|TRANSFER/i.test(raw)) {
+    return "staging";
   }
 
   return "storage";
@@ -4029,18 +4031,38 @@ function openPrintWindow(title, content, paper = "letter") {
   `);
   win.document.close();
 
+  // Printing immediately after document.write can capture a blank page.
+  // Wait for the print document to finish rendering; allow manual retry.
+  const toolbar = win.document.createElement("div");
+  toolbar.className = "print-toolbar";
+  toolbar.innerHTML = '<button type="button" onclick="window.print()">Print this sheet</button>';
+  win.document.body.insertBefore(toolbar, win.document.body.firstChild);
+  const css = win.document.createElement("style");
+  css.textContent = '@media print { .print-toolbar { display:none!important } } .print-toolbar { margin-bottom:16px } .print-toolbar button { padding:8px 16px;cursor:pointer }';
+  win.document.head.appendChild(css);
   win.focus();
-
-  setTimeout(() => {
-    win.print();
-  }, 350);
+  const triggerPrint = () => {
+    win.requestAnimationFrame(() => win.requestAnimationFrame(() => {
+      if (!win.closed) win.print();
+    }));
+  };
+  if (win.document.readyState === "complete") triggerPrint();
+  else win.addEventListener("load", triggerPrint, {once:true});
 }
 
 function printPulls() {
-  if (!currentShortageReport) return;
+  if (!currentShortageReport) {
+    alert("Generate a shortage report before printing.");
+    return;
+  }
+  const rows = visibleShortageRows(currentShortageReport.pulls);
+  if (!rows.length) {
+    alert("No actionable SKU pulls are available for the selected client. Check Needs Follow-Up and inventory locations.");
+    return;
+  }
 
   const content = shortagePrintableRows(
-    visibleShortageRows(currentShortageReport.pulls),
+    rows,
     [
       { label: "Done", value: () => "☐" },
       { label: "SKU", value: "sku" },
@@ -4058,10 +4080,18 @@ function printPulls() {
 }
 
 function printMasterList() {
-  if (!currentShortageReport) return;
+  if (!currentShortageReport) {
+    alert("Generate a shortage report before printing.");
+    return;
+  }
+  const rows = visibleShortageRows(currentShortageReport.master);
+  if (!rows.length) {
+    alert("No master inventory rows are available for the selected client.");
+    return;
+  }
 
   const content = shortagePrintableRows(
-    visibleShortageRows(currentShortageReport.master),
+    rows,
     [
       { label: "Brand", value: "brand" },
       { label: "SKU", value: "sku" },

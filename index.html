@@ -1469,6 +1469,7 @@ td.sku {
             <th>QTY</th>
             <th>Storage Location</th>
             <th>LPN</th>
+            <th>Alternative</th>
           </tr>
         </thead>
         <tbody id="pullTable"></tbody>
@@ -3842,9 +3843,10 @@ function renderShortageReport() {
         <td>${row.qty}</td>
         <td>${escapeHTML(row.location)}</td>
         <td>${escapeHTML(row.lpn)}</td>
+        <td><button type="button" class="btn" style="padding:5px 9px;white-space:nowrap" onclick="refreshPullLocation(${index})" title="Try another eligible storage location and LPN">↻ Different location</button></td>
       </tr>
     `).join("")
-    : `<tr><td colspan="6">
+    : `<tr><td colspan="7">
          No additional storage pulls required.
        </td></tr>`;
 
@@ -3889,6 +3891,39 @@ function renderShortageReport() {
     : `<tr><td colspan="5">
          No exception inventory found.
        </td></tr>`;
+}
+
+function refreshPullLocation(index) {
+  const report=currentShortageReport;
+  const row=report?.pulls?.[index];
+  if(!row)return;
+  const same=(item)=>normalize(item.brand)===normalize(row.brand)&&normalize(item.sku)===normalize(row.sku);
+  const candidates=(report.master||[]).filter(item=>same(item)&&locationType(item.location)==="storage"&&Number(item.available)>0);
+  const identity=item=>normalize(item.location)+"|"+normalize(item.lpn);
+  const current=identity(row);
+  const usedByOthers=new Map();
+  for(let i=0;i<report.pulls.length;i++){
+    if(i===index)continue;
+    const other=report.pulls[i];
+    if(!same(other))continue;
+    const id=identity(other);
+    usedByOthers.set(id,(usedByOthers.get(id)||0)+Number(other.qty||0));
+  }
+  const eligible=candidates.filter(item=>identity(item)!==current &&
+    Number(item.available)-(usedByOthers.get(identity(item))||0)>=Number(row.qty));
+  if(!eligible.length){
+    alert("No other storage location/LPN has enough free quantity for this pull. Shelf, staging, MV-M1 and virtual locations are excluded.");
+    return;
+  }
+  const seen=new Set();
+  const unique=eligible.filter(item=>{const id=identity(item);if(seen.has(id))return false;seen.add(id);return true;})
+    .sort((a,b)=>locationSort(a.location,b.location)||String(a.lpn).localeCompare(String(b.lpn)));
+  const next=unique[0];
+  row.location=next.location;
+  row.lpn=next.lpn;
+  persistActiveShortage();
+  renderShortageReport();
+  trackerMessageSafe("Alternative storage selected for "+row.sku+": "+row.location+" / "+row.lpn+".");
 }
 
 function toggleShortagePull(index, checked) {

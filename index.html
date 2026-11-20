@@ -1185,6 +1185,9 @@ td.sku {
     bottom: 16px;
   }
 }
+
+/* Spreadsheet-style shortage workspace */
+.workbook-bar{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #c9d6cb;margin:24px 0 12px;background:#f6f8f6}.workbook-tabs{display:flex;gap:2px;flex-wrap:wrap;align-items:end}.workbook-tab{border:1px solid #d9e1da;border-bottom:0;border-radius:5px 5px 0 0;background:#e9eeea;color:#43554a;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer}.workbook-tab.selected{background:white;color:#217346;box-shadow:inset 0 3px #217346}.workbook-tools{display:flex;align-items:center;gap:10px;padding:5px 4px}.workbook-tools input{width:215px;max-width:100%;padding:7px 10px;border:1px solid #d0d8d2;border-radius:4px}.workbook-sheet[hidden]{display:none!important}.workbook-sheet h3{font-size:15px;margin:10px 0 4px}.workbook-sheet .table-wrap{max-height:65vh;overflow:auto;border:1px solid #dce2dc;border-radius:3px;background:white}.workbook-sheet table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}.workbook-sheet thead th{position:sticky;top:0;z-index:2;background:#e9efe9;color:#334c3c;border-bottom:1px solid #b9c9bb;white-space:nowrap;padding:9px 11px;text-align:left}.workbook-sheet tbody td{border-bottom:1px solid #e8ece8;border-right:1px solid #f0f2f0;padding:6px 10px;white-space:nowrap}.workbook-sheet tbody tr:nth-child(even){background:#f9fbf9}.workbook-sheet tbody tr:hover{background:#eef6ef}.workbook-sheet tbody input:not([type=checkbox]),.workbook-sheet tbody select{font-size:12px;border:1px solid transparent;border-radius:2px;background:transparent;padding:5px;min-width:115px}.workbook-sheet tbody input:focus,.workbook-sheet tbody select:focus{border-color:#217346;background:white;outline:1px solid #217346}.workbook-sheet tbody input:disabled,.workbook-sheet tbody select:disabled{opacity:.65}.workbook-sheet .sku{font-family:Consolas,monospace;font-size:12px}.workbook-sheet tbody td:first-child{border-left:2px solid transparent}.workbook-sheet tbody tr:hover td:first-child{border-left-color:#217346}@media(max-width:700px){.workbook-bar{display:block}.workbook-tools{padding:10px 0}.workbook-tab{padding:8px}.workbook-sheet .table-wrap{max-height:60vh}}
 </style>
 </head>
 
@@ -1431,7 +1434,15 @@ td.sku {
     <p id="shortageCopyStatus"
       class="message" role="status"></p>
 
-    <h3>All Orders — oldest first</h3>
+<div class="workbook-bar"><div class="workbook-tabs" role="tablist" aria-label="Shortage workbook sheets">
+<button type="button" class="workbook-tab selected" role="tab" data-tab="orders" onclick="showWorkbookSheet('orders')">All Orders</button>
+<button type="button" class="workbook-tab " role="tab" data-tab="pulls" onclick="showWorkbookSheet('pulls')">SKU Pull Sheet</button>
+<button type="button" class="workbook-tab " role="tab" data-tab="master" onclick="showWorkbookSheet('master')">Master List</button>
+<button type="button" class="workbook-tab " role="tab" data-tab="followups" onclick="showWorkbookSheet('followups')">Investigating</button>
+<button type="button" class="workbook-tab " role="tab" data-tab="virtual" onclick="showWorkbookSheet('virtual')">MV-M1</button>
+<button type="button" class="workbook-tab" role="tab" data-tab="completed" onclick="showWorkbookSheet('completed')">Completed</button>
+<button type="button" class="workbook-tab" role="tab" data-tab="archive" onclick="showWorkbookSheet('archive')">Archive</button>
+</div><div class="workbook-tools"><input type="search" id="workbookSearch" placeholder="Find order, SKU, LPN…" oninput="filterWorkbookRows()" aria-label="Search visible sheet"><span id="workbookRowCount" class="muted small"></span></div></div>    <div class="workbook-sheet" data-sheet="orders" ><h3>All Orders — oldest first</h3>
     <p class="muted small">One row per order and SKU from the uploaded shortage report. Order-level statuses will be added with the shared tracker.</p>
     <div class="table-wrap">
       <table>
@@ -1440,7 +1451,8 @@ td.sku {
       </table>
     </div>
 
-    <h3>SKU Pull Sheet — oldest first</h3>
+    </div>
+<div class="workbook-sheet" data-sheet="pulls" hidden><h3>SKU Pull Sheet — oldest first</h3>
 
     <p class="muted small">
       Storage locations only, with quantities needed after
@@ -1464,7 +1476,8 @@ td.sku {
     </div>
 
 
-    <h3>Master List</h3>
+    </div>
+<div class="workbook-sheet" data-sheet="master" hidden><h3>Master List</h3>
 
     <p class="muted small">
       All relevant inventory locations and LPNs, including
@@ -1488,7 +1501,8 @@ td.sku {
     </div>
 
 
-    <h3>Needs Follow-Up</h3>
+    </div>
+<div class="workbook-sheet" data-sheet="followups" hidden><h3>Needs Follow-Up</h3>
 
     <p class="muted small">
       Missing inventory, virtual locations, and items that
@@ -1509,7 +1523,8 @@ td.sku {
       </table>
     </div>
 
-    <h3>MV-M1 / Virtual Location Exceptions</h3>
+    </div>
+<div class="workbook-sheet" data-sheet="virtual" hidden><h3>MV-M1 / Virtual Location Exceptions</h3>
 
     <div class="table-wrap">
       <table>
@@ -1525,7 +1540,7 @@ td.sku {
         <tbody id="virtualTable"></tbody>
       </table>
     </div>
-
+</div><div class="workbook-sheet" data-sheet="completed" hidden><h3>Completed</h3><p class="muted small">Orders marked Done, retained until they disappear from a complete new shortage report.</p><div class="table-wrap"><table><thead><tr><th>Created</th><th>Client</th><th>Order</th><th>SKU</th><th>Status</th><th>Notes</th></tr></thead><tbody id="completedWorkbookTable"></tbody></table></div></div><div class="workbook-sheet" data-sheet="archive" hidden><h3>Archive</h3><p class="muted small">Completed records no longer in a full shortage upload.</p><div class="table-wrap"><table><thead><tr><th>Created</th><th>Client</th><th>Order</th><th>SKU</th><th>Archived</th><th>Notes</th></tr></thead><tbody id="archiveWorkbookTable"></tbody></table></div></div>
   </div>
 </section>
 
@@ -3754,6 +3769,28 @@ function populateShortageBrands() {
   }
 }
 
+
+function showWorkbookSheet(name) {
+  document.querySelectorAll('.workbook-sheet').forEach(el=>{el.hidden=el.dataset.sheet!==name;});
+  document.querySelectorAll('.workbook-tab').forEach(el=>{const active=el.dataset.tab===name;el.classList.toggle('selected',active);el.setAttribute('aria-selected',String(active));});
+  const search=document.getElementById('workbookSearch');if(search)search.value='';
+  filterWorkbookRows();
+}
+function filterWorkbookRows() {
+  const sheet=document.querySelector('.workbook-sheet:not([hidden])');
+  const q=(document.getElementById('workbookSearch')?.value||'').toLowerCase().trim();
+  let visible=0;
+  sheet?.querySelectorAll('tbody tr').forEach(tr=>{const matches=!q||tr.textContent.toLowerCase().includes(q)||Array.from(tr.querySelectorAll('input,select')).some(el=>(el.value||'').toLowerCase().includes(q));tr.hidden=!matches;if(matches)visible++;});
+  const count=document.getElementById('workbookRowCount');if(count)count.textContent=visible+' rows';
+}
+function renderWorkbookHistory(){
+  for(const [id,archived] of [['completedWorkbookTable',false],['archiveWorkbookTable',true]]){
+    const body=document.getElementById(id);if(!body)return;
+    const rows=(trackerSaved||[]).filter(r=>archived?Boolean(r.archived_at):r.status==='Done'&&!r.archived_at);
+    body.innerHTML=rows.length?rows.map(r=>'<tr>'+[r.created_text,r.brand,r.order_code,r.sku,archived?r.archived_at:r.status,r.notes].map(v=>'<td>'+escapeHTML(String(v??''))+'</td>').join('')+'</tr>').join(''):'<tr><td colspan="6">No records yet.</td></tr>';
+  }
+}
+
 function renderShortageReport() {
   const report = currentShortageReport;
 
@@ -3775,6 +3812,8 @@ function renderShortageReport() {
       '<tr><td colspan="7">No orders for this client.</td></tr>';
   }
 
+  renderWorkbookHistory();
+  filterWorkbookRows();
   $("shortageTotal").textContent =
     report.totals.shortage;
 
@@ -7091,6 +7130,7 @@ async function trackerRefresh() {
   if(error){trackerLoaded=false;trackerMessage("Could not load saved tracker: "+error.message);return;}
   trackerSaved=data||[];trackerLoaded=true;
   trackerMessage("Saved tracker connected · "+trackerSaved.length+" order/SKU records.");
+  renderWorkbookHistory();
   if(currentShortageReport) {
     const lookup=new Map(trackerSaved.map(r=>[r.line_key,r]));
     currentShortageReport.orders.forEach(row=>{

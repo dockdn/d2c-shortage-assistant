@@ -3720,9 +3720,7 @@ async function generateShortage() {
       "Report generated. Review the results before requesting pulls."
     );
 
-    if (typeof saveRecentReport === "function") {
-      saveRecentReport(currentShortageReport);
-    }
+    persistActiveShortage();
 
   } catch (error) {
     console.error(error);
@@ -3746,7 +3744,7 @@ function visibleShortageRows(rows) {
 function populateShortageBrands() {
   const select = $("shortageBrandFilter");
   if (!select || !currentShortageReport) return;
-  const brands = [...new Set(["pulls","master","followups","virtual"]
+  const brands = [...new Set(["orders","pulls","master","followups","virtual"]
     .flatMap(key => (currentShortageReport[key] || []).map(row => clean(row.brand)))
     .filter(Boolean))].sort((a,b) => a.localeCompare(b));
   select.innerHTML = '<option value="">All clients</option>' +
@@ -3805,7 +3803,7 @@ function renderShortageReport() {
       <td>${escapeHTML(row.order)}</td>
       <td class="sku">${escapeHTML(row.sku)}</td>
       <td>${row.qty}</td>
-      <td><select data-key="${encodeURIComponent(trackerKey(row))}" onchange="trackerEdit(decodeURIComponent(this.dataset.key),'status',this.value)" ${!trackerUser ? 'disabled title="Sign in to edit"' : ''}>
+      <td><select data-key="${encodeURIComponent(trackerKey(row))}" onchange="trackerEdit(decodeURIComponent(this.dataset.key),'status',this.value)" >
         ${["To Pull","Investigating","Awaiting CS Response","Waiting","Done"].map(v=>`<option value="${v}" ${(row.status||"To Pull")===v?"selected":""}>${v}</option>`).join("")}
       </select></td>
       <td><input data-key="${encodeURIComponent(trackerKey(row))}" value="${escapeHTML(row.notes||"")}" onchange="trackerEdit(decodeURIComponent(this.dataset.key),'notes',this.value)" ${!trackerUser ? 'disabled title="Sign in to edit"' : ''} style="min-width:150px"></td></tr>`).join("") :
@@ -3897,6 +3895,7 @@ function toggleShortagePull(index, checked) {
   if (!row) return;
 
   row.done = checked;
+  persistActiveShortage();
 
   if (typeof saveRecentReport === "function") {
     saveRecentReport(currentShortageReport);
@@ -4855,6 +4854,30 @@ function getSavedReports() {
     console.warn("Unable to read saved reports:", error);
     return [];
   }
+}
+
+const ACTIVE_SHORTAGE_KEY = "d2c_assist_active_shortage_v2";
+function persistActiveShortage(){
+  if(!currentShortageReport)return;
+  try{
+    localStorage.setItem(ACTIVE_SHORTAGE_KEY,JSON.stringify(currentShortageReport));
+    saveRecentReport(currentShortageReport);
+  }catch(error){console.warn("Could not persist active workbook",error);trackerMessageSafe("Browser storage is full; workbook changes may not persist.");}
+}
+function trackerMessageSafe(message){const el=document.getElementById("trackerSyncMessage");if(el)el.textContent=message;}
+function restoreActiveShortage(){
+  try{
+    const raw=localStorage.getItem(ACTIVE_SHORTAGE_KEY);
+    const report=raw?JSON.parse(raw):getSavedReports().find(r=>r.type==="shortage");
+    if(!report||report.type!=="shortage"||!Array.isArray(report.orders))return;
+    currentShortageReport=report;
+    for(const key of ["pulls","master","followups","virtual"])if(!Array.isArray(report[key]))report[key]=[];
+    if(!report.totals)report.totals={shortage:0,shelf:0,tasks:0,pulls:0};
+    populateShortageBrands();
+    renderShortageReport();
+    document.getElementById("shortageOutput")?.classList.remove("hidden");
+    trackerMessageSafe("Your previous workbook was restored from this browser. Upload a new report only when you want to refresh it.");
+  }catch(error){console.warn("Could not restore active workbook",error);}
 }
 
 function saveRecentReport(report) {
@@ -7075,6 +7098,7 @@ function initializeWebsite() {
   loadDailyChecklist();
   renderRecentReports();
   renderPoItems();
+  restoreActiveShortage();
 
   // Render Lucide icons.
   if (typeof lucide !== "undefined") {
@@ -7152,6 +7176,7 @@ async function trackerRefresh() {
       if(saved){row.status=saved.status;row.notes=saved.notes;}
     });
     renderShortageReport();
+    persistActiveShortage();
   }
 }
 async function trackerMergeUpload(orders,isComplete) {
@@ -7182,7 +7207,15 @@ async function trackerMergeUpload(orders,isComplete) {
   await trackerRefresh();
 }
 async function trackerEdit(key,field,value) {
-  if(!trackerUser||!trackerClient)return alert("Sign in to save changes.");
+  if(!trackerUser||!trackerClient){
+    const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);
+    if(!row)return;
+    row[field]=value;
+    persistActiveShortage();
+    if(field==="status")renderShortageReport();
+    trackerMessage("Saved to this browser. Sign in to sync across devices.");
+    return;
+  }
   const old=trackerSaved.find(r=>r.line_key===key);
   if(!old)return alert("This order is not saved yet. Generate the report again.");
   const payload={[field]:value,updated_at:new Date().toISOString()};
@@ -7192,6 +7225,7 @@ async function trackerEdit(key,field,value) {
   Object.assign(old,payload);
   const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);
   if(row)row[field]=value;
+  persistActiveShortage();
   renderWorkbookHistory();
   if(field==="status")renderShortageReport();
   trackerMessage("Saved "+(field==="status"?"status":"notes")+" to Supabase.");

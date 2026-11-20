@@ -1366,7 +1366,17 @@ td.sku {
 
   <!-- SHORTAGE RESULTS -->
   <div id="shortageOutput" class="panel hidden">
-    <h2>Shortage Report Results</h2><div class="actions"><button class="btn primary" onclick="exportShortageWorkbook()">Download Excel Workbook</button></div><p class="muted small">Excel downloads are snapshots, not yet a shared SharePoint workbook.</p>
+    <h2>Shortage Report Results</h2>
+    <div class="panel" style="padding:14px;margin-bottom:14px">
+      <strong>Saved tracker · Supabase</strong>
+      <p class="muted small" id="trackerAuthState">Checking sign-in…</p>
+      <div class="actions" id="trackerSignInControls">
+        <input id="trackerEmail" type="email" placeholder="Your email for a sign-in link" style="min-width:240px">
+        <button class="btn" onclick="trackerSendLink()">Email me a sign-in link</button>
+      </div>
+      <div class="actions"><button class="btn" onclick="trackerRefresh()">Refresh saved statuses</button><button class="btn" onclick="trackerSignOut()">Sign out</button></div>
+      <p class="muted small" id="trackerSyncMessage">Sign in to save order statuses and notes across devices.</p>
+    </div><div class="actions"><button class="btn primary" onclick="exportShortageWorkbook()">Download Excel Workbook</button></div><p class="muted small">Excel downloads are snapshots, not yet a shared SharePoint workbook.</p>
 
     <div class="metrics">
       <div class="metric">
@@ -1425,7 +1435,7 @@ td.sku {
     <p class="muted small">One row per order and SKU from the uploaded shortage report. Order-level statuses will be added with the shared tracker.</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Created</th><th>Client</th><th>Order</th><th>SKU</th><th>Short Qty</th></tr></thead>
+        <thead><tr><th>Created</th><th>Client</th><th>Order</th><th>SKU</th><th>Short Qty</th><th>Status</th><th>Notes</th></tr></thead>
         <tbody id="shortageOrdersTable"></tbody>
       </table>
     </div>
@@ -3535,6 +3545,7 @@ async function generateShortage() {
     })).sort((a,b) => (Number.isFinite(a.sortDate) ? a.sortDate : Infinity) -
                        (Number.isFinite(b.sortDate) ? b.sortDate : Infinity));
 
+    await trackerMergeUpload(orders, mode === "all");
     const pulls = [];
     const master = [];
     const followups = [];
@@ -3756,8 +3767,12 @@ function renderShortageReport() {
       <td>${escapeHTML(row.brand)}</td>
       <td>${escapeHTML(row.order)}</td>
       <td class="sku">${escapeHTML(row.sku)}</td>
-      <td>${row.qty}</td></tr>`).join("") :
-      '<tr><td colspan="5">No orders for this client.</td></tr>';
+      <td>${row.qty}</td>
+      <td><select data-key="${encodeURIComponent(trackerKey(row))}" onchange="trackerEdit(decodeURIComponent(this.dataset.key),'status',this.value)" ${!trackerUser ? 'disabled title="Sign in to edit"' : ''}>
+        ${["To Pull","Investigating","Awaiting CS Response","Waiting","Done"].map(v=>`<option value="${v}" ${(row.status||"To Pull")===v?"selected":""}>${v}</option>`).join("")}
+      </select></td>
+      <td><input data-key="${encodeURIComponent(trackerKey(row))}" value="${escapeHTML(row.notes||"")}" onchange="trackerEdit(decodeURIComponent(this.dataset.key),'notes',this.value)" ${!trackerUser ? 'disabled title="Sign in to edit"' : ''} style="min-width:150px"></td></tr>`).join("") :
+      '<tr><td colspan="7">No orders for this client.</td></tr>';
   }
 
   $("shortageTotal").textContent =
@@ -4026,7 +4041,97 @@ function openPrintWindow(title, content, paper = "letter") {
         )}
       </div>
       ${content}
-    </body>
+    
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/dist/umd/supabase.min.js"></script>
+<script>
+const trackerClient = window.supabase?.createClient("https://tmggolsyrfcrsjluuvgd.supabase.co","sb_publishable_R_b8pZEkadMpz-AE16aXkA_xIIbVdZn");
+let trackerUser = null;
+let trackerSaved = [];
+let trackerLoaded = false;
+function trackerKey(row) { return [normalize(row.brand),normalize(row.order),normalize(row.sku)].join("|"); }
+function trackerMessage(msg) { const el=document.getElementById("trackerSyncMessage"); if(el)el.textContent=msg; }
+async function trackerInit() {
+  if (!trackerClient) { trackerMessage("Unable to load Supabase. Check network access."); return; }
+  const {data,error}=await trackerClient.auth.getUser();
+  trackerUser=error?null:data.user;
+  const state=document.getElementById("trackerAuthState");
+  if(state)state.textContent=trackerUser?"Signed in as "+trackerUser.email:"Not signed in · reports remain local until you sign in";
+  const controls=document.getElementById("trackerSignInControls");
+  if(controls)controls.style.display=trackerUser?"none":"flex";
+  if(trackerUser)await trackerRefresh();
+  else {trackerSaved=[];trackerLoaded=false;trackerMessage("Sign in to enable saved statuses.");}
+  if(currentShortageReport)renderShortageReport();
+}
+async function trackerSendLink() {
+  if(!trackerClient)return alert("Supabase library unavailable.");
+  const email=document.getElementById("trackerEmail")?.value?.trim();
+  if(!email)return alert("Enter your email address.");
+  const {error}=await trackerClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  trackerMessage(error?"Sign-in error: "+error.message:"Check your email for a sign-in link, then return to this page.");
+}
+async function trackerSignOut() {
+  if(!trackerClient)return;
+  await trackerClient.auth.signOut();
+  await trackerInit();
+}
+async function trackerRefresh() {
+  if(!trackerClient||!trackerUser)return trackerMessage("Sign in first.");
+  const {data,error}=await trackerClient.from("d2c_order_tracker").select("*").order("created_text",{ascending:true}).limit(10000);
+  if(error){trackerLoaded=false;trackerMessage("Could not load saved tracker: "+error.message);return;}
+  trackerSaved=data||[];trackerLoaded=true;
+  trackerMessage("Saved tracker connected · "+trackerSaved.length+" order/SKU records.");
+  if(currentShortageReport) {
+    const lookup=new Map(trackerSaved.map(r=>[r.line_key,r]));
+    currentShortageReport.orders.forEach(row=>{
+      const saved=lookup.get(trackerKey(row));
+      if(saved){row.status=saved.status;row.notes=saved.notes;}
+    });
+    renderShortageReport();
+  }
+}
+async function trackerMergeUpload(orders,isComplete) {
+  if(!trackerUser||!trackerClient){trackerMessage("Report generated locally. Sign in to save tracking.");return;}
+  if(!trackerLoaded){await trackerRefresh();if(!trackerLoaded)throw Error("Could not load saved tracker. Upload was not synchronized.");}
+  const prior=new Map(trackerSaved.map(r=>[r.line_key,r]));
+  const seen=new Set(),now=new Date().toISOString();
+  const changes=[];
+  for(const row of orders) {
+    const key=trackerKey(row),old=prior.get(key);
+    seen.add(key);
+    const reappeared=Boolean(old?.archived_at);
+    const increased=old?.status==="Done" && Number(row.qty)>Number(old.shortage_qty);
+    const status=reappeared||increased?"Investigating":(old?.status||"To Pull");
+    const notes=reappeared||increased?[old?.notes||"",reappeared?"Reappeared in shortage report; review needed":"Shortage increased after completion; review needed"].filter(Boolean).join(" | "):(old?.notes||"");
+    row.status=status;row.notes=notes;
+    changes.push({user_id:trackerUser.id,line_key:key,brand:row.brand,order_code:row.order,sku:row.sku,
+      created_text:String(row.created??""),shortage_qty:row.qty,status,notes,
+      completed_at:status==="Done"?old?.completed_at||now:null,archived_at:null,last_seen_at:now,updated_at:now});
+  }
+  // Never archive from a custom-cutoff (partial) report.
+  if(isComplete)for(const old of trackerSaved)if(!seen.has(old.line_key)&&old.status==="Done"&&!old.archived_at)
+    changes.push({...old,archived_at:now,updated_at:now});
+  for(let i=0;i<changes.length;i+=200){
+    const {error}=await trackerClient.from("d2c_order_tracker").upsert(changes.slice(i,i+200),{onConflict:"user_id,line_key"});
+    if(error)throw Error("Could not save tracker: "+error.message);
+  }
+  await trackerRefresh();
+}
+async function trackerEdit(key,field,value) {
+  if(!trackerUser||!trackerClient)return alert("Sign in to save changes.");
+  const old=trackerSaved.find(r=>r.line_key===key);
+  if(!old)return alert("This order is not saved yet. Generate the report again.");
+  const payload={[field]:value,updated_at:new Date().toISOString()};
+  if(field==="status")payload.completed_at=value==="Done"?(old.completed_at||new Date().toISOString()):null;
+  const {error}=await trackerClient.from("d2c_order_tracker").update(payload).eq("line_key",key).eq("user_id",trackerUser.id);
+  if(error){trackerMessage("Save failed: "+error.message);await trackerRefresh();return;}
+  Object.assign(old,payload);
+  const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);
+  if(row)row[field]=value;
+  trackerMessage("Saved "+(field==="status"?"status":"notes")+" to Supabase.");
+}
+window.addEventListener("DOMContentLoaded",()=>{trackerInit();trackerClient?.auth.onAuthStateChange(()=>{setTimeout(trackerInit,0);});});
+</script>
+</body>
     </html>
   `);
   win.document.close();
@@ -4064,15 +4169,15 @@ function exportShortageWorkbook() {
   };
   const rows = key => visibleShortageRows(report[key] || []);
   add("All Orders",["Created","Client","Order","SKU","Short Qty","Status","Notes"],
-    rows("orders").map(r=>[String(r.created??""),r.brand,r.order,r.sku,r.qty,"To Pull",""]));
+    rows("orders").map(r=>[String(r.created??""),r.brand,r.order,r.sku,r.qty,r.status||"To Pull",r.notes||""]));
   add("SKU Pull Sheet",["Check","SKU","Pull Qty","Location","LPN","Client"],
     rows("pulls").map(r=>["",r.sku,r.qty,r.location,r.lpn,r.brand]));
   add("MV-M1 Exceptions",["Client","SKU","Qty","Location","LPN"],
     rows("virtual").map(r=>[r.brand,r.sku,r.qty,r.location,r.lpn]));
   add("Investigating",["Client","SKU","Uncovered Qty","Reason"],
     rows("followups").map(r=>[r.brand,r.sku,r.qty,r.reason]));
-  add("Completed",["Created","Client","Order","SKU","Status","Notes"],[]);
-  add("Archive",["Created","Client","Order","SKU","Archived At","Notes"],[]);
+  add("Completed",["Created","Client","Order","SKU","Status","Notes"],trackerSaved.filter(r=>r.status==="Done"&&!r.archived_at).map(r=>[r.created_text,r.brand,r.order_code,r.sku,r.status,r.notes]));
+  add("Archive",["Created","Client","Order","SKU","Archived At","Notes"],trackerSaved.filter(r=>r.archived_at).map(r=>[r.created_text,r.brand,r.order_code,r.sku,r.archived_at,r.notes]));
   add("All Locations",["Client","SKU","Needed","Location","LPN","Free Qty"],
     rows("master").map(r=>[r.brand,r.sku,r.needed,r.location,r.lpn,r.available]));
   XLSX.writeFile(wb,"D2C_Shortage_Tracker.xlsx");

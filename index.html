@@ -1,11 +1,38 @@
 
 <!DOCTYPE html>
+<!--
+D2C ASSIST | SOURCE TABLE OF CONTENTS
+01 · Document head, dependencies and styles
+02 · Sidebar and workspace toolbar
+03 · Dashboard, shortage center, reports, replenishment and POD hats
+04 · Purchase orders, list generator and ticket generator
+05 · Quick links, emergency handbook and SmartSearch
+06 · Core application logic
+07 · Supabase client and legacy tracker
+08 · Shortage Action Center and automatic Runner dispatch
+09 · Workspace authentication, account controls and shared state
+10 · Manual Runner dispatch and assignment activity
+11 · Runner issue notifications
+  06.1 · Shared utilities and navigation
+  06.2 · Inventory classification and shortage calculation
+  06.3 · Shortage workbook, printing and exports
+  06.4 · Pending replenishment tasks
+  06.5 · The Game POD hat replenishment
+  06.6 · Saved reports and report history
+  06.7 · Purchase order builder
+  06.8 · List generator
+  06.9 · Ticket generator
+  06.10 · Daily checklist
+  06.11 · SmartSearch
+  06.12 · Application startup
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D2C Assist</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2240%22%20fill%3D%22%23294b70%22%2F%3E%3Ctext%20x%3D%2296%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Apple%20Color%20Emoji%2CSegoe%20UI%20Emoji%2CNoto%20Color%20Emoji%2Csans-serif%22%20font-size%3D%22112%22%3E%F0%9F%93%A6%3C%2Ftext%3E%3C%2Fsvg%3E"><link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2240%22%20fill%3D%22%23294b70%22%2F%3E%3Ctext%20x%3D%2296%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Apple%20Color%20Emoji%2CSegoe%20UI%20Emoji%2CNoto%20Color%20Emoji%2Csans-serif%22%20font-size%3D%22112%22%3E%F0%9F%93%A6%3C%2Ftext%3E%3C%2Fsvg%3E">
 
+<!-- 01 · Document head, dependencies and styles -->
 <!-- Libraries -->
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1194,6 +1221,7 @@ td.sku {
 <body>
 <div class="app">
 
+<!-- 02 · Sidebar and workspace toolbar -->
 <!-- SIDEBAR NAVIGATION -->
 
 <aside class="sidebar">
@@ -1276,6 +1304,7 @@ td.sku {
   </div>
 
 <!-- SECTION 2 CONTINUES HERE -->
+<!-- 03 · Dashboard, shortage center, reports, replenishment and POD hats -->
 <!-- SECTION 2: DASHBOARD PAGES -->
 
 <!-- HOME -->
@@ -1896,6 +1925,7 @@ td.sku {
 <!-- SECTION 3 CONTINUES HERE -->
   
 
+<!-- 04 · Purchase orders, list generator and ticket generator -->
 <!-- SECTION 3: PURCHASE ORDERS AND GENERATORS -->
 
 <!-- NC STATE PURCHASE ORDER BUILDER -->
@@ -2423,6 +2453,7 @@ td.sku {
 
 <!-- SECTION 4 CONTINUES HERE -->
 
+<!-- 05 · Quick links, emergency handbook and SmartSearch -->
 <!-- SECTION 4: QUICK LINKS, BREAK GLASS, SMARTSEARCH -->
 
 <!-- QUICK LINKS -->
@@ -2903,6 +2934,7 @@ td.sku {
 
 <!-- SECTION 5: JAVASCRIPT STARTS HERE -->
 
+<!-- 06 · Core application logic -->
 <!-- SECTION 5: CORE JAVASCRIPT AND SHORTAGE CENTER -->
 <script>
 "use strict";
@@ -2913,6 +2945,7 @@ td.sku {
 
 const $ = id => document.getElementById(id);
 
+// 06.1 · Shared utilities and navigation
 function setMessage(id, message) {
   const el = $(id);
   if (el) el.textContent = message;
@@ -3283,6 +3316,7 @@ function toggleDate() {
    INVENTORY CLASSIFICATION
 ============================================ */
 
+// 06.2 · Inventory classification and shortage calculation
 function locationType(location) {
   const raw = clean(location).toUpperCase();
   const compact = raw.replace(/\s+/g, "");
@@ -3729,6 +3763,7 @@ async function generateShortage() {
   }
 }
 
+// 06.3 · Shortage workbook, printing and exports
 function selectedShortageBrand() {
   return $("shortageBrandFilter")?.value || "";
 }
@@ -4224,6 +4259,7 @@ function printMasterList() {
 let currentPendingReport = null;
 let currentHatReport = null;
 
+// 06.4 · Pending replenishment tasks
 function taskStatus(task) {
   return normalize(task.status);
 }
@@ -4563,6 +4599,7 @@ function printConsolidatedPulls() {
    THE GAME POD HATS
 ============================================ */
 
+// 06.5 · The Game POD hat replenishment
 function getHatOrderRows(rows) {
   return rows.map(row => ({
     sku: clean(getField(row, [
@@ -4864,6 +4901,7 @@ function printHats() {
 const REPORT_STORAGE_KEY = "d2c_assist_reports_v1";
 let activeSavedReportId = null;
 
+// 06.6 · Saved reports and report history
 function getSavedReports() {
   try {
     const raw = localStorage.getItem(
@@ -5235,6 +5273,7 @@ let poItems = [];
    READ PRODUCTS EXPORT
 ============================================ */
 
+// 06.7 · Purchase order builder
 async function loadPoInventory() {
   const file = $("poInventoryFile").files[0];
 
@@ -6111,6 +6150,7 @@ $("poTemplateFile").addEventListener(
 
 let listRowsData = [];
 
+// 06.8 · List generator
 function getListType() {
   return $("listType").value;
 }
@@ -6463,6 +6503,7 @@ function copyListForJira() {
    TICKET GENERATOR
 ============================================ */
 
+// 06.9 · Ticket generator
 function ticketValue(id) {
   return clean($(id)?.value || "");
 }
@@ -6734,6 +6775,7 @@ function clearTicket() {
 const DAILY_CHECKLIST_KEY =
   "d2c_assist_daily_checklist_v1";
 
+// 06.10 · Daily checklist
 function updateDailyChecklist() {
   const checkboxes = Array.from(
     document.querySelectorAll(
@@ -6967,6 +7009,7 @@ const assistKnowledge = [
   }
 ];
 
+// 06.11 · SmartSearch
 function toggleAssist(force) {
   const chat = $("assist-chat");
 
@@ -7079,6 +7122,7 @@ function sendAssistMessage() {
    WEBSITE INITIALIZATION
 ============================================ */
 
+// 06.12 · Application startup
 function initializeWebsite() {
   // Date in top bar.
   const dateElement = $("currentDate");
@@ -7133,6 +7177,7 @@ if (document.readyState === "loading") {
 }
 
 </script>
+<!-- 07 · Supabase client and legacy tracker -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.10/dist/umd/supabase.min.js"></script>
 <script>
 const trackerClient = window.supabase?.createClient("https://tmggolsyrfcrsjluuvgd.supabase.co","sb_publishable_R_b8pZEkadMpz-AE16aXkA_xIIbVdZn");
@@ -7270,7 +7315,8 @@ function actionInvestigationRows(){return actionGroups().filter(g=>g.onlyInvesti
 function actionPrintInvestigation(){const rows=actionInvestigationRows();if(!rows.length)return alert("No REWORK / TRANSFER-only shortages.");openPrintWindow("REWORK / TRANSFER Investigation Sheet",shortagePrintableRows(rows,[{label:"SKU",value:"sku"},{label:"Short Qty",value:"qty"},{label:"Location",value:"location"},{label:"LPN",value:"lpn"}]),"letter");}
 const actionExpanded=new Set();
 function actionRender(){const body=document.getElementById("actionRows");if(!body||!currentShortageReport)return;const rows=actionGroups(),filter=document.getElementById("actionFilter").value;document.getElementById("actionCounts").innerHTML=actionStatuses.map(v=>'<button class="btn" data-status="'+v+'">'+v+' · '+rows.filter(g=>g.status===v).length+'</button>').join("");document.querySelectorAll("#actionCounts button").forEach(b=>b.onclick=()=>{document.getElementById("actionFilter").value=b.dataset.status;actionRender()});body.replaceChildren();for(const g of rows.filter(g=>(filter==="All"&&g.status!=="Resolved")||g.status===filter)){const tr=body.insertRow();for(const v of [g.brand,g.sku,g.qty-g.coverage.pick-g.coverage.tasks,g.created||"Unknown"])tr.insertCell().textContent=v;const select=document.createElement("select");for(const v of actionStatuses)select.add(new Option(v,v));select.value=g.status;select.onchange=()=>actionEdit(g.key,"status",select.value);tr.insertCell().append(select);const toggle=document.createElement("button");toggle.className="action-expand";toggle.type="button";toggle.textContent=(g.notes?"▤ ":"")+(actionExpanded.has(g.key)?"⌃":"⌄");toggle.setAttribute("aria-expanded",String(actionExpanded.has(g.key)));toggle.setAttribute("aria-label","Details for "+g.sku);toggle.onclick=()=>{if(actionExpanded.has(g.key))actionExpanded.delete(g.key);else actionExpanded.add(g.key);actionRender()};tr.insertCell().append(toggle);if(actionExpanded.has(g.key)){const detail=body.insertRow();const cell=detail.insertCell();cell.colSpan=6;cell.className="action-detail";const box=document.createElement("div");box.className="action-detail-box";box.append(actionCoverageView(g));if(g.stock.length){const locations=document.createElement("details");locations.className="coverage-locations";const summary=document.createElement("summary");summary.textContent="View inventory locations";locations.append(summary);const stock=document.createElement("div");stock.className="action-stock";for(const item of g.stock){const line=document.createElement("div");line.textContent=[item.location,item.lpn||"No LPN",item.available+" available"].join(" · ");stock.append(line)}locations.append(stock);box.append(locations)}const label=document.createElement("label");label.textContent="Additional notes";box.append(label);const input=document.createElement("textarea");input.rows=3;input.value=g.notes;input.placeholder="Add findings or follow-up notes…";input.onchange=()=>{const state=actionLoad();state[g.key]={...(state[g.key]||{}),notes:input.value};actionSave(state);wsWrite("sku:"+g.key,state[g.key]);toggle.textContent=(input.value?"▤ ":"")+"⌃";renderSharedOrders()};box.append(input);const footer=document.createElement("div");footer.className="action-detail-footer";const hint=document.createElement("span");hint.textContent="Notes save when you leave the field";footer.append(hint);const resolve=document.createElement("button");resolve.className="btn";resolve.textContent="✓ Resolve";resolve.disabled=g.status==="Resolved";resolve.onclick=()=>actionEdit(g.key,"status","Resolved");footer.append(resolve);box.append(footer);cell.append(box)}if(!g.eligible)tr.title="No uncovered shortage in current report; excluded from outputs"}document.getElementById("actionPulls").innerHTML=actionPullRows().map(r=>"<tr>"+[r.sku,r.qty,r.location,r.lpn].map(v=>"<td>"+escapeHTML(String(v??""))+"</td>").join("")+"</tr>").join("")||'<tr><td colspan="4">No assigned pulls with verified sources.</td></tr>';document.getElementById("actionInvestigation").innerHTML=actionInvestigationRows().map(r=>"<tr>"+[r.sku,r.qty,r.location,r.lpn].map(v=>"<td>"+escapeHTML(String(v??""))+"</td>").join("")+"</tr>").join("")||"<tr><td colspan=4>No items to investigate.</td></tr>";document.getElementById("actionEmail").textContent=actionEmailText();document.getElementById("exportPullCount").textContent=actionPullRows().length;actionBrandPrintButtons();document.getElementById("exportM1Count").textContent=rows.filter(g=>g.status==="MV-M1"&&actionM1Qty(g)>0).length;document.getElementById("exportInvestigationCount").textContent=actionInvestigationRows().length;document.getElementById("actionChanges").textContent=rows.filter(g=>g.status==="MV-M1"&&(currentShortageReport.pulls||[]).some(r=>actionKey(r)===g.key)).length+" MV-M1 SKUs have local storage available; review before sending."}
-</script><style>#wsGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#edf1ef;padding:24px;overflow:auto}#wsGate .auth-card{width:min(440px,100%);background:white;border:1px solid #dce4df;border-radius:22px;padding:36px;box-shadow:0 16px 60px #243c3010;margin:auto;color:#23364a}#wsGate .auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}#wsGate .auth-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:13px;background:#315b48;color:white}#wsGate .auth-brand{font-weight:750;font-size:20px;letter-spacing:-.5px}#wsGate .auth-kicker{font-size:11px;letter-spacing:1.5px;color:#74867b;text-transform:uppercase}#wsGate h1{font-size:27px;letter-spacing:-.7px;margin:0 0 8px}#wsGate p{font-size:14px;line-height:1.5;color:#65746f}#wsGate label{display:block;font-size:13px;font-weight:650;margin:18px 0 6px}#wsGate input{width:100%;padding:13px;border:1px solid #ccd8d0;border-radius:9px;background:#fafcfb;font-size:15px}#wsGate .auth-primary{width:100%;margin-top:20px;background:#315b48;color:white;border:0;border-radius:9px;padding:13px;font-weight:650;cursor:pointer}#wsGate .auth-link{background:none;border:0;color:#315b48;font-size:13px;cursor:pointer;padding:8px 0;text-decoration:underline;text-underline-offset:3px}#wsGate .auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}#wsGate .auth-divider{border-top:1px solid #e1e8e3;margin:22px 0 12px}#wsGate .auth-footer{font-size:11px;color:#84918a;text-align:center;margin-top:22px}#wsGate [hidden]{display:none!important}#wsLoginMessage:empty{display:none}#wsLoginMessage{background:#f1f5f2;padding:12px;border-radius:8px}#runnerDispatchButton svg{width:16px;height:16px}@media(max-width:500px){#wsGate{padding:14px}#wsGate .auth-card{padding:24px}}</style><div id="wsGate"><div class="auth-card"><div class="auth-logo"><div class="auth-mark"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2240%22%20fill%3D%22%23294b70%22%2F%3E%3Ctext%20x%3D%2296%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Apple%20Color%20Emoji%2CSegoe%20UI%20Emoji%2CNoto%20Color%20Emoji%2Csans-serif%22%20font-size%3D%22112%22%3E%F0%9F%93%A6%3C%2Ftext%3E%3C%2Fsvg%3E" alt="D2C" style="width:100%;height:100%;object-fit:contain;border-radius:inherit"></div><div><div class="auth-brand">D2C Assist</div><div class="auth-kicker">Operations workspace</div></div></div><h1>Welcome back.</h1><p>Sign in to your warehouse workspace.</p><label for="wsEmail">Work email</label><input id="wsEmail" type="email" autocomplete="email" placeholder="you@company.com"><label for="wsPass">Password</label><input id="wsPass" type="password" autocomplete="current-password" placeholder="Enter your password"><button class="auth-primary" onclick="wsLogin(false)">Sign in</button><div class="auth-links"><button class="auth-link" onclick="wsReset()">Forgot password?</button><button class="auth-link" onclick="wsLogin(true)">Email sign-in link</button></div><div id="wsRegisterFields" hidden><label for="wsName">Full name</label><input id="wsName" autocomplete="name" placeholder="Full name"><label for="wsConfirm">Confirm password</label><input id="wsConfirm" type="password" autocomplete="new-password" placeholder="Confirm password"><button class="auth-primary" onclick="wsRegister()">Create account</button></div><div id="wsRecoveryFields" hidden><label for="wsNewPassword">New password</label><input id="wsNewPassword" type="password" autocomplete="new-password" placeholder="At least 12 characters"><button class="auth-primary" onclick="wsFinishReset()">Save new password</button></div><div class="auth-divider"></div><div class="auth-links"><button class="auth-link" onclick="wsRegisterMode()">Create an account</button><button class="auth-link" onclick="wsLogout()">Switch account</button></div><p id="wsLoginMessage" role="status"></p><div class="auth-footer">Authorized team members only · D2C Operations</div></div></div><dialog id="wsHistoryDialog"><h2>Activity log</h2><pre id="wsHistoryRows" style="white-space:pre-wrap;max-height:60vh;overflow:auto"></pre><button class="btn" onclick="this.closest('dialog').close()">Close</button></dialog><script>
+</script><!-- 09 · Workspace authentication, account controls and shared state -->
+<style>#wsGate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#edf1ef;padding:24px;overflow:auto}#wsGate .auth-card{width:min(440px,100%);background:white;border:1px solid #dce4df;border-radius:22px;padding:36px;box-shadow:0 16px 60px #243c3010;margin:auto;color:#23364a}#wsGate .auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}#wsGate .auth-mark{display:grid;place-items:center;width:48px;height:48px;border-radius:13px;background:#315b48;color:white}#wsGate .auth-brand{font-weight:750;font-size:20px;letter-spacing:-.5px}#wsGate .auth-kicker{font-size:11px;letter-spacing:1.5px;color:#74867b;text-transform:uppercase}#wsGate h1{font-size:27px;letter-spacing:-.7px;margin:0 0 8px}#wsGate p{font-size:14px;line-height:1.5;color:#65746f}#wsGate label{display:block;font-size:13px;font-weight:650;margin:18px 0 6px}#wsGate input{width:100%;padding:13px;border:1px solid #ccd8d0;border-radius:9px;background:#fafcfb;font-size:15px}#wsGate .auth-primary{width:100%;margin-top:20px;background:#315b48;color:white;border:0;border-radius:9px;padding:13px;font-weight:650;cursor:pointer}#wsGate .auth-link{background:none;border:0;color:#315b48;font-size:13px;cursor:pointer;padding:8px 0;text-decoration:underline;text-underline-offset:3px}#wsGate .auth-links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px}#wsGate .auth-divider{border-top:1px solid #e1e8e3;margin:22px 0 12px}#wsGate .auth-footer{font-size:11px;color:#84918a;text-align:center;margin-top:22px}#wsGate [hidden]{display:none!important}#wsLoginMessage:empty{display:none}#wsLoginMessage{background:#f1f5f2;padding:12px;border-radius:8px}#runnerDispatchButton svg{width:16px;height:16px}@media(max-width:500px){#wsGate{padding:14px}#wsGate .auth-card{padding:24px}}</style><div id="wsGate"><div class="auth-card"><div class="auth-logo"><div class="auth-mark"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20192%20192%22%3E%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2240%22%20fill%3D%22%23294b70%22%2F%3E%3Ctext%20x%3D%2296%22%20y%3D%22100%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Apple%20Color%20Emoji%2CSegoe%20UI%20Emoji%2CNoto%20Color%20Emoji%2Csans-serif%22%20font-size%3D%22112%22%3E%F0%9F%93%A6%3C%2Ftext%3E%3C%2Fsvg%3E" alt="D2C" style="width:100%;height:100%;object-fit:contain;border-radius:inherit"></div><div><div class="auth-brand">D2C Assist</div><div class="auth-kicker">Operations workspace</div></div></div><h1>Welcome back.</h1><p>Sign in to your warehouse workspace.</p><label for="wsEmail">Work email</label><input id="wsEmail" type="email" autocomplete="email" placeholder="you@company.com"><label for="wsPass">Password</label><input id="wsPass" type="password" autocomplete="current-password" placeholder="Enter your password"><button class="auth-primary" onclick="wsLogin(false)">Sign in</button><div class="auth-links"><button class="auth-link" onclick="wsReset()">Forgot password?</button><button class="auth-link" onclick="wsLogin(true)">Email sign-in link</button></div><div id="wsRegisterFields" hidden><label for="wsName">Full name</label><input id="wsName" autocomplete="name" placeholder="Full name"><label for="wsConfirm">Confirm password</label><input id="wsConfirm" type="password" autocomplete="new-password" placeholder="Confirm password"><button class="auth-primary" onclick="wsRegister()">Create account</button></div><div id="wsRecoveryFields" hidden><label for="wsNewPassword">New password</label><input id="wsNewPassword" type="password" autocomplete="new-password" placeholder="At least 12 characters"><button class="auth-primary" onclick="wsFinishReset()">Save new password</button></div><div class="auth-divider"></div><div class="auth-links"><button class="auth-link" onclick="wsRegisterMode()">Create an account</button><button class="auth-link" onclick="wsLogout()">Switch account</button></div><p id="wsLoginMessage" role="status"></p><div class="auth-footer">Authorized team members only · D2C Operations</div></div></div><dialog id="wsHistoryDialog"><h2>Activity log</h2><pre id="wsHistoryRows" style="white-space:pre-wrap;max-height:60vh;overflow:auto"></pre><button class="btn" onclick="this.closest('dialog').close()">Close</button></dialog><script>
 let wsRole=null,wsReady=false,wsPreviewMode=false,wsPending=0,wsBusy=false,wsSeen=new Map();
 const wsKeys={report:ACTIVE_SHORTAGE_KEY,reports:REPORT_STORAGE_KEY,checklist:DAILY_CHECKLIST_KEY};
 function wsStatus(t){const e=document.getElementById("wsSync");e.textContent=t;e.title=t;e.style.color=/failed/i.test(t)?"#a34d45":/saving|connecting/i.test(t)?"#71839a":"#668773"}
@@ -7295,7 +7341,9 @@ async function wsHistory(){const {data,error}=await trackerClient.from("workspac
 async function wsPassword(){const p=prompt("Enter a new password (at least 12 characters)");if(!p)return;if(p.length<12)return alert("Use at least 12 characters.");const {error}=await trackerClient.auth.updateUser({password:p});alert(error?error.message:"Password updated.")}
 async function wsLogout(){wsReady=false;await trackerClient.auth.signOut();for(const k of Object.values(wsKeys))localStorage.removeItem(k);localStorage.removeItem("d2c-action-v1");location.reload()}
 window.addEventListener("DOMContentLoaded",()=>{wsInit();setInterval(()=>wsPull(),5000);trackerClient?.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY")wsRecovering=true;if(event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")setTimeout(wsInit,0)})});
-</script><dialog id="runnerDispatch" style="width:min(600px,94vw);max-height:85vh;overflow:auto"><h2>Runner dispatch</h2><form id="runnerForm"><label>SKU / item<input id="rdSku" required></label><label>Quantity<input id="rdQty" type="number" min="1" value="1" required></label><label>Request type<select id="rdKind"><option>Shelf replenishment</option><option>Shortage pull</option><option>Inventory check</option><option>Sample request</option><option>Pickup / delivery</option></select></label><label>Priority<select id="rdPriority"><option>Normal</option><option>Urgent</option><option>Low</option></select></label><label>Locations and LPNs (one per line, location | LPN)<textarea id="rdLocations" placeholder="R-100-14 | NY01384"></textarea></label><label>Instructions<textarea id="rdNotes"></textarea></label><button class="btn primary">Dispatch</button></form><p id="rdMessage" role="status"></p><h3>Assignment activity</h3><div id="rdHistory"></div><a href="/runner/" target="_blank" rel="noopener">Open Runner app</a> <button class="btn" onclick="this.closest('dialog').close()">Close</button></dialog><script>
+</script><!-- 10 · Manual Runner dispatch and assignment activity -->
+<dialog id="runnerDispatch" style="width:min(600px,94vw);max-height:85vh;overflow:auto"><h2>Runner dispatch</h2><form id="runnerForm"><label>SKU / item<input id="rdSku" required></label><label>Quantity<input id="rdQty" type="number" min="1" value="1" required></label><label>Request type<select id="rdKind"><option>Shelf replenishment</option><option>Shortage pull</option><option>Inventory check</option><option>Sample request</option><option>Pickup / delivery</option></select></label><label>Priority<select id="rdPriority"><option>Normal</option><option>Urgent</option><option>Low</option></select></label><label>Locations and LPNs (one per line, location | LPN)<textarea id="rdLocations" placeholder="R-100-14 | NY01384"></textarea></label><label>Instructions<textarea id="rdNotes"></textarea></label><button class="btn primary">Dispatch</button></form><p id="rdMessage" role="status"></p><h3>Assignment activity</h3><div id="rdHistory"></div><a href="/runner/" target="_blank" rel="noopener">Open Runner app</a> <button class="btn" onclick="this.closest('dialog').close()">Close</button></dialog><script>
 const rd=id=>document.getElementById(id);async function rdRefresh(){if(!wsReady||wsRole!=="admin")return;const {data,error}=await trackerClient.from("runner_tasks").select("*").order("created_at",{ascending:false}).limit(100);if(error){rd("rdMessage").textContent=error.message;return}rd("rdHistory").replaceChildren(...data.map(t=>{const el=document.createElement("p");el.textContent=t.priority+" · "+t.sku+" · "+t.pulled+"/"+t.qty+" · "+t.status+(t.result?" — "+t.result:"");return el}))}rd("runnerForm").onsubmit=async e=>{e.preventDefault();if(!wsReady||wsRole!=="admin")return;const b=e.submitter;b.disabled=true;const locations=rd("rdLocations").value.split("\n").filter(v=>v.trim()).map(v=>{const [location,lpn]=v.split("|");return {location:location.trim(),lpn:(lpn||"").trim()}});const {error}=await trackerClient.from("runner_tasks").insert({sku:rd("rdSku").value.trim(),qty:Number(rd("rdQty").value),kind:rd("rdKind").value,priority:rd("rdPriority").value,locations,instructions:rd("rdNotes").value});b.disabled=false;rd("rdMessage").textContent=error?error.message:"Dispatched to Runner.";if(!error){rd("runnerForm").reset();rdRefresh()}};setInterval(()=>{rd("runnerDispatchButton").style.display=wsReady&&wsRole==="admin"?"inline-flex":"none";if(rd("runnerDispatch").open)rdRefresh()},4000);
-</script><div id="runnerIssueNotice" role="status" style="display:none;position:fixed;right:18px;bottom:18px;z-index:950;background:#fff4df;color:#62441b;border:1px solid #cba56a;border-radius:12px;padding:16px;max-width:340px"></div><script>function runnerIssueNotice(){if(!wsReady)return;const issues=actionGroups().filter(g=>g.status==="Under Investigation"&&actionLoad()[g.key]?.runner_task_id);const el=document.getElementById("runnerIssueNotice");el.style.display=issues.length?"block":"none";el.textContent=issues.length?"Runner reported "+issues.length+" issue(s): "+issues.map(g=>g.sku).join(", ")+". Review Under Investigation in Shortage Action Center.":""}setInterval(runnerIssueNotice,4000);</script></body>
+</script><!-- 11 · Runner issue notifications -->
+<div id="runnerIssueNotice" role="status" style="display:none;position:fixed;right:18px;bottom:18px;z-index:950;background:#fff4df;color:#62441b;border:1px solid #cba56a;border-radius:12px;padding:16px;max-width:340px"></div><script>function runnerIssueNotice(){if(!wsReady)return;const issues=actionGroups().filter(g=>g.status==="Under Investigation"&&actionLoad()[g.key]?.runner_task_id);const el=document.getElementById("runnerIssueNotice");el.style.display=issues.length?"block":"none";el.textContent=issues.length?"Runner reported "+issues.length+" issue(s): "+issues.map(g=>g.sku).join(", ")+". Review Under Investigation in Shortage Action Center.":""}setInterval(runnerIssueNotice,4000);</script></body>
 </html>

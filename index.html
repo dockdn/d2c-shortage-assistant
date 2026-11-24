@@ -1339,9 +1339,11 @@ td.sku {
       </div>
 
       <div class="field">
-        <label for="inventoryFile">2. Inventory by Location</label>
-        <input id="inventoryFile" type="file"
-          accept=".xlsx,.xls,.csv">
+        <label>2. Inventory by Location — separate exports by client</label>
+<p class="muted small">Export each client separately in Logiwa. If an export has 4,999 or more rows, split it by location into smaller files. Upload all parts under the same client.</p>
+<div style="display:flex;gap:5px;flex-wrap:wrap" role="tablist"><button type="button" role="tab" aria-selected="true" id="invTab0" onclick="inventoryTab(0)">MagnaReady <span id="invCount0">○</span></button><button type="button" role="tab" aria-selected="false" id="invTab1" onclick="inventoryTab(1)">Swoveralls <span id="invCount1">○</span></button><button type="button" role="tab" aria-selected="false" id="invTab2" onclick="inventoryTab(2)">Duderobe <span id="invCount2">○</span></button></div>
+<div id="invPanel0" role="tabpanel"  style="padding:10px 0"><label for="inventoryFile0">MagnaReady inventory export(s)</label><input id="inventoryFile0" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount0').textContent=this.files.length?'✓ '+this.files.length:'○'"></div><div id="invPanel1" role="tabpanel" hidden style="padding:10px 0"><label for="inventoryFile1">Swoveralls inventory export(s)</label><input id="inventoryFile1" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount1').textContent=this.files.length?'✓ '+this.files.length:'○'"></div><div id="invPanel2" role="tabpanel" hidden style="padding:10px 0"><label for="inventoryFile2">Duderobe inventory export(s)</label><input id="inventoryFile2" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount2').textContent=this.files.length?'✓ '+this.files.length:'○'"></div>
+<p class="muted small">Required for every client present in the selected shortage report. Duderobe items recorded under Swoveralls in Logiwa belong in the Swoveralls export.</p>
       </div>
 
       <div class="field">
@@ -3508,13 +3510,34 @@ function activeTaskCoverage(rows) {
 
 let currentShortageReport = null;
 
+function inventoryTab(i){for(let j=0;j<3;j++){ $("invPanel"+j).hidden=j!==i;$("invTab"+j).setAttribute("aria-selected",String(j===i));}}
+async function readBrandInventory(filesByBrand,shortages){
+ const brands=["MagnaReady","Swoveralls","Duderobe"];
+ const required=new Set(shortages.map(r=>normalize(r.brand)));
+ for(const b of required){const i=brands.findIndex(x=>normalize(x)===b);if(i<0)throw Error("Unsupported inventory client: "+b);if(!filesByBrand[i].length)throw Error("Upload the "+brands[i]+" inventory export before generating.");}
+ const all=[];const seen=new Set();
+ for(let i=0;i<brands.length;i++)for(const file of filesByBrand[i]){
+  const raw=await readExcel(file);
+  if(raw.length>=4999)throw Error(brands[i]+": "+file.name+" has "+raw.length+" rows and may be truncated. Split the export into smaller location groups.");
+  const rows=getInventoryRows(raw);
+  if(raw.length&&!rows.length)throw Error("No inventory SKU rows found in "+file.name);
+  for(const row of rows){
+   if(row.client&&normalize(row.client)!==normalize(brands[i]))throw Error(file.name+" contains "+row.client+" inventory. Upload separate client exports in the correct tabs.");
+   row.client=brands[i];
+   const key=JSON.stringify([normalize(row.client),normalize(row.sku),row.location,row.lpn,row.free,row.total]);
+   if(seen.has(key))throw Error("Duplicate inventory row in "+file.name+" ("+row.sku+", "+row.location+"). Use non-overlapping exports.");
+   seen.add(key);all.push(row);
+  }
+ }
+ return all;
+}
 async function generateShortage() {
   const shortageFile = $("shortageFile").files[0];
-  const inventoryFile = $("inventoryFile").files[0];
+  const filesByBrand = [0,1,2].map(i=>Array.from($("inventoryFile"+i).files));
   const taskFiles = $("taskFile").files;
   const useTaskCoverage = taskFiles.length > 0;
 
-  if (!shortageFile || !inventoryFile) {
+  if (!shortageFile || !filesByBrand.some(f=>f.length)) {
     setMessage(
       "shortageMessage",
       "Please upload the shortage report and inventory export."
@@ -3528,10 +3551,9 @@ async function generateShortage() {
   );
 
   try {
-    const [shortageRaw, inventoryRaw, taskRaw] =
+    const [shortageRaw, taskRaw] =
       await Promise.all([
         readExcel(shortageFile),
-        readExcel(inventoryFile),
         useTaskCoverage ? readMultipleExcel(taskFiles) : Promise.resolve([])
       ]);
 
@@ -3543,7 +3565,7 @@ async function generateShortage() {
         mode
       ));
 
-    const inventory = getInventoryRows(inventoryRaw);
+    const inventory = await readBrandInventory(filesByBrand,shortages);
     const taskCoverage = useTaskCoverage ? activeTaskCoverage(taskRaw) : new Map();
 
     const groups = new Map();

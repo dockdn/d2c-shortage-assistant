@@ -3492,15 +3492,11 @@ function activeTaskCoverage(rows) {
 let currentShortageReport = null;
 
 async function readCombinedInventory(files){
- const all=[];const seen=new Set();
+ const all=[];
  for(const file of files){
   const raw=await readExcel(file);const rows=getInventoryRows(raw);
   if(raw.length&&!rows.length)throw Error("No inventory SKU rows found in "+file.name);
-  for(const row of rows){
-   const key=JSON.stringify([normalize(row.client),normalize(row.sku),row.location,row.lpn,row.free,row.total]);
-   if(seen.has(key))throw Error("Duplicate inventory row in "+file.name+" ("+row.sku+", "+row.location+"). Use non-overlapping exports.");
-   seen.add(key);all.push(row);
-  }
+  for(const row of rows)all.push(row);
  }
  return all;
 }

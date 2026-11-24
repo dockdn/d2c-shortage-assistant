@@ -2688,10 +2688,10 @@ td.sku {
           </tr>
           <tr>
             <td>Shelf Location</td>
-            <td>Pickable inventory. Commonly 100 and 88 building shelf locations.</td>
+            <td>Pickable inventory. Includes 100 and 88 building shelf locations and FM locations.</td>
           </tr>
           <tr>
-            <td>Storage Location</td>
+            <td>FM Locations</td><td>Pickable inventory, not storage. Count free quantity toward shortage coverage; no replenishment is needed when pickable stock covers demand.</td></tr><tr><td>Storage Location</td>
             <td>Non-pickable inventory that may require replenishment.</td>
           </tr>
           <tr>
@@ -3326,9 +3326,9 @@ function locationType(location) {
     return "virtual";
   }
 
-  // Only location codes beginning with "100." or "88." are pickable shelves.
+  // Building 100/88 shelves and FM locations are pickable.
   // R-100 and R-88 are storage, never shelf.
-  if (/^(?:100|88)\./i.test(raw)) {
+  if (/^(?:100|88)\./i.test(raw) || /^FM/i.test(raw)) {
     return "shelf";
   }
 
@@ -6963,10 +6963,10 @@ const assistKnowledge = [
   {
     keywords: [
       "virtual", "mv-m1", "0m1", "0m5",
-      "receiving dock", "location"
+      "receiving dock", "location", "fm locations", "fm location"
     ],
     answer:
-      "The Warehouse Reference section explains shelf, storage, receiving, and virtual locations. For virtual locations, notify Maren. MV-M1, 0M1, and 0M5 should be handled as exceptions.",
+      "The Warehouse Reference section explains shelf, storage, receiving, and virtual locations. FM locations are pickable, not storage; their free quantity counts toward shortage coverage. For virtual locations, notify Maren. MV-M1, 0M1, and 0M5 should be handled as exceptions.",
     page: "emergency",
     label: "Open Warehouse Reference"
   },

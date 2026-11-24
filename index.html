@@ -7064,8 +7064,36 @@ function addAssistMessage(text, role, source) {
   container.scrollTop = container.scrollHeight;
 }
 
+// Live SmartSearch metrics: calculate from the current synced workbook, not canned answers.
+function assistMetrics(query){
+  if(!/\b(how many|how much|count|total|number of|remaining|summary|breakdown|percentage|percent|started|starting|left)\b/.test(query))return null;
+  if(!/shortage|assigned|mv[\s-]*m1|investigat|waiting|resolved|orders?|skus?|units?|replenish|covered|stockout/.test(query))return null;
+  const source={page:"shortage",label:"Open Shortage Center"};
+  if(!currentShortageReport||!wsReady)return {...source,answer:"Open and sync a shortage report first so I can calculate its numbers."};
+  const report=currentShortageReport;
+  const brand=/duderobes?/.test(query)?"Duderobe":/swoveralls?/.test(query)?"Swoveralls":/magna\s*ready/.test(query)?"MagnaReady":/the game/.test(query)?"The Game":null;
+  const match=r=>!brand||actionBrand(r)===brand;
+  const all=(report.orders||[]).filter(match);
+  const active=all.filter(r=>!actionIgnored(r));
+  const groups=actionGroups().filter(match);
+  const status=/mv[\s-]*m1/.test(query)?"MV-M1":/waiting (?:for )?cs|customer service/.test(query)?"Waiting for CS":/investigat|stockout|out of stock/.test(query)?"Under Investigation":/resolved|completed/.test(query)?"Resolved":/assigned|replenish|runner/.test(query)?"Assigned":null;
+  const starting=/start|initial|original|begin/.test(query);
+  const selected=groups.filter(g=>status?g.status===status:g.status!=="Resolved");
+  const keys=new Set(selected.map(g=>g.key));
+  const rows=starting?all:active.filter(r=>keys.has(actionKey(r)));
+  const orders=new Set(rows.filter(r=>r.order).map(r=>normalize(r.brand)+"|"+normalize(r.order))).size;
+  const skus=new Set(rows.map(actionKey)).size;
+  const reported=rows.reduce((n,r)=>n+(Number(r.qty)||0),0);
+  const units=starting?reported:selected.reduce((n,g)=>n+(status==="Assigned"?actionStoragePulls(g).reduce((a,r)=>a+r.qty,0):status==="MV-M1"?actionM1Qty(g):Math.max(0,g.qty-g.coverage.pick-g.coverage.tasks)),0);
+  const title=(brand?brand+" — ":"")+(starting?"Starting report":status||"Active shortages");
+  const stamp=report.createdAt?new Date(report.createdAt).toLocaleString("en-US",{timeZone:"America/New_York"}):"unknown";
+  const note=starting?"Starting means the currently loaded report at upload, including temporarily ignored orders; not necessarily the first report of the day.":status==="MV-M1"?"Orders counted are distinct orders containing a SKU routed to MV-M1; exact order-level allocation is not available.":status==="Assigned"?"Assigned counts Action Center status, not confirmed Runner completion.":"Current Action Center routing; temporarily ignored orders are excluded.";
+  return {...source,answer:title+"\n\n"+orders.toLocaleString()+" distinct orders\n"+skus.toLocaleString()+" unique client/SKUs\n"+units.toLocaleString()+" "+(starting?"reported shortage units":"units "+(status==="Assigned"?"to pull":status==="MV-M1"?"to request":"to address"))+"\n"+reported.toLocaleString()+" reported shortage units across those orders' matching lines\n\n"+note+"\nReport uploaded: "+stamp};
+}
+
 function findAssistAnswer(question) {
   const query = normalize(question);
+  const metrics=assistMetrics(query);if(metrics)return metrics;
   if((/pod|the game|hats?/.test(query)&&/filter|replenishment|shortage|tags?/.test(query))||/pod w inv|pod-and-inventory/.test(query))return assistKnowledge[0];
 
   let best = null;
@@ -7115,7 +7143,7 @@ function sendAssistMessage() {
     );
   } else {
     addAssistMessage(
-      "I couldn't find a specific answer in the D2C Assist reference. Try asking about shortage reports, inventory locations, replenishment, purchase orders, POD hats, daily operations, or warehouse tools.",
+      "I couldn't find a specific answer. Try “How many shortages did I start with?”, “How many are assigned?”, “How many orders are waiting for MV-M1?”, or ask about warehouse tools and procedures.",
       "bot"
     );
   }

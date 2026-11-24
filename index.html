@@ -1839,7 +1839,7 @@ td.sku {
   </div>
 
   <div id="hatOutput" class="panel hidden">
-    <h2>Hats to Retrieve</h2>
+    <h2>Hats to Transfer · 88 → 100</h2>
 
     <div class="metrics">
       <div class="metric">
@@ -1866,7 +1866,7 @@ td.sku {
 
       <button class="btn"
         onclick="copyHatMessageForMarc()">
-        Copy Message to Marc
+        Copy Transfer Request
       </button>
     </div>
 
@@ -4603,11 +4603,11 @@ function getHatOrderRows(rows) {
       "Client", "Client Name", "Brand"
     ])),
     qty: positiveNumber(getField(row, [
-      "Shortage UOM Qty",
+      "Shortage UOM Qty", "Shortage UOM Quantity", "Shortage Quantity",
       "Shortage Qty",
       "Unallocated UOM Qty",
       "Unallocated Quantity",
-      "Quantity", "Qty",
+      "Quantity", "Qty", "UOM Qty", "UOM Quantity", "Order UOM Qty", "Ordered UOM Qty", "Order Quantity", "Shipment Order UOM Qty",
       "Ordered Quantity"
     ])),
     order: clean(getField(row, [
@@ -4620,7 +4620,7 @@ function getHatOrderRows(rows) {
 function isGameClient(client) {
   const c = normalize(client);
 
-  return c === "thegame" ||
+  return c.startsWith("thegame") ||
     c === "thegamed2c" ||
     c === "game";
 }
@@ -4643,7 +4643,7 @@ function isHatSku(sku) {
 function isBuilding88(location) {
   const loc = clean(location).toUpperCase();
 
-  return /^88(?:[A-Z]|[.\s-]|$)/.test(loc) ||
+  return /^(?:R[- ]?)?88(?:[A-Z]|[.\s-]|$)/.test(loc) ||
     loc === "88 SAMPLES";
 }
 
@@ -4674,7 +4674,7 @@ async function generateHats() {
     const grouped = new Map();
 
     for (const order of orders) {
-      if (!isGameClient(order.client)) continue;
+      if (order.client && !isGameClient(order.client)) continue;
       if (!isHatSku(order.sku)) continue;
 
       const key = normalize(order.sku);
@@ -4693,6 +4693,7 @@ async function generateHats() {
       if (order.order) group.orders.push(order.order);
     }
 
+    if (!grouped.size) throw Error("No eligible hat demand found. Check that the shipment export contains SKU and shortage or order quantity columns, and is filtered to The Game POD shortages. Detected headers: "+Object.keys(orderRaw[0]||{}).join(", "));
     const pulls = [];
     const missing = [];
     let totalNeeded = 0;
@@ -4707,9 +4708,9 @@ async function generateHats() {
         normalize(item.sku) === normalize(group.sku) &&
         isBuilding88(item.location) &&
         (!item.client || isGameClient(item.client)) &&
-        item.free > 0
+        item.free > 0 && ["shelf","storage"].includes(locationType(item.location))
       ).sort((a, b) =>
-        locationSort(a.location, b.location)
+        Number(locationType(a.location)!=="shelf")-Number(locationType(b.location)!=="shelf") || locationSort(a.location, b.location)
       );
 
       for (const item of locations) {
@@ -4856,7 +4857,7 @@ function copyHatMessageForMarc() {
   );
 
   const message = [
-    "Hi Marc! Do you have time to transfer these hats for me?",
+    "Hi! Please transfer these hats from building 88 to building 100.",
     "",
     ...lines,
     "",

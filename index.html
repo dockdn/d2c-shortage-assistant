@@ -1369,7 +1369,7 @@ td.sku {
 
   <!-- SHORTAGE RESULTS -->
   <div id="shortageOutput" class="panel hidden">
-    <h2>Shortage Report Results</h2>
+    <h2>Shortage Report Results</h2><section class="panel" id="actionCenter" style="margin:14px 0"><h2>Shortage Action Center</h2><p class="muted small">Oldest outstanding order first. SKU decisions are saved in this browser. Upload fresh reports to update quantities. Missing SKUs are not assumed resolved.</p><div class="actions" id="actionCounts"></div><div class="actions"><select id="actionFilter" onchange="actionRender()"><option>All</option><option>New</option><option>Assigned</option><option>MV-M1</option><option>Waiting for CS</option><option>Under Investigation</option><option>Resolved</option></select><button class="btn" onclick="actionPrint()">Print assigned pull list</button><button class="btn" onclick="actionCopy()">Copy email to Anthony</button></div><p id="actionChanges" class="muted small"></p><div style="overflow:auto"><table><thead><tr><th>Brand</th><th>SKU</th><th>Shortage</th><th>Oldest order</th><th>Status</th><th>Notes</th></tr></thead><tbody id="actionRows"></tbody></table></div><h3>Assigned replenisher list</h3><div style="overflow:auto"><table><thead><tr><th>SKU</th><th>Storage location</th><th>LPN</th></tr></thead><tbody id="actionPulls"></tbody></table></div><h3>MV-M1 email preview</h3><pre id="actionEmail" style="white-space:pre-wrap"></pre><p id="actionMessage" class="muted small"></p></section>
     <div class="panel" style="padding:14px;margin-bottom:14px">
       <strong>Saved tracker · Supabase</strong>
       <p class="muted small" id="trackerAuthState">Checking sign-in…</p>
@@ -3795,6 +3795,7 @@ function renderWorkbookHistory(){
 }
 
 function renderShortageReport() {
+  actionRender();
   const report = currentShortageReport;
 
   if (!report) return;
@@ -4120,7 +4121,20 @@ function openPrintWindow(title, content, paper = "letter") {
       ${content}
     
 
-</body>
+<script>
+const actionStatuses=["New","Assigned","MV-M1","Waiting for CS","Under Investigation","Resolved"];
+function actionKey(r){return normalize(r.brand)+"|"+normalize(r.sku)}
+function actionBrand(r){const b=normalize(r.brand);if(/^s?20-/.test(normalize(r.sku))&&/swoverall|duderobe/.test(b))return "Duderobe";if(b.includes("duderobe"))return "Duderobe";if(b.includes("swoverall"))return "Swoveralls";if(b.includes("magnaready")||b.includes("magna ready"))return "MagnaReady";return r.brand||"Unclassified"}
+function actionLoad(){try{return JSON.parse(localStorage.getItem("d2c-action-v1")||"{}")}catch{return {}}}
+function actionSave(state){try{localStorage.setItem("d2c-action-v1",JSON.stringify(state));return true}catch{document.getElementById("actionMessage").textContent="Unable to save browser data.";return false}}
+function actionGroups(){const report=currentShortageReport;if(!report)return [];const groups=new Map();for(const o of report.orders||[]){const k=actionKey(o);if(!groups.has(k))groups.set(k,{key:k,brand:actionBrand(o),sku:o.sku,qty:0,date:Infinity,created:""});const g=groups.get(k);g.qty+=Number(o.qty)||0;const d=parseLogiwaDate(o.created);if(Number.isFinite(d)&&d<g.date){g.date=d;g.created=String(o.created)}}const eligible=new Set([...(report.pulls||[]),...(report.followups||[])].map(actionKey));const state=actionLoad();return [...groups.values()].filter(g=>eligible.has(g.key)||state[g.key]).map(g=>({...g,status:state[g.key]?.status||"New",notes:state[g.key]?.notes||"",eligible:eligible.has(g.key)})).sort((a,b)=>a.date-b.date||a.sku.localeCompare(b.sku))}
+function actionEdit(key,field,value){const state=actionLoad();state[key]={...(state[key]||{}),[field]:value};actionSave(state);actionRender()}
+function actionPullRows(){const keys=new Set(actionGroups().filter(g=>g.status==="Assigned"&&g.eligible).map(g=>g.key));return (currentShortageReport?.pulls||[]).filter(r=>keys.has(actionKey(r))&&!r.done&&r.location&&r.lpn&&locationType(r.location)==="storage").sort((a,b)=>(a.oldestOrderDate??Infinity)-(b.oldestOrderDate??Infinity)||a.sku.localeCompare(b.sku))}
+function actionEmailText(){const rows=actionGroups().filter(g=>g.status==="MV-M1"&&g.eligible);return "Hi Anthony!\n\nBelow is the updated list of items we are currently short on and need from MV-M1. The quantities listed reflect our current outstanding shortages.\n\n"+[...new Set(rows.map(g=>g.brand))].map(b=>b.toUpperCase()+"\n"+rows.filter(g=>g.brand===b).map(g=>"("+g.qty+") "+g.sku).join("\n")).join("\n\n")+"\n\nThank you!"}
+function actionCopy(){if(!actionGroups().some(g=>g.status==="MV-M1"&&g.eligible)){document.getElementById("actionMessage").textContent="No active MV-M1 requests.";return}copyText(actionEmailText(),"actionMessage")}
+function actionPrint(){const rows=actionPullRows();if(!rows.length){document.getElementById("actionMessage").textContent="No assigned pulls with verified storage and LPN.";return}openPrintWindow("Assigned Replenisher Pull List","<table><thead><tr><th>SKU</th><th>Storage location</th><th>LPN</th></tr></thead><tbody>"+rows.map(r=>"<tr>"+[r.sku,r.location,r.lpn].map(v=>"<td>"+escapeHTML(v)+"</td>").join("")+"</tr>").join("")+"</tbody></table>")}
+function actionRender(){const body=document.getElementById("actionRows");if(!body||!currentShortageReport)return;const rows=actionGroups(),filter=document.getElementById("actionFilter").value;document.getElementById("actionCounts").innerHTML=actionStatuses.map(v=>'<button class="btn" data-status="'+v+'">'+v+' · '+rows.filter(g=>g.status===v).length+'</button>').join("");document.querySelectorAll("#actionCounts button").forEach(b=>b.onclick=()=>{document.getElementById("actionFilter").value=b.dataset.status;actionRender()});body.replaceChildren();for(const g of rows.filter(g=>filter==="All"||g.status===filter)){const tr=body.insertRow();for(const v of [g.brand,g.sku,g.qty,g.created||"Unknown"])tr.insertCell().textContent=v;const select=document.createElement("select");for(const v of actionStatuses)select.add(new Option(v,v));select.value=g.status;select.onchange=()=>actionEdit(g.key,"status",select.value);tr.insertCell().append(select);const input=document.createElement("input");input.value=g.notes;input.placeholder="Notes";input.onchange=()=>actionEdit(g.key,"notes",input.value);tr.insertCell().append(input);if(!g.eligible)tr.title="No uncovered shortage in current report; excluded from outputs"}document.getElementById("actionPulls").innerHTML=actionPullRows().map(r=>"<tr>"+[r.sku,r.location,r.lpn].map(v=>"<td>"+escapeHTML(v)+"</td>").join("")+"</tr>").join("")||'<tr><td colspan="3">No assigned pulls with verified sources.</td></tr>';document.getElementById("actionEmail").textContent=actionEmailText();document.getElementById("actionChanges").textContent=rows.filter(g=>g.status==="MV-M1"&&(currentShortageReport.pulls||[]).some(r=>actionKey(r)===g.key)).length+" MV-M1 SKUs have local storage available; review before sending."}
+</script></body>
     </html>
   `);
   win.document.close();

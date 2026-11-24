@@ -1332,7 +1332,7 @@ td.sku {
     <h2>Upload Logiwa Reports</h2>
 
 <div class="upload-step"><label for="shortageFile">1. Shortage Report</label><input id="shortageFile" type="file" accept=".xlsx,.xls,.csv"></div>
-<div class="upload-step"><label>2. Inventory by Location</label><p class="muted small">Export each client separately in Logiwa. Upload the complete inventory export for each client.</p><div class="inventory-grid"><div class="inventory-card"><label for="inventoryFile0">MagnaReady</label><span class="muted small" id="invCount0">No files selected</span><input id="inventoryFile0" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount0').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile1">Swoveralls</label><span class="muted small" id="invCount1">No files selected</span><input id="inventoryFile1" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount1').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile2">Duderobe</label><span class="muted small" id="invCount2">No files selected</span><input id="inventoryFile2" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount2').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div></div><p class="muted small">Upload every client included in the shortage report. If Duderobe is recorded under Swoveralls in Logiwa, use the Swoveralls field.</p></div>
+<div class="upload-step"><label for="inventoryFile">2. Inventory by Location</label><p class="muted small">Upload a combined inventory export or multiple inventory files. Include all relevant clients and locations.</p><input id="inventoryFile" type="file" accept=".xlsx,.xls,.csv" multiple></div>
 <div class="upload-step"><label for="taskFile">3. Replenishment Task List (optional)</label><input id="taskFile" type="file" accept=".xlsx,.xls,.csv" multiple></div>
     <p class="muted small">The replenishment task list is optional. If uploaded, active tasks will be included automatically.</p>
 
@@ -3491,20 +3491,12 @@ function activeTaskCoverage(rows) {
 
 let currentShortageReport = null;
 
-function inventoryTab(i){for(let j=0;j<3;j++){ $("invPanel"+j).hidden=j!==i;$("invTab"+j).setAttribute("aria-selected",String(j===i));}}
-async function readBrandInventory(filesByBrand,shortages){
- const brands=["MagnaReady","Swoveralls","Duderobe"];
- const required=new Set(shortages.map(r=>normalize(r.brand)));
- for(const b of required){const i=brands.findIndex(x=>normalize(x)===b);if(i<0)throw Error("Unsupported inventory client: "+b);if(!filesByBrand[i].length)throw Error("Upload the "+brands[i]+" inventory export before generating.");}
+async function readCombinedInventory(files){
  const all=[];const seen=new Set();
- for(let i=0;i<brands.length;i++)for(const file of filesByBrand[i]){
-  const raw=await readExcel(file);
-  
-  const rows=getInventoryRows(raw);
+ for(const file of files){
+  const raw=await readExcel(file);const rows=getInventoryRows(raw);
   if(raw.length&&!rows.length)throw Error("No inventory SKU rows found in "+file.name);
   for(const row of rows){
-   if(row.client&&normalize(row.client)!==normalize(brands[i]))throw Error(file.name+" contains "+row.client+" inventory. Upload separate client exports in the correct tabs.");
-   row.client=brands[i];
    const key=JSON.stringify([normalize(row.client),normalize(row.sku),row.location,row.lpn,row.free,row.total]);
    if(seen.has(key))throw Error("Duplicate inventory row in "+file.name+" ("+row.sku+", "+row.location+"). Use non-overlapping exports.");
    seen.add(key);all.push(row);
@@ -3514,11 +3506,11 @@ async function readBrandInventory(filesByBrand,shortages){
 }
 async function generateShortage() {
   const shortageFile = $("shortageFile").files[0];
-  const filesByBrand = [0,1,2].map(i=>Array.from($("inventoryFile"+i).files));
+  const inventoryFiles = Array.from($("inventoryFile").files);
   const taskFiles = $("taskFile").files;
   const useTaskCoverage = taskFiles.length > 0;
 
-  if (!shortageFile || !filesByBrand.some(f=>f.length)) {
+  if (!shortageFile || !inventoryFiles.length) {
     setMessage(
       "shortageMessage",
       "Please upload the shortage report and inventory export."
@@ -3546,7 +3538,7 @@ async function generateShortage() {
         mode
       ));
 
-    const inventory = await readBrandInventory(filesByBrand,shortages);
+    const inventory = await readCombinedInventory(inventoryFiles);
     const taskCoverage = useTaskCoverage ? activeTaskCoverage(taskRaw) : new Map();
 
     const groups = new Map();

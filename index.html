@@ -2269,29 +2269,11 @@ td.sku {
           oninput="updateTicketPreview()">
       </div>
 
-      <div class="field">
-        <label for="rushBrand">Brand</label>
-        <select id="rushBrand"
-          onchange="updateTicketPreview()">
-          <option value="">Select Brand</option>
-          <option value="MagnaReady">MagnaReady</option>
-          <option value="Swoveralls">Swoveralls</option>
-          <option value="The Game">The Game</option>
-          <option value="Duderobe">Duderobe</option>
-          <option value="MV Sport">MV Sport</option>
-        </select>
-      </div>
+
     </div>
 
     <div class="row" style="margin-top:14px">
-      <div class="field">
-        <label for="rushShippingMethod">
-          Shipping Method
-        </label>
-        <input id="rushShippingMethod" type="text"
-          placeholder="e.g. UPS Next Day Air"
-          oninput="updateTicketPreview()">
-      </div>
+
 
       <div class="field">
         <label for="rushRequestedBy">
@@ -6534,16 +6516,6 @@ function rushTicketHTML() {
       ${ticketField(
         "Order #",
         ticketValue("rushOrderNumber")
-      )}
-
-      ${ticketField(
-        "Brand",
-        ticketValue("rushBrand")
-      )}
-
-      ${ticketField(
-        "Shipping",
-        ticketValue("rushShippingMethod")
       )}
 
       ${ticketField(

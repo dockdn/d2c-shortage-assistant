@@ -1332,7 +1332,7 @@ td.sku {
     <h2>Upload Logiwa Reports</h2>
 
 <div class="upload-step"><label for="shortageFile">1. Shortage Report</label><input id="shortageFile" type="file" accept=".xlsx,.xls,.csv"></div>
-<div class="upload-step"><label>2. Inventory by Location</label><p class="muted small">Export each client separately in Logiwa. Split files with 4,999 or more rows into smaller location groups.</p><div class="inventory-grid"><div class="inventory-card"><label for="inventoryFile0">MagnaReady</label><span class="muted small" id="invCount0">No files selected</span><input id="inventoryFile0" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount0').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile1">Swoveralls</label><span class="muted small" id="invCount1">No files selected</span><input id="inventoryFile1" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount1').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile2">Duderobe</label><span class="muted small" id="invCount2">No files selected</span><input id="inventoryFile2" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount2').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div></div><p class="muted small">Upload every client included in the shortage report. If Duderobe is recorded under Swoveralls in Logiwa, use the Swoveralls field.</p></div>
+<div class="upload-step"><label>2. Inventory by Location</label><p class="muted small">Export each client separately in Logiwa. Large files are accepted. Verify that Logiwa exported all inventory rows.</p><div class="inventory-grid"><div class="inventory-card"><label for="inventoryFile0">MagnaReady</label><span class="muted small" id="invCount0">No files selected</span><input id="inventoryFile0" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount0').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile1">Swoveralls</label><span class="muted small" id="invCount1">No files selected</span><input id="inventoryFile1" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount1').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div><div class="inventory-card"><label for="inventoryFile2">Duderobe</label><span class="muted small" id="invCount2">No files selected</span><input id="inventoryFile2" type="file" accept=".xlsx,.xls,.csv" multiple onchange="document.getElementById('invCount2').textContent=this.files.length?'✓ '+this.files.length+' file(s) selected':'No files selected'"></div></div><p class="muted small">Upload every client included in the shortage report. If Duderobe is recorded under Swoveralls in Logiwa, use the Swoveralls field.</p></div>
 <div class="upload-step"><label for="taskFile">3. Replenishment Task List (optional)</label><input id="taskFile" type="file" accept=".xlsx,.xls,.csv" multiple></div>
     <p class="muted small">The replenishment task list is optional. If uploaded, active tasks will be included automatically.</p>
 
@@ -3496,10 +3496,10 @@ async function readBrandInventory(filesByBrand,shortages){
  const brands=["MagnaReady","Swoveralls","Duderobe"];
  const required=new Set(shortages.map(r=>normalize(r.brand)));
  for(const b of required){const i=brands.findIndex(x=>normalize(x)===b);if(i<0)throw Error("Unsupported inventory client: "+b);if(!filesByBrand[i].length)throw Error("Upload the "+brands[i]+" inventory export before generating.");}
- const all=[];const seen=new Set();
+ const all=[];const seen=new Set();const warnings=[];
  for(let i=0;i<brands.length;i++)for(const file of filesByBrand[i]){
   const raw=await readExcel(file);
-  if(raw.length>=4999)throw Error(brands[i]+": "+file.name+" has "+raw.length+" rows and may be truncated. Split the export into smaller location groups.");
+  if(raw.length===4999||raw.length===5000)warnings.push(brands[i]+": "+file.name+" contains "+raw.length+" rows. Verify the Logiwa export is complete.");
   const rows=getInventoryRows(raw);
   if(raw.length&&!rows.length)throw Error("No inventory SKU rows found in "+file.name);
   for(const row of rows){
@@ -3510,7 +3510,7 @@ async function readBrandInventory(filesByBrand,shortages){
    seen.add(key);all.push(row);
   }
  }
- return all;
+ all.warnings=warnings;return all;
 }
 async function generateShortage() {
   const shortageFile = $("shortageFile").files[0];
@@ -3547,6 +3547,7 @@ async function generateShortage() {
       ));
 
     const inventory = await readBrandInventory(filesByBrand,shortages);
+    if(inventory.warnings.length)alert(inventory.warnings.join("\n")+"\n\nReport generation will continue.");
     const taskCoverage = useTaskCoverage ? activeTaskCoverage(taskRaw) : new Map();
 
     const groups = new Map();

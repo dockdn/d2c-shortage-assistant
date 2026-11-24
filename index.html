@@ -1253,7 +1253,7 @@ td.sku {
     </button>
   </nav>
 
-  <div class="sidebar-bottom">
+  <div class="sidebar-bottom"><div style="padding:10px"><strong id="wsAccount">Account</strong><p id="wsSync" class="small">Connecting…</p><button class="btn" id="wsPreview" hidden onclick="wsToggle()">Preview as Team Member</button><button class="btn" onclick="wsHistory()">Activity log</button><button class="btn" onclick="wsPassword()">Set / reset password</button><button class="btn" onclick="wsLogout()">Sign out</button></div>
     <div class="nav-divider"></div>
 
     <button class="nav-item" data-page="emergency"
@@ -1370,16 +1370,7 @@ td.sku {
   <!-- SHORTAGE RESULTS -->
   <div id="shortageOutput" class="panel hidden">
     <h2>Shortage Report Results</h2><section class="panel" id="actionCenter" style="margin:14px 0"><h2>Shortage Action Center</h2><p class="muted small">Oldest outstanding order first. SKU decisions are saved in this browser. Upload fresh reports to update quantities. Missing SKUs are not assumed resolved.</p><div class="actions" id="actionCounts"></div><div class="actions"><select id="actionFilter" onchange="actionRender()"><option>All</option><option>New</option><option>Assigned</option><option>MV-M1</option><option>Waiting for CS</option><option>Under Investigation</option><option>Resolved</option></select><button class="btn" onclick="actionPrint()">Print assigned pull list</button><button class="btn" onclick="actionCopy()">Copy email to Anthony</button></div><p id="actionChanges" class="muted small"></p><div style="overflow:auto"><table><thead><tr><th>Brand</th><th>SKU</th><th>Shortage</th><th>Oldest order</th><th>Status</th><th>Notes</th></tr></thead><tbody id="actionRows"></tbody></table></div><h3>Assigned replenisher list</h3><div style="overflow:auto"><table><thead><tr><th>SKU</th><th>Storage location</th><th>LPN</th></tr></thead><tbody id="actionPulls"></tbody></table></div><h3>MV-M1 email preview</h3><pre id="actionEmail" style="white-space:pre-wrap"></pre><p id="actionMessage" class="muted small"></p></section>
-    <div class="panel" style="padding:14px;margin-bottom:14px">
-      <strong>Saved tracker · Supabase</strong>
-      <p class="muted small" id="trackerAuthState">Checking sign-in…</p>
-      <div class="actions" id="trackerSignInControls">
-        <input id="trackerEmail" type="email" placeholder="Your email for a sign-in link" style="min-width:240px">
-        <button class="btn" onclick="trackerSendLink()">Email me a sign-in link</button>
-      </div>
-      <div class="actions"><button class="btn" onclick="trackerRefresh()">Refresh saved statuses</button><button class="btn" onclick="trackerSignOut()">Sign out</button></div>
-      <p class="muted small" id="trackerSyncMessage">Sign in to save order statuses and notes across devices.</p>
-    </div><div class="actions"><button class="btn primary" onclick="exportShortageWorkbook()">Download Excel Workbook</button></div><p class="muted small">Excel downloads are snapshots, not yet a shared SharePoint workbook.</p>
+    <p id="trackerSyncMessage" hidden></p><div class="actions"><button class="btn primary" onclick="exportShortageWorkbook()">Download Excel Workbook</button></div><p class="muted small">Excel downloads are snapshots, not yet a shared SharePoint workbook.</p>
 
     <div class="metrics">
       <div class="metric">
@@ -3560,7 +3551,7 @@ async function generateShortage() {
     })).sort((a,b) => (Number.isFinite(a.sortDate) ? a.sortDate : Infinity) -
                        (Number.isFinite(b.sortDate) ? b.sortDate : Infinity));
 
-    await trackerMergeUpload(orders, false); // Archiving requires an explicitly verified complete snapshot; never infer completeness from the cutoff setting.
+    // Shared report snapshot is saved below. // Archiving requires an explicitly verified complete snapshot; never infer completeness from the cutoff setting.
     const pulls = [];
     const master = [];
     const followups = [];
@@ -4901,6 +4892,7 @@ function persistActiveShortage(){
   if(!currentShortageReport)return;
   try{
     localStorage.setItem(ACTIVE_SHORTAGE_KEY,JSON.stringify(currentShortageReport));
+    wsWrite("report",currentShortageReport);
     saveRecentReport(currentShortageReport);
   }catch(error){console.warn("Could not persist active workbook",error);trackerMessageSafe("Browser storage is full; workbook changes may not persist.");}
 }
@@ -7246,7 +7238,7 @@ async function trackerMergeUpload(orders,isComplete) {
   }
   await trackerRefresh();
 }
-async function trackerEdit(key,field,value) {
+async function legacyTrackerEdit(key,field,value) {
   if(!trackerUser||!trackerClient){
     const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);
     if(!row)return;
@@ -7270,7 +7262,7 @@ async function trackerEdit(key,field,value) {
   if(field==="status")renderShortageReport();
   trackerMessage("Saved "+(field==="status"?"status":"notes")+" to Supabase.");
 }
-window.addEventListener("DOMContentLoaded",()=>{trackerInit();trackerClient?.auth.onAuthStateChange(()=>{setTimeout(trackerInit,0);});});
+
 </script>
 <script>
 const actionStatuses=["New","Assigned","MV-M1","Waiting for CS","Under Investigation","Resolved"];
@@ -7279,11 +7271,26 @@ function actionBrand(r){const b=normalize(r.brand);if(/^s?20-/.test(normalize(r.
 function actionLoad(){try{return JSON.parse(localStorage.getItem("d2c-action-v1")||"{}")}catch{return {}}}
 function actionSave(state){try{localStorage.setItem("d2c-action-v1",JSON.stringify(state));return true}catch{document.getElementById("actionMessage").textContent="Unable to save browser data.";return false}}
 function actionGroups(){const report=currentShortageReport;if(!report)return [];const groups=new Map();for(const o of report.orders||[]){const k=actionKey(o);if(!groups.has(k))groups.set(k,{key:k,brand:actionBrand(o),sku:o.sku,qty:0,date:Infinity,created:""});const g=groups.get(k);g.qty+=Number(o.qty)||0;const d=parseLogiwaDate(o.created);if(Number.isFinite(d)&&d<g.date){g.date=d;g.created=String(o.created)}}const eligible=new Set([...(report.pulls||[]),...(report.followups||[])].map(actionKey));const state=actionLoad();const available=new Map();for(const item of report.master||[]){if(Number(item.available)<=0)continue;const k=actionKey(item);if(!available.has(k))available.set(k,[]);available.get(k).push(item)}return [...groups.values()].filter(g=>eligible.has(g.key)||state[g.key]).map(g=>{const stock=available.get(g.key)||[];const onlyM1=eligible.has(g.key)&&stock.length>0&&stock.every(item=>/^(MV[- ]?M1|0M1|OM1)(\b|[-.])/i.test(clean(item.location)));return {...g,status:onlyM1?"MV-M1":state[g.key]?.status||"New",notes:state[g.key]?.notes||"",eligible:eligible.has(g.key),onlyM1}}).sort((a,b)=>a.date-b.date||a.sku.localeCompare(b.sku))}
-function actionEdit(key,field,value){const state=actionLoad();state[key]={...(state[key]||{}),[field]:value};actionSave(state);actionRender()}
+function actionEdit(key,field,value){const state=actionLoad();state[key]={...(state[key]||{}),[field]:value};actionSave(state);wsWrite("sku:"+key,state[key]);actionRender()}
 function actionPullRows(){const keys=new Set(actionGroups().filter(g=>g.status==="Assigned"&&g.eligible).map(g=>g.key));return (currentShortageReport?.pulls||[]).filter(r=>keys.has(actionKey(r))&&!r.done&&r.location&&r.lpn&&locationType(r.location)==="storage").sort((a,b)=>(a.oldestOrderDate??Infinity)-(b.oldestOrderDate??Infinity)||a.sku.localeCompare(b.sku))}
 function actionEmailText(){const rows=actionGroups().filter(g=>g.status==="MV-M1"&&g.eligible);return "Hi Anthony!\n\nBelow is the updated list of items we are currently short on and need from MV-M1. The quantities listed reflect our current outstanding shortages.\n\n"+[...new Set(rows.map(g=>g.brand))].map(b=>b.toUpperCase()+"\n"+rows.filter(g=>g.brand===b).map(g=>"("+g.qty+") "+g.sku).join("\n")).join("\n\n")+"\n\nThank you!"}
 function actionCopy(){if(!actionGroups().some(g=>g.status==="MV-M1"&&g.eligible)){document.getElementById("actionMessage").textContent="No active MV-M1 requests.";return}copyText(actionEmailText(),"actionMessage")}
 function actionPrint(){const rows=actionPullRows();if(!rows.length){document.getElementById("actionMessage").textContent="No assigned pulls with verified storage and LPN.";return}openPrintWindow("Assigned Replenisher Pull List","<table><thead><tr><th>SKU</th><th>Storage location</th><th>LPN</th></tr></thead><tbody>"+rows.map(r=>"<tr>"+[r.sku,r.location,r.lpn].map(v=>"<td>"+escapeHTML(v)+"</td>").join("")+"</tr>").join("")+"</tbody></table>")}
 function actionRender(){const body=document.getElementById("actionRows");if(!body||!currentShortageReport)return;const rows=actionGroups(),filter=document.getElementById("actionFilter").value;document.getElementById("actionCounts").innerHTML=actionStatuses.map(v=>'<button class="btn" data-status="'+v+'">'+v+' · '+rows.filter(g=>g.status===v).length+'</button>').join("");document.querySelectorAll("#actionCounts button").forEach(b=>b.onclick=()=>{document.getElementById("actionFilter").value=b.dataset.status;actionRender()});body.replaceChildren();for(const g of rows.filter(g=>filter==="All"||g.status===filter)){const tr=body.insertRow();for(const v of [g.brand,g.sku,g.qty,g.created||"Unknown"])tr.insertCell().textContent=v;const select=document.createElement("select");for(const v of actionStatuses)select.add(new Option(v,v));select.value=g.status;select.disabled=g.onlyM1;select.title=g.onlyM1?"Automatically assigned: available inventory is only in MV-M1":"";select.onchange=()=>actionEdit(g.key,"status",select.value);tr.insertCell().append(select);const input=document.createElement("input");input.value=g.notes;input.placeholder="Notes";input.onchange=()=>actionEdit(g.key,"notes",input.value);tr.insertCell().append(input);if(!g.eligible)tr.title="No uncovered shortage in current report; excluded from outputs"}document.getElementById("actionPulls").innerHTML=actionPullRows().map(r=>"<tr>"+[r.sku,r.location,r.lpn].map(v=>"<td>"+escapeHTML(v)+"</td>").join("")+"</tr>").join("")||'<tr><td colspan="3">No assigned pulls with verified sources.</td></tr>';document.getElementById("actionEmail").textContent=actionEmailText();document.getElementById("actionChanges").textContent=rows.filter(g=>g.status==="MV-M1"&&(currentShortageReport.pulls||[]).some(r=>actionKey(r)===g.key)).length+" MV-M1 SKUs have local storage available; review before sending."}
+</script><div id="wsGate" style="position:fixed;inset:0;z-index:99999;background:#f4f6f9;display:flex;align-items:center;justify-content:center"><div class="panel" style="width:min(420px,90vw);padding:28px"><h1>D2C Operations Hub</h1><p>Sign in to your shared workspace</p><input id="wsEmail" type="email" placeholder="Work email" style="width:100%;margin:8px 0"><input id="wsPass" type="password" placeholder="Password" style="width:100%;margin:8px 0"><div class="actions"><button class="btn primary" onclick="wsLogin(false)">Sign in</button><button class="btn" onclick="wsLogin(true)">Email sign-in link</button></div><p id="wsLoginMessage"></p></div></div><dialog id="wsHistoryDialog"><h2>Activity log</h2><pre id="wsHistoryRows" style="white-space:pre-wrap;max-height:60vh;overflow:auto"></pre><button class="btn" onclick="this.closest('dialog').close()">Close</button></dialog><script>
+let wsRole=null,wsReady=false,wsPreviewMode=false,wsPending=0,wsBusy=false,wsSeen=new Map();
+const wsKeys={report:ACTIVE_SHORTAGE_KEY,reports:REPORT_STORAGE_KEY,checklist:DAILY_CHECKLIST_KEY};
+function wsStatus(t){document.getElementById("wsSync").textContent=t}
+function wsGate(show){document.getElementById("wsGate").style.display=show?"flex":"none";document.querySelector(".sidebar").inert=show;document.querySelector("main.content").inert=show}
+async function wsLogin(link){const email=document.getElementById("wsEmail").value.trim(),password=document.getElementById("wsPass").value;const result=link?await trackerClient.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}}):await trackerClient.auth.signInWithPassword({email,password});document.getElementById("wsLoginMessage").textContent=result.error?result.error.message:link?"Check your email.":"Signing in…";if(!result.error&&!link)await wsInit()}
+async function wsInit(){if(!trackerClient)return;const {data}=await trackerClient.auth.getUser();trackerUser=data?.user||null;wsReady=false;if(!trackerUser){wsGate(true);return}const {data:member,error}=await trackerClient.from("workspace_members").select("role").eq("user_id",trackerUser.id).maybeSingle();if(error||!member){wsGate(true);document.getElementById("wsLoginMessage").textContent="This account is not authorized for the workspace.";return}wsRole=member.role;document.getElementById("wsAccount").textContent=trackerUser.email+" · "+wsRole;document.getElementById("wsPreview").hidden=wsRole!=="admin";await wsPull(true);wsGate(!wsReady)}
+async function wsWrite(key,value){if(!wsReady)return;wsPending++;wsStatus("Saving…");try{const {error}=await trackerClient.from("workspace_state").upsert({key,value,updated_by:trackerUser.id});if(error)throw error;wsStatus("Synced")}catch(e){wsStatus("Save failed: "+e.message)}finally{wsPending--}}
+async function wsPull(first=false){if(wsBusy||wsPending||!trackerUser||!wsRole)return;wsBusy=true;try{const {data,error}=await trackerClient.from("workspace_state").select("*");if(error)throw error;let redraw=false;const state=first?{}:actionLoad();for(const row of data||[]){if(wsSeen.get(row.key)===row.updated_at)continue;wsSeen.set(row.key,row.updated_at);if(row.key.startsWith("sku:")){state[row.key.slice(4)]=row.value;redraw=true}else if(wsKeys[row.key]){localStorage.setItem(wsKeys[row.key],JSON.stringify(row.value));if(row.key==="report"){currentShortageReport=row.value;redraw=true}else if(row.key==="reports")renderRecentReports();else if(row.key==="checklist")loadDailyChecklist()}}actionSave(state);if(first&&!(data||[]).some(r=>r.key==="report")){currentShortageReport=null;document.getElementById("shortageOutput").classList.add("hidden")}if(redraw&&currentShortageReport){populateShortageBrands();renderShortageReport();document.getElementById("shortageOutput").classList.remove("hidden")}wsReady=true;wsStatus("Synced")}catch(e){wsStatus("Sync failed: "+e.message)}finally{wsBusy=false}}
+async function trackerEdit(key,field,value){const row=currentShortageReport?.orders?.find(r=>trackerKey(r)===key);if(!row)return;row[field]=value;persistActiveShortage();renderShortageReport()}
+function wsToggle(){wsPreviewMode=!wsPreviewMode;document.getElementById("wsPreview").textContent=wsPreviewMode?"Return to Admin View":"Preview as Team Member";document.getElementById("wsAccount").textContent=trackerUser.email+" · "+(wsPreviewMode?"Team member preview":wsRole)}
+async function wsHistory(){const {data,error}=await trackerClient.from("workspace_activity").select("*").order("happened_at",{ascending:false}).limit(100);const d=document.getElementById("wsHistoryDialog");document.getElementById("wsHistoryRows").textContent=error?error.message:(data||[]).map(r=>new Date(r.happened_at).toLocaleString()+" · "+r.key+" · "+(r.actor===trackerUser.id?trackerUser.email:r.actor)).join("\n");d.showModal()}
+async function wsPassword(){const p=prompt("Enter a new password (at least 12 characters)");if(!p)return;if(p.length<12)return alert("Use at least 12 characters.");const {error}=await trackerClient.auth.updateUser({password:p});alert(error?error.message:"Password updated.")}
+async function wsLogout(){wsReady=false;await trackerClient.auth.signOut();for(const k of Object.values(wsKeys))localStorage.removeItem(k);localStorage.removeItem("d2c-action-v1");location.reload()}
+window.addEventListener("DOMContentLoaded",()=>{wsInit();setInterval(()=>wsPull(),5000);trackerClient?.auth.onAuthStateChange((event)=>{if(event==="SIGNED_IN"||event==="PASSWORD_RECOVERY")setTimeout(wsInit,0)})});
 </script></body>
 </html>

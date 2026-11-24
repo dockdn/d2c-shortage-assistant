@@ -7339,7 +7339,6 @@ async function actionChangeCutoff(value){if(!wsReady||!currentShortageReport)ret
 // Route from current inventory; retain verified decisions and Runner outcomes.
 function actionRoute(g,c,s,onlyM1){
   if(s?.status==="Resolved"||s?.runner_result&&s?.status==="Under Investigation")return s.status;
-  if(s?.manualStatus&&s.status==="Under Investigation")return s.status;
   if(c.storage>0)return "Assigned";
   if(c.m1>0||onlyM1)return "MV-M1";
   if(s?.manualStatus&&s.status==="Waiting for CS")return "Waiting for CS";

@@ -2896,15 +2896,14 @@ td.sku {
 
   <div id="assistMessages" class="assist-messages">
     <div class="assist-message bot">
-      Hi! Ask me where to find a tool, report,
-      warehouse reference, or daily procedure.
+      Hi! Ask me about your current shortage counts, assigned SKUs, MV-M1 orders, or where to find a tool or procedure.
     </div>
   </div>
 
   <div id="assistSuggestions" class="assist-suggestions">
     <button class="assist-suggestion"
-      onclick="askAssist('Where is the shortage report?')">
-      Shortage report
+      onclick="askAssist('How many shortages are left?')">
+      Current shortages
     </button>
 
     <button class="assist-suggestion"
@@ -7093,7 +7092,7 @@ function assistMetrics(query){
 
 function findAssistAnswer(question) {
   const query = normalize(question);
-  const metrics=assistMetrics(query);if(metrics)return metrics;
+  const metrics=assistMetrics(clean(question).toLowerCase().replace(/\s+/g," "));if(metrics)return metrics;
   if((/pod|the game|hats?/.test(query)&&/filter|replenishment|shortage|tags?/.test(query))||/pod w inv|pod-and-inventory/.test(query))return assistKnowledge[0];
 
   let best = null;

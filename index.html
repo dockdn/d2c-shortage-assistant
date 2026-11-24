@@ -7296,6 +7296,7 @@ async function legacyTrackerEdit(key,field,value) {
 </script>
 <script>
 const actionStatuses=["New","Assigned","MV-M1","Waiting for CS","Under Investigation","Resolved"];
+// 08 · Shortage Action Center and automatic Runner dispatch
 function actionKey(r){return normalize(r.brand)+"|"+normalize(r.sku)}
 function actionBrand(r){const b=normalize(r.brand);if(/^s?20-/.test(normalize(r.sku))&&/swoverall|duderobe/.test(b))return "Duderobe";if(b.includes("duderobe"))return "Duderobe";if(b.includes("swoverall"))return "Swoveralls";if(b.includes("magnaready")||b.includes("magna ready"))return "MagnaReady";return r.brand||"Unclassified"}
 function actionLoad(){try{return JSON.parse(localStorage.getItem("d2c-action-v1")||"{}")}catch{return {}}}
